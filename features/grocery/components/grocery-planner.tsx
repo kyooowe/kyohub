@@ -28,6 +28,7 @@ export function GroceryPlanner() {
 	const [dialogEntry, setDialogEntry] = useState<GroceryItem | "new" | null>(null);
 	const [storageError, setStorageError] = useState("");
 	const [ready, setReady] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
 	useEffect(() => {
 		let active = true;
@@ -67,6 +68,8 @@ export function GroceryPlanner() {
 
 	async function submitGrocery(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+		if (submitting) return;
+		setSubmitting(true);
 		const name = String(new FormData(event.currentTarget).get("item")).trim();
 		if (!name) return;
 		const editing = dialogEntry && dialogEntry !== "new" ? dialogEntry : null;
@@ -84,13 +87,17 @@ export function GroceryPlanner() {
 		} catch (error) {
 			const action = editing ? "edit" : "add";
 			setStorageError(error instanceof Error ? `Could not ${action} grocery: ${error.message}` : `Could not ${action} grocery.`);
+		} finally {
+			setSubmitting(false);
 		}
 	}
 
 	async function updateItem(id: string, update: (item: GroceryItem) => GroceryItem | null) {
+		if (submitting) return;
 		const item = dayItems.find((entry) => entry.id === id);
 		if (!item) return;
 		const updated = update(item);
+		setSubmitting(true);
 		try {
 			if (updated) await updateGroceryItem(id, { name: updated.name, done: updated.done });
 			else await deleteGroceryItem(id);
@@ -98,6 +105,8 @@ export function GroceryPlanner() {
 			setStorageError("");
 		} catch (error) {
 			setStorageError(error instanceof Error ? `Could not update grocery: ${error.message}` : "Could not update grocery.");
+		} finally {
+			setSubmitting(false);
 		}
 	}
 
@@ -111,7 +120,7 @@ export function GroceryPlanner() {
 					<h1 className="bg-linear-to-r from-slate-900 via-blue-950 to-indigo-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">Grocery planner</h1>
 					<p className="mt-1 text-sm text-slate-500">A little list-making goes a long way.</p>
 				</div>
-				<Button type="button" className="min-h-11 border-0 bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add grocery</Button>
+				<Button type="button" disabled={submitting} className="min-h-11 border-0 bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add grocery</Button>
 			</div>
 			<div className="grid items-start gap-5 lg:grid-cols-2">
 				<Card className="overflow-hidden border-0 bg-white py-0 shadow-lg shadow-slate-300/40 ring-0">
@@ -150,7 +159,7 @@ export function GroceryPlanner() {
 					</CardHeader>
 					<CardContent className="p-5">
 						<GrocerySummary items={dayItems} doneCount={doneCount} />
-						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} />
+						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} submitting={submitting} />
 					</CardContent>
 				</Card>
 			</div>
@@ -159,8 +168,9 @@ export function GroceryPlanner() {
 				open={dialogEntry !== null}
 				entry={dialogEntry && dialogEntry !== "new" ? dialogEntry : null}
 				selectedDate={selectedDate}
-				onOpenChange={(open) => { if (!open) setDialogEntry(null); }}
+				onOpenChange={(open) => { if (!open && !submitting) setDialogEntry(null); }}
 				onSubmit={submitGrocery}
+				submitting={submitting}
 			/>
 		</>
 	);

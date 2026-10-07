@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Baby, Key, ShoppingCart } from "lucide-react";
+import type { AuthUser } from "@/features/auth/lib/session";
 
 const navigation = [
 	{ href: "/passwords", label: "Password manager", icon: Key },
@@ -11,7 +12,7 @@ const navigation = [
 	{ href: "/baby-needs", label: "Kyooowe Needs", icon: Baby },
 ];
 
-export default function Dashboard({ children }: { children: ReactNode }) {
+export default function Dashboard({ children, user }: { children: ReactNode; user: AuthUser }) {
 	const pathname = usePathname();
 	const current = navigation.find((item) => pathname.startsWith(item.href)) ?? navigation[0];
 
@@ -47,15 +48,15 @@ export default function Dashboard({ children }: { children: ReactNode }) {
 						A little more organized, a little less to remember.
 					</div>
 					<div className="flex items-center gap-3 border-t border-white/10 pt-4">
-						<div className="grid size-9 place-items-center rounded-full bg-linear-to-br from-fuchsia-300 to-violet-400 text-xs font-bold text-violet-950 ring-2 ring-white/10">AM</div>
-						<div><p className="text-sm font-medium text-white">Alex Morgan</p><p className="text-xs text-violet-200/50">Personal space</p></div>
+						<div className="grid size-9 place-items-center rounded-full bg-linear-to-br from-fuchsia-300 to-violet-400 text-xs font-bold text-violet-950 ring-2 ring-white/10">{user.initials}</div>
+						<div><p className="text-sm font-medium text-white">{user.name}</p><p className="text-xs text-violet-200/50">Personal space</p></div>
 					</div>
 				</div>
 			</aside>
 			<section className="min-w-0 flex-1">
 				<header className="flex h-14 items-center justify-between border-b border-violet-100 bg-white/80 px-5 shadow-[0_1px_8px_rgba(68,48,125,0.04)] backdrop-blur md:px-10">
 					<div className="text-sm text-slate-400">My space <span className="mx-2 text-violet-200">/</span><strong className="font-medium text-slate-700">{current.label}</strong></div>
-					<div className="flex items-center gap-3 text-xs text-slate-400">{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric" }).format(new Date())}<span className="grid size-8 place-items-center rounded-full bg-linear-to-br from-violet-500 to-fuchsia-500 font-semibold text-white shadow-md shadow-violet-300/40">AM</span></div>
+					<div className="flex items-center gap-3 text-xs text-slate-400">{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric" }).format(new Date())}<span className="grid size-8 place-items-center rounded-full bg-linear-to-br from-violet-500 to-fuchsia-500 font-semibold text-white shadow-md shadow-violet-300/40">{user.initials}</span></div>
 				</header>
 				<div className="mx-auto max-w-6xl space-y-6 p-4 md:p-8">{children}</div>
 			</section>

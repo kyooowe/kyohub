@@ -2,9 +2,10 @@
 
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useEffect, useMemo, useState } from "react";
-import { Globe, Key, KeyRound, Plus, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Globe, Key, KeyRound, Loader2, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { PasswordDialog } from "@/features/passwords/components/password-dialog";
 import { PasswordList } from "@/features/passwords/components/password-list";
 import { PasswordSearch } from "@/features/passwords/components/password-search";
@@ -20,6 +21,8 @@ export function PasswordManager() {
 	const [revealed, setRevealed] = useState<string[]>([]);
 	const [ready, setReady] = useState(false);
 	const [storageError, setStorageError] = useState("");
+	const [submitting, setSubmitting] = useState(false);
+	const [deleteTarget, setDeleteTarget] = useState<PasswordEntry | null>(null);
 
 	useEffect(() => {
 		let active = true;
@@ -44,6 +47,7 @@ export function PasswordManager() {
 	}, [passwords, filter, query]);
 
 	async function submitEntry(entry: PasswordEntry) {
+		setSubmitting(true);
 		try {
 			if (dialogEntry === "new") {
 				await createPasswordEntry(entry);
@@ -55,17 +59,24 @@ export function PasswordManager() {
 			setDialogEntry(null);
 		} catch (error) {
 			setStorageError(error instanceof Error ? `Password change failed: ${error.message}` : "Password change failed.");
+		} finally {
+			setSubmitting(false);
 		}
 	}
 
-	function deleteEntry(entry: PasswordEntry) {
-		if (!window.confirm(`Delete the ${entry.website} login?`)) return;
-		void deletePasswordEntry(entry.id).then(async () => {
+	async function deleteEntry() {
+		if (!deleteTarget) return;
+		setSubmitting(true);
+		try {
+			await deletePasswordEntry(deleteTarget.id);
 			setPasswords(await getPasswordEntries());
 			setStorageError("");
-		}).catch((error: unknown) => {
+			setDeleteTarget(null);
+		} catch (error: unknown) {
 			setStorageError(error instanceof Error ? `Could not delete password: ${error.message}` : "Could not delete password.");
-		});
+		} finally {
+			setSubmitting(false);
+		}
 	}
 
 	const strongCount = passwords.filter((entry) => getStrength(entry.password).score >= 4).length;
@@ -98,11 +109,38 @@ export function PasswordManager() {
 			</div>
 			<CardContent className="p-4 md:p-5">
 				<PasswordSearch query={query} onQueryChange={setQuery} filter={filter} onFilterChange={setFilter} />
-				<PasswordList entries={visibleEntries} revealed={revealed} onToggleReveal={(id) => setRevealed((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])} onEdit={setDialogEntry} onDelete={deleteEntry} />
+				<PasswordList entries={visibleEntries} revealed={revealed} onToggleReveal={(id) => setRevealed((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])} onEdit={setDialogEntry} onDelete={setDeleteTarget} />
 				<div className="mt-5 flex flex-wrap justify-between gap-2 border-t border-violet-100 pt-4 text-xs text-slate-400"><span>Showing {visibleEntries.length} of {passwords.length} passwords</span><span>Saved to the shared database</span></div>
 			</CardContent>
 		</Card>
 		<p className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900"><ShieldCheck size={16} className="mt-0.5 shrink-0 text-amber-700" /><span><strong>Shared family workspace:</strong> Anyone who can access this app can read these passwords. They are not encrypted in the database.</span></p>
-		<PasswordDialog entry={dialogEntry} onOpenChange={(open) => { if (!open) setDialogEntry(null); }} onSubmit={submitEntry} />
+		<PasswordDialog entry={dialogEntry} onOpenChange={(open) => { if (!open && !submitting) setDialogEntry(null); }} onSubmit={submitEntry} submitting={submitting} />
+		<Dialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open && !submitting) setDeleteTarget(null); }}>
+			<DialogContent className="max-w-md overflow-hidden border-0 bg-white p-0 shadow-2xl shadow-slate-950/20 sm:rounded-2xl">
+				<div className="border-b border-red-100 bg-linear-to-br from-red-50 via-rose-50 to-white px-6 pb-5 pt-6">
+					<div className="flex items-start justify-between gap-4">
+						<div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-red-100 text-red-600 shadow-sm shadow-red-200">
+							<AlertTriangle size={23} strokeWidth={2.2} />
+						</div>
+						<DialogClose disabled={submitting} aria-label="Close delete dialog" className="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-200">×</DialogClose>
+					</div>
+					<DialogTitle className="mt-5 text-xl font-semibold tracking-tight text-slate-950">Delete this password?</DialogTitle>
+					<DialogDescription className="mt-2 text-sm leading-relaxed text-slate-600">This action permanently removes the saved login. You will not be able to recover it later.</DialogDescription>
+				</div>
+				<div className="px-6 py-5">
+					<div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+						<div className="grid size-9 place-items-center rounded-lg bg-white text-red-500 shadow-sm"><Trash2 size={17} /></div>
+						<div className="min-w-0">
+							<p className="truncate text-sm font-semibold text-slate-900">{deleteTarget?.website ?? "Saved login"}</p>
+							<p className="text-xs text-slate-500">Saved password entry</p>
+						</div>
+					</div>
+					<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+						<DialogClose disabled={submitting} className="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">Keep password</DialogClose>
+						<Button type="button" disabled={submitting} className="min-h-10 bg-red-600 px-4 text-white shadow-sm shadow-red-200 transition-all hover:bg-red-700 hover:shadow-md" onClick={() => void deleteEntry()}>{submitting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} {submitting ? "Deleting…" : "Delete password"}</Button>
+					</div>
+				</div>
+			</DialogContent>
+		</Dialog>
 	</>;
 }
