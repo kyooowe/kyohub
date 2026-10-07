@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { requireAuth } from "@/features/auth/lib/session";
 import type { BabyNeed, BabyNeedType } from "@/features/baby-needs/types";
 
 export type BabyNeedRecord = BabyNeed & { dateKey: string };
@@ -41,6 +42,7 @@ function validateNeed(value: unknown): BabyNeedRecord {
 }
 
 export async function getBabyNeeds(): Promise<BabyNeedRecord[]> {
+	await requireAuth();
 	const needs = await db.orm.public.BabyNeed
 		.select("id", "dateKey", "title", "type", "notes", "done")
 		.orderBy([(need) => need.createdAt.asc(), (need) => need.id.asc()])
@@ -49,11 +51,13 @@ export async function getBabyNeeds(): Promise<BabyNeedRecord[]> {
 }
 
 export async function createBabyNeed(value: unknown): Promise<void> {
+	await requireAuth();
 	const need = validateNeed(value);
 	await db.orm.public.BabyNeed.create(need);
 }
 
 export async function updateBabyNeed(id: string, value: unknown): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") {
 		throw new Error("Invalid baby reminder.");
 	}
@@ -80,6 +84,7 @@ export async function updateBabyNeed(id: string, value: unknown): Promise<void> 
 }
 
 export async function deleteBabyNeed(id: string): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid baby reminder ID.");
 	const existing = await db.orm.public.BabyNeed.first({ id });
 	if (!existing) throw new Error("Baby reminder was not found.");
@@ -87,6 +92,7 @@ export async function deleteBabyNeed(id: string): Promise<void> {
 }
 
 export async function importLegacyBabyNeeds(values: unknown): Promise<void> {
+	await requireAuth();
 	if (!Array.isArray(values) || values.length > 10000) throw new Error("Invalid saved baby reminder data.");
 	for (const value of values) {
 		const need = validateNeed(value);

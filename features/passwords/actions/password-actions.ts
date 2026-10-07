@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { requireAuth } from "@/features/auth/lib/session";
 import { categories } from "@/features/passwords/lib/password-utils";
 import type { PasswordEntry } from "@/features/passwords/types";
 
@@ -29,6 +30,7 @@ function validateEntry(value: unknown): PasswordEntry {
 }
 
 export async function getPasswordEntries(): Promise<PasswordEntry[]> {
+	await requireAuth();
 	const entries = await db.orm.public.PasswordEntry
 		.select("id", "website", "url", "category", "username", "password")
 		.orderBy([(entry) => entry.createdAt.desc(), (entry) => entry.id.desc()])
@@ -37,11 +39,13 @@ export async function getPasswordEntries(): Promise<PasswordEntry[]> {
 }
 
 export async function createPasswordEntry(value: unknown): Promise<void> {
+	await requireAuth();
 	const entry = validateEntry(value);
 	await db.orm.public.PasswordEntry.create(entry);
 }
 
 export async function updatePasswordEntry(id: string, value: unknown): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") {
 		throw new Error("Invalid password entry.");
 	}
@@ -58,6 +62,7 @@ export async function updatePasswordEntry(id: string, value: unknown): Promise<v
 }
 
 export async function deletePasswordEntry(id: string): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid password entry ID.");
 	const existing = await db.orm.public.PasswordEntry.first({ id });
 	if (!existing) throw new Error("Password entry was not found.");

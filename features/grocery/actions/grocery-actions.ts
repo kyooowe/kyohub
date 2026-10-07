@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { requireAuth } from "@/features/auth/lib/session";
 import type { GroceryItem } from "@/features/grocery/types";
 
 export type GroceryRecord = GroceryItem & { dateKey: string };
@@ -27,6 +28,7 @@ function validateItem(value: unknown): GroceryRecord {
 }
 
 export async function getGroceryItems(): Promise<GroceryRecord[]> {
+	await requireAuth();
 	return db.orm.public.GroceryItem
 		.select("id", "dateKey", "name", "done")
 		.orderBy([(item) => item.createdAt.asc(), (item) => item.id.asc()])
@@ -34,11 +36,13 @@ export async function getGroceryItems(): Promise<GroceryRecord[]> {
 }
 
 export async function createGroceryItem(value: unknown): Promise<void> {
+	await requireAuth();
 	const item = validateItem(value);
 	await db.orm.public.GroceryItem.create(item);
 }
 
 export async function updateGroceryItem(id: string, value: unknown): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") {
 		throw new Error("Invalid grocery item.");
 	}
@@ -59,6 +63,7 @@ export async function updateGroceryItem(id: string, value: unknown): Promise<voi
 }
 
 export async function deleteGroceryItem(id: string): Promise<void> {
+	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid grocery item ID.");
 	const existing = await db.orm.public.GroceryItem.first({ id });
 	if (!existing) throw new Error("Grocery item was not found.");
@@ -66,6 +71,7 @@ export async function deleteGroceryItem(id: string): Promise<void> {
 }
 
 export async function importLegacyGroceryItems(values: unknown): Promise<void> {
+	await requireAuth();
 	if (!Array.isArray(values) || values.length > 10000) throw new Error("Invalid saved grocery data.");
 	for (const value of values) {
 		const item = validateItem(value);
