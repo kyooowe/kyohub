@@ -20,6 +20,14 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## PostgreSQL data
+
+Set `DATABASE_URL` in `.env.local` to a PostgreSQL connection string. The password, grocery, and baby-needs features use the same shared database workspace; their server actions provide create, read, update, and delete operations. The password manager reads only from PostgreSQL. Existing browser-saved grocery and baby-needs items are imported into PostgreSQL the first time each browser opens the corresponding feature.
+
+After changing `prisma/schema.prisma`, run `npm run contract:emit` to regenerate the typed contract, then `npx prisma db init` to apply additive schema changes.
+
+This workspace currently has no sign-in or access control, so anyone who can reach the app can read and change the shared data. Password entries are stored as plaintext in PostgreSQL. Do not expose this app publicly until authentication, authorization, and password encryption are added.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

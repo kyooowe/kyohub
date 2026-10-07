@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "KyoHub — your space, together",
-  description: "Keep your passwords organized and plan your grocery lists by date.",
+  description: "Keep passwords, grocery lists, and baby reminders organized in one family space.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

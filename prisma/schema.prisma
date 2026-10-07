@@ -1,0 +1,33 @@
+// use prisma-8
+
+model PasswordEntry {
+  id        String           @id @default(uuid())
+  website   String
+  url       String
+  category  String
+  username  String
+  password  String
+  createdAt TimestamptzString @default(now())
+}
+
+model GroceryItem {
+  id        String           @id @default(uuid())
+  dateKey   String
+  name      String
+  done      Boolean          @default(false)
+  createdAt TimestamptzString @default(now())
+
+  @@index([dateKey])
+}
+
+model BabyNeed {
+  id        String           @id @default(uuid())
+  dateKey   String
+  title     String
+  type      String
+  notes     String           @default("")
+  done      Boolean          @default(false)
+  createdAt TimestamptzString @default(now())
+
+  @@index([dateKey])
+}

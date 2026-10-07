@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "prisma/schema.d.ts",
+    "migrations/**/contract.d.ts",
   ]),
 ]);
 
