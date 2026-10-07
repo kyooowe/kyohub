@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, IBM_Plex_Sans, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KyoHub — your space, together",
   description: "Keep passwords, grocery lists, and baby reminders organized in one family space.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1e40af",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

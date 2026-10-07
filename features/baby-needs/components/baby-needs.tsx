@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Baby, Bell, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -107,7 +108,7 @@ export function BabyNeeds() {
 
 	return <>
 		{storageError && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{storageError}</div>}
-		{!ready && <p className="text-sm text-muted-foreground">Loading saved items…</p>}
+		{!ready && <LoadingIndicator />}
 		<div className="flex flex-wrap items-end justify-between gap-4">
 			<div><p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-widest text-teal-700"><span className="grid size-6 place-items-center rounded-md bg-teal-100"><Baby size={15} /></span> BABY NEEDS</p><h1 className="bg-linear-to-r from-slate-900 via-teal-950 to-cyan-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">Kyooowe Needs</h1><p className="mt-1 text-sm text-slate-500">Keep vaccinations and important little milestones in one place.</p></div>
 			<Button type="button" className="min-h-11 border-0 bg-linear-to-r from-teal-600 to-cyan-600 text-white shadow-lg shadow-teal-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-teal-700 hover:to-cyan-700 hover:shadow-xl hover:shadow-teal-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add baby need</Button>

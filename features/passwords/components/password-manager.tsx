@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useEffect, useMemo, useState } from "react";
 import { Globe, Key, KeyRound, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ export function PasswordManager() {
 
 	return <>
 		{storageError && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{storageError}</div>}
-		{!ready && <p className="text-sm text-muted-foreground">Loading saved items…</p>}
+		{!ready && <LoadingIndicator />}
 		<div className="flex flex-wrap items-end justify-between gap-4">
 			<div><p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-widest text-violet-600"><span className="grid size-6 place-items-center rounded-md bg-violet-100 text-violet-600"><KeyRound size={14} /></span> YOUR DIGITAL LIFE</p><h1 className="bg-linear-to-r from-slate-900 via-violet-950 to-violet-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">Password manager</h1><p className="mt-1 text-sm text-slate-500">All your logins, neatly in one place.</p></div>
 			<Button type="button" className="min-h-11 border-0 bg-linear-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-violet-700 hover:to-fuchsia-700 hover:shadow-xl hover:shadow-violet-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add password</Button>

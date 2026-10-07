@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,7 @@ export function GroceryPlanner() {
 	return (
 		<>
 			{storageError && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{storageError}</div>}
-			{!ready && <p className="text-sm text-muted-foreground">Loading saved items…</p>}
+			{!ready && <LoadingIndicator />}
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div>
 					<p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-widest text-blue-700"><span className="grid size-6 place-items-center rounded-md bg-blue-100 text-blue-700"><CalendarDays size={14} /></span> PLAN YOUR WEEK</p>
