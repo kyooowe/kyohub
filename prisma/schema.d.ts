@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'493e45e418f90b0ddc9210a24ee8f9ccc395576bf49c48d59f26d635daeb34ea'>;
+  StorageHashBase<'be5c75b55190313f55c70c64ab37fa3243e6e404ef65ad7bcc505de3da2fcde2'>;
 export type ExecutionHash =
-  ExecutionHashBase<'9dd4900e9d8799d39df6e88f938bdcd91f04dded7579bc9c00931aa94ad185a5'>;
+  ExecutionHashBase<'e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -259,12 +259,27 @@ export type FieldOutputTypes = {
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
     };
+    readonly BudgetBill: {
+      readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dueDay: CodecTypes['pg/int4@1']['output'] | null;
+      readonly frequency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly title: CodecTypes['pg/text@1']['output'];
+    };
     readonly GroceryItem: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
       readonly done: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+    };
+    readonly MonthlyBudget: {
+      readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthKey: CodecTypes['pg/text@1']['output'];
     };
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['output'];
@@ -274,6 +289,13 @@ export type FieldOutputTypes = {
       readonly url: CodecTypes['pg/text@1']['output'];
       readonly username: CodecTypes['pg/text@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'];
+    };
+    readonly PushSubscription: {
+      readonly auth: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly endpoint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly p256dh: CodecTypes['pg/text@1']['output'];
     };
   };
 };
@@ -288,12 +310,27 @@ export type FieldInputTypes = {
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
     };
+    readonly BudgetBill: {
+      readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dueDay: CodecTypes['pg/int4@1']['input'] | null;
+      readonly frequency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly title: CodecTypes['pg/text@1']['input'];
+    };
     readonly GroceryItem: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
       readonly done: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+    };
+    readonly MonthlyBudget: {
+      readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthKey: CodecTypes['pg/text@1']['input'];
     };
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['input'];
@@ -303,6 +340,13 @@ export type FieldInputTypes = {
       readonly url: CodecTypes['pg/text@1']['input'];
       readonly username: CodecTypes['pg/text@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'];
+    };
+    readonly PushSubscription: {
+      readonly auth: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly endpoint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly p256dh: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -317,12 +361,27 @@ export type StorageColumnTypes = {
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
     };
+    readonly BudgetBill: {
+      readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dueDay: CodecTypes['pg/int4@1']['output'] | null;
+      readonly frequency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly title: CodecTypes['pg/text@1']['output'];
+    };
     readonly GroceryItem: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
       readonly done: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
+    };
+    readonly MonthlyBudget: {
+      readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthKey: CodecTypes['pg/text@1']['output'];
     };
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['output'];
@@ -332,6 +391,13 @@ export type StorageColumnTypes = {
       readonly url: CodecTypes['pg/text@1']['output'];
       readonly username: CodecTypes['pg/text@1']['output'];
       readonly website: CodecTypes['pg/text@1']['output'];
+    };
+    readonly PushSubscription: {
+      readonly auth: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly endpoint: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly p256dh: CodecTypes['pg/text@1']['output'];
     };
   };
 };
@@ -346,12 +412,27 @@ export type StorageColumnInputTypes = {
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
     };
+    readonly BudgetBill: {
+      readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dueDay: CodecTypes['pg/int4@1']['input'] | null;
+      readonly frequency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly title: CodecTypes['pg/text@1']['input'];
+    };
     readonly GroceryItem: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
       readonly done: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly name: CodecTypes['pg/text@1']['input'];
+    };
+    readonly MonthlyBudget: {
+      readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthKey: CodecTypes['pg/text@1']['input'];
     };
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['input'];
@@ -361,6 +442,13 @@ export type StorageColumnInputTypes = {
       readonly url: CodecTypes['pg/text@1']['input'];
       readonly username: CodecTypes['pg/text@1']['input'];
       readonly website: CodecTypes['pg/text@1']['input'];
+    };
+    readonly PushSubscription: {
+      readonly auth: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly endpoint: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly p256dh: CodecTypes['pg/text@1']['input'];
     };
   };
 };
@@ -376,12 +464,29 @@ export namespace Models {
     type: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_BudgetBill = {
+    amountCents: CodecTypes['pg/int4@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    dueDay: CodecTypes['pg/int4@1']['output'] | null;
+    frequency: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    monthKey: CodecTypes['pg/text@1']['output'] | null;
+    title: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_GroceryItem = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     dateKey: CodecTypes['pg/text@1']['output'];
     done: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     name: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_MonthlyBudget = {
+    amountCents: CodecTypes['pg/int4@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    monthKey: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
   export type public_PasswordEntry = {
@@ -394,13 +499,24 @@ export namespace Models {
     website: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_PushSubscription = {
+    auth: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    endpoint: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    p256dh: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
 }
 
 export declare const models: {
   public: {
     BabyNeed: Models.public_BabyNeed;
+    BudgetBill: Models.public_BudgetBill;
     GroceryItem: Models.public_GroceryItem;
+    MonthlyBudget: Models.public_MonthlyBudget;
     PasswordEntry: Models.public_PasswordEntry;
+    PushSubscription: Models.public_PushSubscription;
   };
 };
 
@@ -481,6 +597,63 @@ type ContractBase = Omit<
               ];
               foreignKeys: readonly [];
             };
+            readonly BudgetBill: {
+              columns: {
+                readonly amountCents: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly dueDay: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly frequency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly monthKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly title: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BudgetBill_frequency_idx_ed55490e';
+                  readonly prefix: 'BudgetBill_frequency_idx';
+                  readonly columns: readonly ['frequency'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BudgetBill_monthKey_idx_52f47cb7';
+                  readonly prefix: 'BudgetBill_monthKey_idx';
+                  readonly columns: readonly ['monthKey'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly GroceryItem: {
               columns: {
                 readonly createdAt: {
@@ -524,6 +697,35 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
               ];
+              foreignKeys: readonly [];
+            };
+            readonly MonthlyBudget: {
+              columns: {
+                readonly amountCents: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly monthKey: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['monthKey'] }];
+              indexes: readonly [];
               foreignKeys: readonly [];
             };
             readonly PasswordEntry: {
@@ -570,6 +772,40 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly PushSubscription: {
+              columns: {
+                readonly auth: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly endpoint: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly p256dh: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['endpoint'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
           };
         };
       };
@@ -582,13 +818,25 @@ type ContractBase = Omit<
   readonly targetFamily: 'sql';
   readonly roots: {
     readonly BabyNeed: { readonly namespace: 'public' & NamespaceId; readonly model: 'BabyNeed' };
+    readonly BudgetBill: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BudgetBill';
+    };
     readonly GroceryItem: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'GroceryItem';
     };
+    readonly MonthlyBudget: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'MonthlyBudget';
+    };
     readonly PasswordEntry: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'PasswordEntry';
+    };
+    readonly PushSubscription: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PushSubscription';
     };
   };
   readonly domain: {
@@ -644,6 +892,55 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly BudgetBill: {
+            readonly fields: {
+              readonly amountCents: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly dueDay: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly frequency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly monthKey: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BudgetBill';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amountCents: { readonly column: 'amountCents' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly dueDay: { readonly column: 'dueDay' };
+                readonly frequency: { readonly column: 'frequency' };
+                readonly id: { readonly column: 'id' };
+                readonly monthKey: { readonly column: 'monthKey' };
+                readonly title: { readonly column: 'title' };
+              };
+            };
+          };
           readonly GroceryItem: {
             readonly fields: {
               readonly createdAt: {
@@ -680,6 +977,40 @@ type ContractBase = Omit<
                 readonly done: { readonly column: 'done' };
                 readonly id: { readonly column: 'id' };
                 readonly name: { readonly column: 'name' };
+              };
+            };
+          };
+          readonly MonthlyBudget: {
+            readonly fields: {
+              readonly amountCents: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly monthKey: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'MonthlyBudget';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amountCents: { readonly column: 'amountCents' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly monthKey: { readonly column: 'monthKey' };
               };
             };
           };
@@ -732,6 +1063,45 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly PushSubscription: {
+            readonly fields: {
+              readonly auth: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly endpoint: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly p256dh: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'PushSubscription';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly auth: { readonly column: 'auth' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly endpoint: { readonly column: 'endpoint' };
+                readonly id: { readonly column: 'id' };
+                readonly p256dh: { readonly column: 'p256dh' };
+              };
+            };
+          };
         };
       };
     };
@@ -772,6 +1142,14 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'BudgetBill';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'GroceryItem';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -780,7 +1158,23 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'MonthlyBudget';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'PasswordEntry';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'PushSubscription';
             readonly field: 'id';
             readonly namespace: 'public';
           };

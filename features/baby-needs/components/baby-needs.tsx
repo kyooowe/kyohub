@@ -9,12 +9,11 @@ import { BabyNeedDialog } from "@/features/baby-needs/components/baby-need-dialo
 import { BabyNeedsList } from "@/features/baby-needs/components/baby-needs-list";
 import { BabySummary } from "@/features/baby-needs/components/baby-summary";
 import { UpcomingNeeds } from "@/features/baby-needs/components/upcoming-needs";
-import { createBabyNeed, deleteBabyNeed, getBabyNeeds, importLegacyBabyNeeds, updateBabyNeed, type BabyNeedRecord } from "@/features/baby-needs/actions/baby-needs-actions";
+import { PushReminderSettings } from "@/features/baby-needs/components/push-reminder-settings";
+import { createBabyNeed, deleteBabyNeed, getBabyNeeds, updateBabyNeed, type BabyNeedRecord } from "@/features/baby-needs/actions/baby-needs-actions";
 import { dateLabel, getDateKey } from "@/features/grocery/lib/grocery-utils";
-import { getUpcomingVaccine } from "@/features/baby-needs/lib/baby-needs-utils";
+import { getUpcomingImportantDate, getUpcomingVaccine } from "@/features/baby-needs/lib/baby-needs-utils";
 import type { BabyNeed } from "@/features/baby-needs/types";
-
-const storageKey = "kyooowe-baby-needs-v1";
 
 function groupByDate(entries: BabyNeedRecord[]) {
 	return entries.reduce<Record<string, BabyNeed[]>>((grouped, { dateKey, ...need }) => {
@@ -36,15 +35,7 @@ export function BabyNeeds() {
 		let active = true;
 		async function loadNeeds() {
 			try {
-				const saved = localStorage.getItem(storageKey);
-				let entries = await getBabyNeeds();
-				if (saved !== null) {
-					const legacy = Object.entries(JSON.parse(saved) as Record<string, BabyNeed[]>)
-						.flatMap(([dateKey, items]) => items.map((item) => ({ ...item, dateKey })));
-					await importLegacyBabyNeeds(legacy);
-					localStorage.removeItem(storageKey);
-					entries = await getBabyNeeds();
-				}
+				const entries = await getBabyNeeds();
 				if (active) setNeeds(groupByDate(entries));
 			} catch (error) {
 				if (active) setStorageError(error instanceof Error ? `Could not load baby needs: ${error.message}` : "Could not load baby needs from the database.");
@@ -60,6 +51,7 @@ export function BabyNeeds() {
 	const dayNeeds = needs[dateKey] ?? [];
 	const todayKey = getDateKey(new Date());
 	const upcoming = getUpcomingVaccine(needs, todayKey);
+	const upcomingImportantDate = getUpcomingImportantDate(needs, todayKey);
 	const calendar = useMemo(() => {
 		const daysInMonth = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
 		const firstWeekday = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
@@ -122,7 +114,15 @@ export function BabyNeeds() {
 			<div><p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-widest text-teal-700"><span className="grid size-6 place-items-center rounded-md bg-teal-100"><Baby size={15} /></span> BABY NEEDS</p><h1 className="bg-linear-to-r from-slate-900 via-teal-950 to-cyan-700 bg-clip-text text-2xl font-bold tracking-tight text-transparent md:text-3xl">Kyooowe Needs</h1><p className="mt-1 text-sm text-slate-500">Keep vaccinations and important little milestones in one place.</p></div>
 			<Button type="button" disabled={submitting} className="min-h-11 border-0 bg-linear-to-r from-teal-600 to-cyan-600 text-white shadow-lg shadow-teal-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-teal-700 hover:to-cyan-700 hover:shadow-xl hover:shadow-teal-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add baby need</Button>
 		</div>
-		<UpcomingNeeds need={upcoming} />
+		<PushReminderSettings />
+		<div className="flex flex-col gap-3">
+			{upcoming && (
+				<UpcomingNeeds need={upcoming} kind="vaccine" />
+			)}
+			{upcomingImportantDate && (
+				<UpcomingNeeds need={upcomingImportantDate} kind="important" />
+			)}
+		</div>
 		<div className="grid items-start gap-5 lg:grid-cols-2">
 			<Card className="overflow-hidden border-0 bg-white py-0 shadow-lg shadow-slate-300/40 ring-0">
 				<CardHeader className="gap-4 border-b border-teal-900/10 bg-linear-to-r from-teal-800 via-teal-700 to-cyan-700 p-5 text-white">

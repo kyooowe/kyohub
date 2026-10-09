@@ -1,9 +1,22 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
 import { categories } from "@/features/passwords/lib/password-utils";
 import type { PasswordEntry } from "@/features/passwords/types";
+
+const getCachedPasswordEntries = unstable_cache(
+	async () => {
+		const entries = await db.orm.public.PasswordEntry
+			.select("id", "website", "url", "category", "username", "password")
+			.orderBy([(entry) => entry.createdAt.desc(), (entry) => entry.id.desc()])
+			.all();
+		return entries.map(validateEntry);
+	},
+	["password-entries"],
+	{ tags: ["password-entries"], revalidate: 60 },
+);
 
 function validateEntry(value: unknown): PasswordEntry {
 	if (!value || typeof value !== "object") throw new Error("Invalid password entry.");
@@ -31,17 +44,14 @@ function validateEntry(value: unknown): PasswordEntry {
 
 export async function getPasswordEntries(): Promise<PasswordEntry[]> {
 	await requireAuth();
-	const entries = await db.orm.public.PasswordEntry
-		.select("id", "website", "url", "category", "username", "password")
-		.orderBy([(entry) => entry.createdAt.desc(), (entry) => entry.id.desc()])
-		.all();
-	return entries.map(validateEntry);
+	return getCachedPasswordEntries();
 }
 
 export async function createPasswordEntry(value: unknown): Promise<void> {
 	await requireAuth();
 	const entry = validateEntry(value);
 	await db.orm.public.PasswordEntry.create(entry);
+	updateTag("password-entries");
 }
 
 export async function updatePasswordEntry(id: string, value: unknown): Promise<void> {
@@ -59,6 +69,7 @@ export async function updatePasswordEntry(id: string, value: unknown): Promise<v
 		username: entry.username,
 		password: entry.password,
 	});
+	updateTag("password-entries");
 }
 
 export async function deletePasswordEntry(id: string): Promise<void> {
@@ -67,4 +78,5 @@ export async function deletePasswordEntry(id: string): Promise<void> {
 	const existing = await db.orm.public.PasswordEntry.first({ id });
 	if (!existing) throw new Error("Password entry was not found.");
 	await db.orm.public.PasswordEntry.where({ id }).delete();
+	updateTag("password-entries");
 }

@@ -8,11 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GroceryDialog } from "@/features/grocery/components/grocery-dialog";
 import { GroceryList } from "@/features/grocery/components/grocery-list";
 import { GrocerySummary } from "@/features/grocery/components/grocery-summary";
-import { createGroceryItem, deleteGroceryItem, getGroceryItems, importLegacyGroceryItems, updateGroceryItem, type GroceryRecord } from "@/features/grocery/actions/grocery-actions";
+import { createGroceryItem, deleteGroceryItem, getGroceryItems, updateGroceryItem, type GroceryRecord } from "@/features/grocery/actions/grocery-actions";
 import { dateLabel, getDateKey } from "@/features/grocery/lib/grocery-utils";
 import type { GroceryItem } from "@/features/grocery/types";
-
-const storageKey = "kyohub-groceries-v1";
 
 function groupByDate(items: GroceryRecord[]) {
 	return items.reduce<Record<string, GroceryItem[]>>((grouped, { dateKey, ...item }) => {
@@ -34,15 +32,7 @@ export function GroceryPlanner() {
 		let active = true;
 		async function loadGroceries() {
 			try {
-				const saved = localStorage.getItem(storageKey);
-				let items = await getGroceryItems();
-				if (saved !== null) {
-					const legacy = Object.entries(JSON.parse(saved) as Record<string, GroceryItem[]>)
-						.flatMap(([dateKey, entries]) => entries.map((item) => ({ ...item, dateKey })));
-					await importLegacyGroceryItems(legacy);
-					localStorage.removeItem(storageKey);
-					items = await getGroceryItems();
-				}
+				const items = await getGroceryItems();
 				if (active) setGroceries(groupByDate(items));
 			} catch (error) {
 				if (active) setStorageError(error instanceof Error ? `Could not load groceries: ${error.message}` : "Could not load groceries from the database.");

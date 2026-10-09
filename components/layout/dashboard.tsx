@@ -3,13 +3,14 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Baby, Key, ShoppingCart } from "lucide-react";
+import { Baby, ChartNoAxesColumn, Key, ShoppingCart } from "lucide-react";
 import type { AuthUser } from "@/features/auth/lib/session";
 
 const navigation = [
 	{ href: "/passwords", label: "Password manager", icon: Key },
 	{ href: "/grocery", label: "Grocery planner", icon: ShoppingCart },
 	{ href: "/baby-needs", label: "Kyooowe Needs", icon: Baby },
+	{ href: "/budget", label: "Budget planner", icon: ChartNoAxesColumn },
 ];
 
 export default function Dashboard({ children, user }: { children: ReactNode; user: AuthUser }) {
@@ -27,7 +28,7 @@ export default function Dashboard({ children, user }: { children: ReactNode; use
 					Kyohub<span className="-ml-3 text-fuchsia-300">.</span>
 				</Link>
 				<p className="mb-2 hidden px-3 text-[10px] font-semibold tracking-[0.18em] text-violet-200/50 md:block">YOUR SPACE</p>
-				<nav aria-label="Main navigation" className="grid grid-cols-3 gap-2 md:flex md:flex-col">
+				<nav aria-label="Main navigation" className="grid grid-cols-4 gap-2 md:flex md:flex-col">
 					{navigation.map(({ href, label, icon: Icon }) => {
 						const active = current.href === href;
 						return (

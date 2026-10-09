@@ -31,3 +31,31 @@ model BabyNeed {
 
   @@index([dateKey])
 }
+
+model PushSubscription {
+  id        String           @id @default(uuid())
+  endpoint  String           @unique
+  p256dh    String
+  auth      String
+  createdAt TimestamptzString @default(now())
+}
+
+model MonthlyBudget {
+  id         String           @id @default(uuid())
+  monthKey   String           @unique
+  amountCents Int
+  createdAt  TimestamptzString @default(now())
+}
+
+model BudgetBill {
+  id          String           @id @default(uuid())
+  title       String
+  amountCents Int
+  frequency   String
+  monthKey    String?
+  dueDay      Int?
+  createdAt   TimestamptzString @default(now())
+
+  @@index([monthKey])
+  @@index([frequency])
+}

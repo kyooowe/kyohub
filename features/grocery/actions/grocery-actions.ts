@@ -1,10 +1,22 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
 import type { GroceryItem } from "@/features/grocery/types";
 
 export type GroceryRecord = GroceryItem & { dateKey: string };
+
+const getCachedGroceryItems = unstable_cache(
+	async () => {
+		return db.orm.public.GroceryItem
+			.select("id", "dateKey", "name", "done")
+			.orderBy([(item) => item.createdAt.asc(), (item) => item.id.asc()])
+			.all();
+	},
+	["grocery-items"],
+	{ tags: ["grocery-items"], revalidate: 60 },
+);
 
 function isDateKey(value: unknown): value is string {
 	if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -29,16 +41,14 @@ function validateItem(value: unknown): GroceryRecord {
 
 export async function getGroceryItems(): Promise<GroceryRecord[]> {
 	await requireAuth();
-	return db.orm.public.GroceryItem
-		.select("id", "dateKey", "name", "done")
-		.orderBy([(item) => item.createdAt.asc(), (item) => item.id.asc()])
-		.all();
+	return getCachedGroceryItems();
 }
 
 export async function createGroceryItem(value: unknown): Promise<void> {
 	await requireAuth();
 	const item = validateItem(value);
 	await db.orm.public.GroceryItem.create(item);
+	updateTag("grocery-items");
 }
 
 export async function updateGroceryItem(id: string, value: unknown): Promise<void> {
@@ -60,6 +70,7 @@ export async function updateGroceryItem(id: string, value: unknown): Promise<voi
 	const existing = await db.orm.public.GroceryItem.first({ id });
 	if (!existing) throw new Error("Grocery item was not found.");
 	await db.orm.public.GroceryItem.where({ id }).update(fields);
+	updateTag("grocery-items");
 }
 
 export async function deleteGroceryItem(id: string): Promise<void> {
@@ -68,14 +79,5 @@ export async function deleteGroceryItem(id: string): Promise<void> {
 	const existing = await db.orm.public.GroceryItem.first({ id });
 	if (!existing) throw new Error("Grocery item was not found.");
 	await db.orm.public.GroceryItem.where({ id }).delete();
-}
-
-export async function importLegacyGroceryItems(values: unknown): Promise<void> {
-	await requireAuth();
-	if (!Array.isArray(values) || values.length > 10000) throw new Error("Invalid saved grocery data.");
-	for (const value of values) {
-		const item = validateItem(value);
-		const existing = await db.orm.public.GroceryItem.first({ id: item.id });
-		if (!existing) await db.orm.public.GroceryItem.create(item);
-	}
+	updateTag("grocery-items");
 }

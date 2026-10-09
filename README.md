@@ -22,9 +22,25 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## PostgreSQL data
 
-Set `DATABASE_URL` in `.env.local` to a PostgreSQL connection string. The password, grocery, and baby-needs features use the same shared database workspace; their server actions provide create, read, update, and delete operations. The password manager reads only from PostgreSQL. Existing browser-saved grocery and baby-needs items are imported into PostgreSQL the first time each browser opens the corresponding feature.
+Set `DATABASE_URL` in `.env.local` to a PostgreSQL connection string. The password, grocery, baby-needs, and budget-planner features use the same shared database workspace; their server actions provide create, read, update, and delete operations. The budget planner stores monthly budgets and recurring or one-time bills, then compares scheduled expenses across six months. Feature data is read from and written to PostgreSQL; the app does not store transaction data in browser storage.
 
 After changing `prisma/schema.prisma`, run `npm run contract:emit` to regenerate the typed contract, then `npx prisma db init` to apply additive schema changes.
+
+## Baby reminder push notifications
+
+The baby-needs page can subscribe each browser/device to daily push reminders. At 9 PM Philippine time, the scheduled job checks tomorrow's reminders and sends their titles; if there are none, it sends **"No important/vaccine scheduled tomorrow"**. Notifications are sent only to devices that have enabled push reminders.
+
+Generate a VAPID key pair once with `npx web-push generate-vapid-keys`, then configure these environment variables in your deployment (and locally in `.env.local`):
+
+```env
+NEXT_PUBLIC_VAPID_PUBLIC_KEY="your VAPID public key"
+VAPID_PUBLIC_KEY="the same VAPID public key"
+VAPID_PRIVATE_KEY="your VAPID private key"
+VAPID_SUBJECT="mailto:you@example.com"
+CRON_SECRET="a long random secret"
+```
+
+Keep `VAPID_PRIVATE_KEY` and `CRON_SECRET` secret. After adding the `PushSubscription` model, run `npm run contract:emit` and `npx prisma db init` to update the typed contract and apply the additive database change. The included Vercel cron schedule uses `0 13 * * *` UTC, which is 9 PM in the Philippines; configure this app on Vercel for the schedule to run.
 
 This workspace currently has no sign-in or access control, so anyone who can reach the app can read and change the shared data. Password entries are stored as plaintext in PostgreSQL. Do not expose this app publicly until authentication, authorization, and password encryption are added.
 

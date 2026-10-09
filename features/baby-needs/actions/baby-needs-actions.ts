@@ -1,10 +1,23 @@
 "use server";
 
 import { db } from "@/prisma/db";
+import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
 import type { BabyNeed, BabyNeedType } from "@/features/baby-needs/types";
 
 export type BabyNeedRecord = BabyNeed & { dateKey: string };
+
+const getCachedBabyNeeds = unstable_cache(
+	async () => {
+		const needs = await db.orm.public.BabyNeed
+			.select("id", "dateKey", "title", "type", "notes", "done")
+			.orderBy([(need) => need.createdAt.asc(), (need) => need.id.asc()])
+			.all();
+		return needs.map(validateNeed);
+	},
+	["baby-needs"],
+	{ tags: ["baby-needs"], revalidate: 60 },
+);
 
 function validateType(value: unknown): BabyNeedType {
 	if (value === "Vaccination" || value === "Important date") return value;
@@ -43,17 +56,14 @@ function validateNeed(value: unknown): BabyNeedRecord {
 
 export async function getBabyNeeds(): Promise<BabyNeedRecord[]> {
 	await requireAuth();
-	const needs = await db.orm.public.BabyNeed
-		.select("id", "dateKey", "title", "type", "notes", "done")
-		.orderBy([(need) => need.createdAt.asc(), (need) => need.id.asc()])
-		.all();
-	return needs.map(validateNeed);
+	return getCachedBabyNeeds();
 }
 
 export async function createBabyNeed(value: unknown): Promise<void> {
 	await requireAuth();
 	const need = validateNeed(value);
 	await db.orm.public.BabyNeed.create(need);
+	updateTag("baby-needs");
 }
 
 export async function updateBabyNeed(id: string, value: unknown): Promise<void> {
@@ -81,6 +91,7 @@ export async function updateBabyNeed(id: string, value: unknown): Promise<void> 
 		notes: validated.notes,
 		done: validated.done,
 	});
+	updateTag("baby-needs");
 }
 
 export async function deleteBabyNeed(id: string): Promise<void> {
@@ -89,14 +100,5 @@ export async function deleteBabyNeed(id: string): Promise<void> {
 	const existing = await db.orm.public.BabyNeed.first({ id });
 	if (!existing) throw new Error("Baby reminder was not found.");
 	await db.orm.public.BabyNeed.where({ id }).delete();
-}
-
-export async function importLegacyBabyNeeds(values: unknown): Promise<void> {
-	await requireAuth();
-	if (!Array.isArray(values) || values.length > 10000) throw new Error("Invalid saved baby reminder data.");
-	for (const value of values) {
-		const need = validateNeed(value);
-		const existing = await db.orm.public.BabyNeed.first({ id: need.id });
-		if (!existing) await db.orm.public.BabyNeed.create(need);
-	}
+	updateTag("baby-needs");
 }
