@@ -1,16 +1,33 @@
 # Kyohub
 
-**A little more organized, a little less to remember.**
+> **A little more organized, a little less to remember.**
 
 Kyohub is a family space for keeping everyday plans together—from grocery runs and monthly bills to baby milestones and household logins.
 
+---
+
 ## Made for family life
 
-- **Grocery planner** — Keep the shopping list handy and check things off as you go.
-- **Baby calendar** — Track vaccinations and important dates, with optional daily push reminders.
-- **Budget planner** — Set a monthly budget, plan recurring or one-time bills, and see what remains.
-- **Password manager** — Keep household logins organized and easy to find.
-- **Simple sign-in** — Enter a six-digit PIN to get to your space.
+| | Feature | What it helps with |
+| --- | --- | --- |
+| 🛒 | **Grocery planner** | Keep the shopping list handy and check things off as you go. |
+| 🗓️ | **Baby calendar** | Track vaccinations and important dates, with optional daily push reminders. |
+| 💰 | **Budget planner** | Set a monthly budget, plan recurring or one-time bills, and see what remains. |
+| 🔐 | **Password manager** | Keep household logins organized and easy to find. |
+| 👋 | **Simple sign-in** | Enter a six-digit PIN to get to your space. |
+
+## Get started
+
+Configure `.env` from `.env.example` with your PostgreSQL connection and authentication settings, then run:
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to use Kyohub locally.
+
+---
 
 ## Built with
 
