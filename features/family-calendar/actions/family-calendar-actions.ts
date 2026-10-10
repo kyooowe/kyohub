@@ -3,25 +3,25 @@
 import { db } from "@/prisma/db";
 import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
-import type { BabyNeed, BabyNeedType } from "@/features/baby-needs/types";
+import type { FamilyAppointment, FamilyAppointmentType } from "@/features/family-calendar/family-calendar-types";
 
-export type BabyNeedRecord = BabyNeed & { dateKey: string };
+export type FamilyAppointmentRecord = FamilyAppointment & { dateKey: string };
 
-const getCachedBabyNeeds = unstable_cache(
+const getCachedFamilyAppointments = unstable_cache(
 	async () => {
 		const needs = await db.orm.public.BabyNeed
 			.select("id", "dateKey", "title", "type", "notes", "done")
-			.orderBy([(need) => need.createdAt.asc(), (need) => need.id.asc()])
+			.orderBy([(appointment) => appointment.createdAt.asc(), (appointment) => appointment.id.asc()])
 			.all();
-		return needs.map(validateNeed);
+		return needs.map(validateAppointment);
 	},
-	["baby-needs"],
-	{ tags: ["baby-needs"], revalidate: 60 },
+	["family-calendar"],
+	{ tags: ["family-calendar"], revalidate: 60 },
 );
 
-function validateType(value: unknown): BabyNeedType {
+function validateType(value: unknown): FamilyAppointmentType {
 	if (value === "Vaccination" || value === "Important date") return value;
-	throw new Error("Invalid baby reminder type.");
+	throw new Error("Invalid appointment type.");
 }
 
 function isDateKey(value: unknown): value is string {
@@ -31,8 +31,8 @@ function isDateKey(value: unknown): value is string {
 	return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
-function validateNeed(value: unknown): BabyNeedRecord {
-	if (!value || typeof value !== "object") throw new Error("Invalid baby reminder.");
+function validateAppointment(value: unknown): FamilyAppointmentRecord {
+	if (!value || typeof value !== "object") throw new Error("Invalid family appointment.");
 	const need = value as Record<string, unknown>;
 	const type = validateType(need.type);
 	if (
@@ -42,7 +42,7 @@ function validateNeed(value: unknown): BabyNeedRecord {
 		|| typeof need.notes !== "string" || need.notes.length > 2000
 		|| typeof need.done !== "boolean"
 	) {
-		throw new Error("Enter a valid title, reminder type, and date.");
+		throw new Error("Enter a valid appointment title, type, and date.");
 	}
 	return {
 		id: need.id,
@@ -54,30 +54,30 @@ function validateNeed(value: unknown): BabyNeedRecord {
 	};
 }
 
-export async function getBabyNeeds(): Promise<BabyNeedRecord[]> {
+export async function getFamilyAppointments(): Promise<FamilyAppointmentRecord[]> {
 	await requireAuth();
-	return getCachedBabyNeeds();
+	return getCachedFamilyAppointments();
 }
 
-export async function createBabyNeed(value: unknown): Promise<void> {
+export async function createFamilyAppointment(value: unknown): Promise<void> {
 	await requireAuth();
-	const need = validateNeed(value);
+	const need = validateAppointment(value);
 	await db.orm.public.BabyNeed.create(need);
-	updateTag("baby-needs");
+	updateTag("family-calendar");
 }
 
-export async function updateBabyNeed(id: string, value: unknown): Promise<void> {
+export async function updateFamilyAppointment(id: string, value: unknown): Promise<void> {
 	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") {
-		throw new Error("Invalid baby reminder.");
+		throw new Error("Invalid family appointment.");
 	}
 	const update = value as Record<string, unknown>;
 	if (!["title", "type", "notes", "done"].some((field) => Object.hasOwn(update, field))) {
-		throw new Error("No baby reminder changes were provided.");
+		throw new Error("No family appointment changes were provided.");
 	}
 	const existing = await db.orm.public.BabyNeed.first({ id });
-	if (!existing) throw new Error("Baby reminder was not found.");
-	const validated = validateNeed({
+	if (!existing) throw new Error("Family appointment was not found.");
+	const validated = validateAppointment({
 		id,
 		dateKey: existing.dateKey,
 		title: Object.hasOwn(update, "title") ? update.title : existing.title,
@@ -91,14 +91,14 @@ export async function updateBabyNeed(id: string, value: unknown): Promise<void> 
 		notes: validated.notes,
 		done: validated.done,
 	});
-	updateTag("baby-needs");
+	updateTag("family-calendar");
 }
 
-export async function deleteBabyNeed(id: string): Promise<void> {
+export async function deleteFamilyAppointment(id: string): Promise<void> {
 	await requireAuth();
-	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid baby reminder ID.");
+	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid family appointment ID.");
 	const existing = await db.orm.public.BabyNeed.first({ id });
-	if (!existing) throw new Error("Baby reminder was not found.");
+	if (!existing) throw new Error("Family appointment was not found.");
 	await db.orm.public.BabyNeed.where({ id }).delete();
-	updateTag("baby-needs");
+	updateTag("family-calendar");
 }

@@ -1,10 +1,10 @@
 import { Bell, CalendarDays, Syringe } from "lucide-react";
-import type { BabyNeed } from "@/features/baby-needs/types";
+import type { FamilyAppointment } from "@/features/family-calendar/family-calendar-types";
 import { dateLabel } from "@/features/grocery/lib/grocery-utils";
 
 type UpcomingNeedKind = "vaccine" | "important";
 
-export function UpcomingNeeds({ need, kind }: { need: (BabyNeed & { dateKey: string }) | undefined; kind: UpcomingNeedKind }) {
+export function UpcomingFamilyAppointment({ need, kind }: { need: (FamilyAppointment & { dateKey: string }) | undefined; kind: UpcomingNeedKind }) {
 	const isVaccine = kind === "vaccine";
 	const hasNeed = Boolean(need);
 	const accent = isVaccine

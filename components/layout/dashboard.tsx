@@ -3,13 +3,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Baby, ChartNoAxesColumn, Key, ShoppingCart } from "lucide-react";
+import { CalendarDays, ChartNoAxesColumn, Key, ShoppingCart } from "lucide-react";
 import type { AuthUser } from "@/features/auth/lib/session";
 
 const navigation = [
 	{ href: "/passwords", label: "Password manager", icon: Key },
 	{ href: "/grocery", label: "Grocery planner", icon: ShoppingCart },
-	{ href: "/baby-needs", label: "Kyooowe Needs", icon: Baby },
+	{ href: "/baby-needs", label: "Family Calendar", icon: CalendarDays },
 	{ href: "/budget", label: "Budget planner", icon: ChartNoAxesColumn },
 ];
 

@@ -13,4 +13,6 @@ export type BudgetBill = {
 	frequency: BillFrequency;
 	monthKey: string | null;
 	dueDay: number | null;
+	paidMonthKeys: string[];
+	createdAt: string;
 };

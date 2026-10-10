@@ -158,6 +158,14 @@
                   "kind": "scalar"
                 }
               },
+              "paidMonthKeys": {
+                "many": true,
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
@@ -186,6 +194,9 @@
                 },
                 "monthKey": {
                   "column": "monthKey"
+                },
+                "paidMonthKeys": {
+                  "column": "paidMonthKeys"
                 },
                 "title": {
                   "column": "title"
@@ -527,6 +538,13 @@
               "uniques": []
             },
             "BudgetBill": {
+              "checks": [
+                {
+                  "expression": "array_position(\"paidMonthKeys\", NULL) IS NULL",
+                  "name": "BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9",
+                  "prefix": "BudgetBill_paidMonthKeys_elem_not_null"
+                }
+              ],
               "columns": {
                 "amountCents": {
                   "codecId": "pg/int4@1",
@@ -561,6 +579,16 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "paidMonthKeys": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": []
+                  },
+                  "many": true,
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "title": {
                   "codecId": "pg/text@1",
@@ -794,7 +822,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "be5c75b55190313f55c70c64ab37fa3243e6e404ef65ad7bcc505de3da2fcde2"
+    "storageHash": "e1c6194fcdeda7572279aa0c4cf8e6d0622ad32882d82943c7b4d088cb6b2c7c"
   },
   "execution": {
     "executionHash": "e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649",

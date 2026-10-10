@@ -1,0 +1,493 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.BabyNeed",
+    "label": "Create table \"BabyNeed\"",
+    "summary": "Creates table \"BabyNeed\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyNeed"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyNeed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyNeed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyNeed\"",
+        "sql": "CREATE TABLE \"public\".\"BabyNeed\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dateKey\" text NOT NULL,\n  \"done\" bool DEFAULT false NOT NULL,\n  \"id\" text NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"title\" text NOT NULL,\n  \"type\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyNeed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyNeed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BudgetBill",
+    "label": "Create table \"BudgetBill\"",
+    "summary": "Creates table \"BudgetBill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BudgetBill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BudgetBill\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BudgetBill\"",
+        "sql": "CREATE TABLE \"public\".\"BudgetBill\" (\n  \"amountCents\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dueDay\" int4,\n  \"frequency\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"monthKey\" text,\n  \"title\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BudgetBill\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.GroceryItem",
+    "label": "Create table \"GroceryItem\"",
+    "summary": "Creates table \"GroceryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "GroceryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"GroceryItem\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GroceryItem\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"GroceryItem\"",
+        "sql": "CREATE TABLE \"public\".\"GroceryItem\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dateKey\" text NOT NULL,\n  \"done\" bool DEFAULT false NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"GroceryItem\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GroceryItem\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.MonthlyBudget",
+    "label": "Create table \"MonthlyBudget\"",
+    "summary": "Creates table \"MonthlyBudget\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "MonthlyBudget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"MonthlyBudget\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MonthlyBudget\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"MonthlyBudget\"",
+        "sql": "CREATE TABLE \"public\".\"MonthlyBudget\" (\n  \"amountCents\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"monthKey\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"MonthlyBudget\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"MonthlyBudget\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PasswordEntry",
+    "label": "Create table \"PasswordEntry\"",
+    "summary": "Creates table \"PasswordEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PasswordEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PasswordEntry\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PasswordEntry\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PasswordEntry\"",
+        "sql": "CREATE TABLE \"public\".\"PasswordEntry\" (\n  \"category\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"password\" text NOT NULL,\n  \"url\" text NOT NULL,\n  \"username\" text NOT NULL,\n  \"website\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PasswordEntry\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PasswordEntry\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PushSubscription",
+    "label": "Create table \"PushSubscription\"",
+    "summary": "Creates table \"PushSubscription\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PushSubscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PushSubscription\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushSubscription\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PushSubscription\"",
+        "sql": "CREATE TABLE \"public\".\"PushSubscription\" (\n  \"auth\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"endpoint\" text NOT NULL,\n  \"id\" text NOT NULL,\n  \"p256dh\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PushSubscription\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PushSubscription\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.MonthlyBudget.MonthlyBudget_monthKey_key",
+    "label": "Add unique constraint on \"MonthlyBudget\" (monthKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "MonthlyBudget_monthKey_key",
+        "table": "MonthlyBudget"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"MonthlyBudget_monthKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MonthlyBudget_monthKey_key",
+          "public",
+          "\"public\".\"MonthlyBudget\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"MonthlyBudget_monthKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"MonthlyBudget\" ADD CONSTRAINT \"MonthlyBudget_monthKey_key\" UNIQUE (\"monthKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"MonthlyBudget_monthKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "MonthlyBudget_monthKey_key",
+          "public",
+          "\"public\".\"MonthlyBudget\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.PushSubscription.PushSubscription_endpoint_key",
+    "label": "Add unique constraint on \"PushSubscription\" (endpoint)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "PushSubscription_endpoint_key",
+        "table": "PushSubscription"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"PushSubscription_endpoint_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushSubscription_endpoint_key",
+          "public",
+          "\"public\".\"PushSubscription\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"PushSubscription_endpoint_key\"",
+        "sql": "ALTER TABLE \"public\".\"PushSubscription\" ADD CONSTRAINT \"PushSubscription_endpoint_key\" UNIQUE (\"endpoint\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"PushSubscription_endpoint_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PushSubscription_endpoint_key",
+          "public",
+          "\"public\".\"PushSubscription\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyNeed.BabyNeed_dateKey_idx_bf583274",
+    "label": "Create index \"BabyNeed_dateKey_idx_bf583274\" on \"BabyNeed\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyNeed_dateKey_idx_bf583274",
+        "table": "BabyNeed"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyNeed_dateKey_idx_bf583274\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyNeed_dateKey_idx_bf583274\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyNeed_dateKey_idx_bf583274\"",
+        "sql": "CREATE INDEX \"BabyNeed_dateKey_idx_bf583274\" ON \"public\".\"BabyNeed\" (\"dateKey\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyNeed_dateKey_idx_bf583274\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyNeed_dateKey_idx_bf583274\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BudgetBill.BudgetBill_frequency_idx_ed55490e",
+    "label": "Create index \"BudgetBill_frequency_idx_ed55490e\" on \"BudgetBill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BudgetBill_frequency_idx_ed55490e",
+        "table": "BudgetBill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BudgetBill_frequency_idx_ed55490e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill_frequency_idx_ed55490e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BudgetBill_frequency_idx_ed55490e\"",
+        "sql": "CREATE INDEX \"BudgetBill_frequency_idx_ed55490e\" ON \"public\".\"BudgetBill\" (\"frequency\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BudgetBill_frequency_idx_ed55490e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill_frequency_idx_ed55490e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BudgetBill.BudgetBill_monthKey_idx_52f47cb7",
+    "label": "Create index \"BudgetBill_monthKey_idx_52f47cb7\" on \"BudgetBill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BudgetBill_monthKey_idx_52f47cb7",
+        "table": "BudgetBill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BudgetBill_monthKey_idx_52f47cb7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill_monthKey_idx_52f47cb7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BudgetBill_monthKey_idx_52f47cb7\"",
+        "sql": "CREATE INDEX \"BudgetBill_monthKey_idx_52f47cb7\" ON \"public\".\"BudgetBill\" (\"monthKey\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BudgetBill_monthKey_idx_52f47cb7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BudgetBill_monthKey_idx_52f47cb7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.GroceryItem.GroceryItem_dateKey_idx_bf583274",
+    "label": "Create index \"GroceryItem_dateKey_idx_bf583274\" on \"GroceryItem\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "GroceryItem_dateKey_idx_bf583274",
+        "table": "GroceryItem"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"GroceryItem_dateKey_idx_bf583274\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GroceryItem_dateKey_idx_bf583274\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"GroceryItem_dateKey_idx_bf583274\"",
+        "sql": "CREATE INDEX \"GroceryItem_dateKey_idx_bf583274\" ON \"public\".\"GroceryItem\" (\"dateKey\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"GroceryItem_dateKey_idx_bf583274\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"GroceryItem_dateKey_idx_bf583274\""
+        ]
+      }
+    ]
+  }
+]

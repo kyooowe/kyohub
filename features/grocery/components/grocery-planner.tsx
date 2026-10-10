@@ -2,9 +2,10 @@
 
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FeatureSectionHeader } from "@/components/feature-section-header";
 import { GroceryDialog } from "@/features/grocery/components/grocery-dialog";
 import { GroceryList } from "@/features/grocery/components/grocery-list";
 import { GrocerySummary } from "@/features/grocery/components/grocery-summary";
@@ -113,18 +114,15 @@ export function GroceryPlanner() {
 				<Button type="button" disabled={submitting} className="min-h-11 border-0 bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl hover:shadow-blue-400/40" onClick={() => setDialogEntry("new")}><Plus size={17} /> Add grocery</Button>
 			</div>
 			<div className="grid items-start gap-5 lg:grid-cols-2">
-				<Card className="overflow-hidden border-0 bg-white py-0 shadow-lg shadow-slate-300/40 ring-0">
-					<CardHeader className="gap-4 border-b border-blue-900/10 bg-linear-to-r from-blue-800 via-indigo-800 to-violet-800 p-5 text-white">
-						<div className="flex items-center justify-between gap-3">
-							<div><CardTitle className="text-white">Your calendar</CardTitle><p className="mt-1 text-xs text-blue-100/80">Select a day to see its grocery list.</p></div>
-							<div className="flex items-center gap-2">
-								<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/20 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month"><ChevronLeft size={18} strokeWidth={2.5} /></Button>
-								<span className="min-w-28 text-center text-sm font-bold text-white">{dateLabel(month, { month: "long", year: "numeric" })}</span>
-								<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/20 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month"><ChevronRight size={18} strokeWidth={2.5} /></Button>
-							</div>
+				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
+					<FeatureSectionHeader theme="blue" icon={CalendarDays} title="Your calendar" description="Select a day to see its grocery list.">
+						<div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
+							<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month"><ChevronLeft size={18} strokeWidth={2.5} /></Button>
+							<span className="min-w-28 text-center text-sm font-bold text-white">{dateLabel(month, { month: "long", year: "numeric" })}</span>
+							<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month"><ChevronRight size={18} strokeWidth={2.5} /></Button>
 						</div>
-					</CardHeader>
-					<CardContent className="p-5 pt-0">
+					</FeatureSectionHeader>
+					<CardContent className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-300/30 sm:p-5">
 						<div className="grid grid-cols-7 gap-1 text-center">
 							{["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => <span key={day} className="grid h-8 place-items-center text-xs font-semibold text-slate-400">{day}</span>)}
 							{calendar.map((date, index) => {
@@ -141,13 +139,14 @@ export function GroceryPlanner() {
 						<div className="mt-4 flex gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-blue-600 ring-2 ring-blue-100" /> Today</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-indigo-600" /> Has groceries</span></div>
 					</CardContent>
 				</Card>
-				<Card className="overflow-hidden border-0 bg-white py-0 shadow-lg shadow-slate-300/40 ring-0">
-					<CardHeader className="flex flex-row items-center gap-3 border-b border-blue-900/10 bg-linear-to-r from-blue-800 via-indigo-800 to-violet-800 p-5">
-						<span className="flex size-11 shrink-0 flex-col items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white shadow-inner shadow-white/10"><span className="text-[9px] font-semibold uppercase">{dateLabel(selectedDate, { month: "short" })}</span><strong className="text-lg leading-5">{selectedDate.getDate()}</strong></span>
-						<div className="min-w-0 flex-1"><CardTitle className="text-white">{selectedKey === getDateKey(new Date()) ? "Today’s list" : dateLabel(selectedDate, { weekday: "long" })}</CardTitle><p className="mt-1 text-xs text-blue-100/80">{dateLabel(selectedDate, { month: "long", day: "numeric", year: "numeric" })}</p></div>
-						<Button type="button" variant="outline" size="icon-sm" className="size-8 shrink-0 touch-manipulation rounded-xl border border-white/20 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setDialogEntry("new")} aria-label="Add an item"><Plus size={16} strokeWidth={2.5} /></Button>
-					</CardHeader>
-					<CardContent className="p-5">
+				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
+					<FeatureSectionHeader theme="blue" icon={ShoppingCart} title={selectedKey === getDateKey(new Date()) ? "Today’s list" : dateLabel(selectedDate, { weekday: "long" })} description={dateLabel(selectedDate, { month: "long", day: "numeric", year: "numeric" })}>
+						<div className="flex items-center justify-between gap-2 sm:justify-end">
+							<span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10"><span className="text-[9px] font-semibold uppercase">{dateLabel(selectedDate, { month: "short" })}</span><strong className="text-lg leading-5">{selectedDate.getDate()}</strong></span>
+							<Button type="button" variant="outline" size="icon-sm" className="size-9 shrink-0 touch-manipulation rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setDialogEntry("new")} aria-label="Add an item"><Plus size={16} strokeWidth={2.5} /></Button>
+						</div>
+					</FeatureSectionHeader>
+					<CardContent className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-300/30 sm:p-5">
 						<GrocerySummary items={dayItems} doneCount={doneCount} />
 						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} submitting={submitting} />
 					</CardContent>

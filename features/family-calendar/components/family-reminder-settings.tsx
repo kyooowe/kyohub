@@ -26,7 +26,7 @@ async function sendSubscription(method: "POST" | "DELETE", subscription: PushSub
 	}
 }
 
-export function PushReminderSettings() {
+export function FamilyReminderSettings() {
 	const [state, setState] = useState<State>(() => publicKey ? "checking" : "unconfigured");
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
@@ -110,7 +110,7 @@ export function PushReminderSettings() {
 			<div className="flex min-w-0 items-start gap-3">
 				<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700"><Bell size={19} /></span>
 				<div>
-					<p className="font-semibold text-slate-800">Tomorrow’s baby reminders</p>
+					<p className="font-semibold text-slate-800">Tomorrow’s family reminders</p>
 					<p className="mt-1 text-sm text-slate-500">{statusMessage}</p>
 					{error && <p role="alert" className="mt-1 text-sm text-rose-700">{error}</p>}
 				</div>
