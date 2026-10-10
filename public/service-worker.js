@@ -1,6 +1,6 @@
 self.addEventListener("push", (event) => {
 	let notification = {
-		title: "Family reminders for tomorrow",
+		title: "Reminders Tomorrow",
 		body: "You have a family appointment tomorrow.",
 		url: "/baby-needs",
 	};

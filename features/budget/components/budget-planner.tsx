@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { createBudgetBill, deleteBudgetBill, getBudgetData, saveMonthlyBudget, setBudgetBillPaid, updateBudgetBill } from "@/features/budget/actions/budget-actions";
@@ -28,6 +29,8 @@ export function BudgetPlanner() {
 	const [billDueDay, setBillDueDay] = useState("");
 	const [billFrequency, setBillFrequency] = useState<BillFrequency>("recurring");
 	const [editingBillId, setEditingBillId] = useState<string | null>(null);
+	const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
+	const [billDialogOpen, setBillDialogOpen] = useState(false);
 	const billFormRef = useRef<HTMLFormElement>(null);
 	const [ready, setReady] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
@@ -44,14 +47,17 @@ export function BudgetPlanner() {
 	const overdueMonthBills = monthBillOccurrences.filter(({ bill, monthKey: occurrenceMonth }) =>
 		!bill.paidMonthKeys.includes(occurrenceMonth) && isBillOccurrenceOverdue(bill, occurrenceMonth, today),
 	);
-	const overdueMonthTotal = overdueMonthBills.reduce((total, { bill }) => total + bill.amountCents, 0);
+	const overdueOccurrenceKeys = new Set(overdueMonthBills.map(({ bill, monthKey: occurrenceMonth }) => `${bill.id}-${occurrenceMonth}`));
+	const visibleMonthBillOccurrences = monthBillOccurrences.filter(({ bill, monthKey: occurrenceMonth }) =>
+		!overdueOccurrenceKeys.has(`${bill.id}-${occurrenceMonth}`),
+	);
 	const expenses = monthBills.reduce((total, bill) => total + bill.amountCents, 0);
 	const remaining = (budget?.amountCents ?? 0) - expenses;
 
 	const chart = useMemo<ExpensePoint[]>(() => {
 		const selected = new Date(`${selectedMonth}-01T00:00:00`);
-		return Array.from({ length: 6 }, (_, index) => {
-			const date = new Date(selected.getFullYear(), selected.getMonth() - 5 + index, 1);
+		return Array.from({ length: 9 }, (_, index) => {
+			const date = new Date(selected.getFullYear(), selected.getMonth() - 8 + index, 1);
 			const key = monthKey(date);
 			const monthBudget = budgets.find((item) => item.monthKey === key)?.amountCents ?? 0;
 			const monthExpenses = billsForMonth(bills, key).reduce((total, bill) => total + bill.amountCents, 0);
@@ -110,6 +116,7 @@ export function BudgetPlanner() {
 			await saveMonthlyBudget(selectedMonth, amount);
 			await load();
 			setError("");
+			setBudgetDialogOpen(false);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not save monthly budget.");
 		} finally {
@@ -133,7 +140,7 @@ export function BudgetPlanner() {
 		setBillDueDay(bill.dueDay?.toString() ?? "");
 		setBillFrequency(bill.frequency);
 		setError("");
-		billFormRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+		setBillDialogOpen(true);
 	}
 
 	async function submitBill(event: FormEvent<HTMLFormElement>) {
@@ -171,6 +178,7 @@ export function BudgetPlanner() {
 			resetBillForm();
 			await load();
 			setError("");
+			setBillDialogOpen(false);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : `Could not ${editingBillId ? "update" : "add"} bill.`);
 		} finally {
@@ -192,8 +200,8 @@ export function BudgetPlanner() {
 		}
 	}
 
-	async function updateBillPayment(bill: BudgetBill, paymentMonth: string, paid: boolean) {
-		if (submitting) return;
+	async function updateBillPayment(bill: BudgetBill, paymentMonth: string, paid: boolean): Promise<boolean> {
+		if (submitting) return false;
 		setSubmitting(true);
 		try {
 			await setBudgetBillPaid(bill.id, paymentMonth, paid);
@@ -204,27 +212,32 @@ export function BudgetPlanner() {
 					: item.paidMonthKeys.filter((month) => month !== paymentMonth),
 			}));
 			setError("");
+			return true;
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not update bill payment status.");
+			return false;
 		} finally {
 			setSubmitting(false);
 		}
 	}
 
 	return <>
-		{error && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">{error}</div>}
+		{error && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</div>}
 		{!ready && <LoadingIndicator />}
 		<BudgetHeader selectedMonth={selectedMonth} onSelectMonth={selectMonth} />
 		<BudgetSummary
 			selectedMonth={selectedMonth}
 			budgetCents={budget?.amountCents ?? 0}
 			billCount={billOccurrences.length}
+			scheduledBillTotalCents={billOccurrences.reduce((total, { bill }) => total + bill.amountCents, 0)}
 			paidBillCount={paidBillCount}
 			unpaidBillCount={unpaidBillCount}
 			billWindowLabel={billWindowLabel(billWindowStart, billWindowEnd)}
-			overdueBillCount={overdueMonthBills.length}
-			overdueTotalCents={overdueMonthTotal}
+			overdueBills={overdueMonthBills}
 			remainingCents={remaining}
+			submitting={submitting}
+			error={error}
+			onCompleteOverdue={(bill, paymentMonth) => updateBillPayment(bill, paymentMonth, true)}
 		/>
 		<BudgetForms
 			budgetInput={budgetInput}
@@ -240,19 +253,31 @@ export function BudgetPlanner() {
 			onBillFrequencyChange={setBillFrequency}
 			editingBill={Boolean(editingBillId)}
 			submitting={submitting}
+			error={error}
 			billFormRef={billFormRef}
 			onSubmitBill={submitBill}
 			onCancelBill={resetBillForm}
+			budgetDialogOpen={budgetDialogOpen}
+			onBudgetDialogOpenChange={setBudgetDialogOpen}
+			billDialogOpen={billDialogOpen}
+			onBillDialogOpenChange={(open) => {
+				setBillDialogOpen(open);
+				if (!open && editingBillId) resetBillForm();
+			}}
 		/>
-		<BudgetBillList
-			selectedMonth={selectedMonth}
-			occurrences={monthBillOccurrences}
-			today={today}
-			submitting={submitting}
-			onEdit={editBill}
-			onPaymentChange={(bill, paymentMonth, paid) => void updateBillPayment(bill, paymentMonth, paid)}
-			onDelete={(id) => void removeBill(id)}
-		/>
-		<BudgetExpenseChart data={chart} bills={bills} />
+		<div className="space-y-4">
+			<BudgetBillList
+				selectedMonth={selectedMonth}
+				occurrences={visibleMonthBillOccurrences}
+				hiddenOverdueCount={overdueMonthBills.length}
+				today={today}
+				submitting={submitting}
+				onEdit={editBill}
+				onPaymentChange={(bill, paymentMonth, paid) => void updateBillPayment(bill, paymentMonth, paid)}
+				onDelete={(id) => void removeBill(id)}
+			/>
+			<BudgetExpenseChart data={chart} bills={bills} />
+		</div>
+		<p className="flex items-center gap-2 rounded-lg border border-rose-100 bg-rose-50 p-3 text-xs text-rose-950/70 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-200"><Wallet size={16} className="shrink-0 text-rose-700 dark:text-rose-300" /><span><strong>Monthly budget overview:</strong> Plan your spending, keep bills on track, and see how much is left.</span></p>
 	</>;
 }

@@ -106,13 +106,13 @@ export function FamilyReminderSettings() {
 	}[state];
 
 	return (
-		<section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm">
+		<section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
 			<div className="flex min-w-0 items-start gap-3">
-				<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700"><Bell size={19} /></span>
+				<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"><Bell size={19} /></span>
 				<div>
-					<p className="font-semibold text-slate-800">Tomorrow’s family reminders</p>
-					<p className="mt-1 text-sm text-slate-500">{statusMessage}</p>
-					{error && <p role="alert" className="mt-1 text-sm text-rose-700">{error}</p>}
+					<p className="font-semibold text-slate-800 dark:text-slate-100">Tomorrow’s family reminders</p>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{statusMessage}</p>
+					{error && <p role="alert" className="mt-1 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
 				</div>
 			</div>
 			{(state === "disabled" || state === "enabled") && (
@@ -121,8 +121,8 @@ export function FamilyReminderSettings() {
 					variant={state === "enabled" ? "outline" : "default"}
 					disabled={busy}
 					className={state === "enabled"
-						? "min-h-10 rounded-xl border-teal-200 bg-white text-teal-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-900 hover:shadow-md"
-						: "min-h-11 rounded-xl border-0 bg-linear-to-r from-teal-600 to-cyan-600 px-5 text-white shadow-lg shadow-teal-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-teal-700 hover:to-cyan-700 hover:shadow-xl hover:shadow-teal-400/40"}
+						? "min-h-10 rounded-xl border-teal-200 bg-white text-teal-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-900 hover:shadow-md dark:border-teal-800 dark:bg-slate-900 dark:text-teal-200 dark:hover:border-teal-700 dark:hover:bg-teal-950 dark:hover:text-teal-100 dark:shadow-black/30 dark:hover:shadow-black/40"
+						: "min-h-11 rounded-xl border-0 bg-linear-to-r from-teal-600 to-cyan-600 px-5 text-white shadow-lg shadow-teal-300/50 ring-1 ring-inset ring-white/20 transition-all duration-200 hover:-translate-y-0.5 hover:from-teal-700 hover:to-cyan-700 hover:shadow-xl hover:shadow-teal-400/40 dark:shadow-teal-950/70 dark:hover:shadow-teal-950/80"}
 					onClick={() => void (state === "enabled" ? disable() : enable())}
 				>
 					{state === "enabled" ? <BellOff size={16} /> : <Bell size={16} />}

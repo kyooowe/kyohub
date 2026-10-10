@@ -56,8 +56,8 @@ export async function GET(request: Request) {
 		.filter((need) => need.type === "Important date" || need.type === "Vaccination")
 		.map((need) => `${need.type}: ${need.title}`);
 	const payload = JSON.stringify({
-		title: "Family reminders for tomorrow",
-		body: reminders.length ? reminders.join("\n") : "No family appointments scheduled tomorrow",
+		title: "Reminders Tomorrow",
+		body: reminders.length ? reminders.join("\n") : "No important dates or vaccinations scheduled for tomorrow.",
 		url: "/baby-needs",
 	});
 	const subscriptions = await db.orm.public.PushSubscription
