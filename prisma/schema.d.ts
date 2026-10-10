@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'be5c75b55190313f55c70c64ab37fa3243e6e404ef65ad7bcc505de3da2fcde2'>;
+  StorageHashBase<'e1c6194fcdeda7572279aa0c4cf8e6d0622ad32882d82943c7b4d088cb6b2c7c'>;
 export type ExecutionHash =
   ExecutionHashBase<'e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649'>;
 export type ProfileHash =
@@ -266,6 +266,7 @@ export type FieldOutputTypes = {
       readonly frequency: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly monthKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly paidMonthKeys: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly title: CodecTypes['pg/text@1']['output'];
     };
     readonly GroceryItem: {
@@ -317,6 +318,7 @@ export type FieldInputTypes = {
       readonly frequency: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly monthKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly paidMonthKeys: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly title: CodecTypes['pg/text@1']['input'];
     };
     readonly GroceryItem: {
@@ -368,6 +370,7 @@ export type StorageColumnTypes = {
       readonly frequency: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly monthKey: CodecTypes['pg/text@1']['output'] | null;
+      readonly paidMonthKeys: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
       readonly title: CodecTypes['pg/text@1']['output'];
     };
     readonly GroceryItem: {
@@ -419,6 +422,7 @@ export type StorageColumnInputTypes = {
       readonly frequency: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly monthKey: CodecTypes['pg/text@1']['input'] | null;
+      readonly paidMonthKeys: ReadonlyArray<CodecTypes['pg/text@1']['input']>;
       readonly title: CodecTypes['pg/text@1']['input'];
     };
     readonly GroceryItem: {
@@ -471,6 +475,7 @@ export namespace Models {
     frequency: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     monthKey: CodecTypes['pg/text@1']['output'] | null;
+    paidMonthKeys: ReadonlyArray<CodecTypes['pg/text@1']['output']>;
     title: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
@@ -629,6 +634,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
+                };
+                readonly paidMonthKeys: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', readonly []>;
+                  };
                 };
                 readonly title: {
                   readonly nativeType: 'text';
@@ -921,6 +935,11 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly paidMonthKeys: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+                readonly many: true;
+              };
               readonly title: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -937,6 +956,7 @@ type ContractBase = Omit<
                 readonly frequency: { readonly column: 'frequency' };
                 readonly id: { readonly column: 'id' };
                 readonly monthKey: { readonly column: 'monthKey' };
+                readonly paidMonthKeys: { readonly column: 'paidMonthKeys' };
                 readonly title: { readonly column: 'title' };
               };
             };

@@ -1,7 +1,7 @@
 self.addEventListener("push", (event) => {
 	let notification = {
-		title: "Baby reminders for tomorrow",
-		body: "You have a baby reminder tomorrow.",
+		title: "Reminders Tomorrow",
+		body: "You have a family appointment tomorrow.",
 		url: "/baby-needs",
 	};
 	if (event.data) {
@@ -13,8 +13,8 @@ self.addEventListener("push", (event) => {
 	}
 	event.waitUntil(self.registration.showNotification(notification.title, {
 		body: notification.body,
-		icon: "/icons/icon-192.png",
-		badge: "/icons/icon-192.png",
+		icon: "/icons/icon-512x512.png",
+		badge: "/icons/notification-badge.png",
 		data: { url: notification.url },
 	}));
 });

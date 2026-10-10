@@ -54,6 +54,7 @@ model BudgetBill {
   frequency   String
   monthKey    String?
   dueDay      Int?
+  paidMonthKeys String[]       @default([])
   createdAt   TimestamptzString @default(now())
 
   @@index([monthKey])

@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "KyoHub",
     short_name: "KyoHub",
-    description: "Keep passwords, grocery lists, and baby reminders organized in one family space.",
+    description: "Keep passwords, grocery lists, and family appointments organized in one place.",
     start_url: "/",
     scope: "/",
     display: "standalone",

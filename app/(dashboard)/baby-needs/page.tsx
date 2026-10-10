@@ -1,5 +1,5 @@
-import { BabyNeeds } from "@/features/baby-needs/components/baby-needs";
+import { FamilyCalendar } from "@/features/family-calendar/components/family-calendar";
 
-export default function BabyNeedsPage() {
-	return <BabyNeeds />;
+export default function FamilyCalendarPage() {
+	return <FamilyCalendar />;
 }

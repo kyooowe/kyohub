@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.BudgetBill.paidMonthKeys",
+    "label": "Add column \"paidMonthKeys\" to \"BudgetBill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "paidMonthKeys",
+        "table": "BudgetBill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"paidMonthKeys\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BudgetBill",
+          "paidMonthKeys"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"paidMonthKeys\"",
+        "sql": "ALTER TABLE \"public\".\"BudgetBill\" ADD COLUMN \"paidMonthKeys\" text[] DEFAULT '{}' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"paidMonthKeys\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BudgetBill",
+          "paidMonthKeys"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.BudgetBill.BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9",
+    "label": "Add check constraint \"BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9\" on \"BudgetBill\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9",
+        "table": "BudgetBill"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9",
+          "public",
+          "\"public\".\"BudgetBill\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9\"",
+        "sql": "ALTER TABLE \"public\".\"BudgetBill\" ADD CONSTRAINT \"BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9\" CHECK (array_position(\"paidMonthKeys\", NULL) IS NULL)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "BudgetBill_paidMonthKeys_elem_not_null_caa3a6d9",
+          "public",
+          "\"public\".\"BudgetBill\""
+        ]
+      }
+    ]
+  }
+]
