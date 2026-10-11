@@ -3,13 +3,13 @@
 import { db } from "@/prisma/db";
 import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
-import { categories } from "@/features/passwords/lib/password-utils";
+import { allCategories } from "@/features/passwords/lib/password-utils";
 import type { PasswordEntry } from "@/features/passwords/types";
 
 const getCachedPasswordEntries = unstable_cache(
 	async () => {
 		const entries = await db.orm.public.PasswordEntry
-			.select("id", "website", "url", "category", "username", "password")
+			.select("id", "website", "url", "category", "username", "password", "favorite")
 			.orderBy([(entry) => entry.createdAt.desc(), (entry) => entry.id.desc()])
 			.all();
 		return entries.map(validateEntry);
@@ -21,7 +21,7 @@ const getCachedPasswordEntries = unstable_cache(
 function validateEntry(value: unknown): PasswordEntry {
 	if (!value || typeof value !== "object") throw new Error("Invalid password entry.");
 	const entry = value as Record<string, unknown>;
-	const category = categories.find((item) => item === entry.category);
+	const category = allCategories.find((item) => item === entry.category);
 	if (
 		typeof entry.id !== "string" || entry.id.length === 0 || entry.id.length > 128
 		|| typeof entry.website !== "string" || !entry.website.trim() || entry.website.length > 200
@@ -29,6 +29,7 @@ function validateEntry(value: unknown): PasswordEntry {
 		|| !category
 		|| typeof entry.username !== "string" || !entry.username.trim() || entry.username.length > 320
 		|| typeof entry.password !== "string" || !entry.password || entry.password.length > 4096
+		|| typeof entry.favorite !== "boolean"
 	) {
 		throw new Error("Enter a valid website, URL, category, username, and password.");
 	}
@@ -39,6 +40,7 @@ function validateEntry(value: unknown): PasswordEntry {
 		category,
 		username: entry.username.trim(),
 		password: entry.password,
+		favorite: entry.favorite,
 	};
 }
 
@@ -68,7 +70,19 @@ export async function updatePasswordEntry(id: string, value: unknown): Promise<v
 		category: entry.category,
 		username: entry.username,
 		password: entry.password,
+		favorite: entry.favorite,
 	});
+	updateTag("password-entries");
+}
+
+export async function setPasswordFavorite(id: string, favorite: boolean): Promise<void> {
+	await requireAuth();
+	if (typeof id !== "string" || !id || id.length > 128 || typeof favorite !== "boolean") {
+		throw new Error("Invalid favorite update.");
+	}
+	const existing = await db.orm.public.PasswordEntry.first({ id });
+	if (!existing) throw new Error("Password entry was not found.");
+	await db.orm.public.PasswordEntry.where({ id }).update({ favorite });
 	updateTag("password-entries");
 }
 

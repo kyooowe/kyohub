@@ -2,8 +2,6 @@ import { timingSafeEqual } from "node:crypto";
 import { db } from "@/prisma/db";
 import webpush from "web-push";
 
-export const runtime = "nodejs";
-
 function matchesSecret(provided: string | null, expected: string) {
 	if (!provided) return false;
 	const providedBytes = Buffer.from(provided);

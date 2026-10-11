@@ -11,31 +11,27 @@ import {
 	Landmark,
 	ShieldAlert,
 	ShieldCheck,
+	Star,
 	Trash2,
 } from "lucide-react";
 import { PasswordAvatar } from "@/features/passwords/components/password-avatar";
 import { getStrength } from "@/features/passwords/lib/password-utils";
 import type { Category, PasswordEntry } from "@/features/passwords/types";
 
-export const passwordCategoryStyles: Record<Category, { avatarStyle: string; bannerStyle: string }> = {
+export const passwordCategoryStyles: Record<Category, { bannerStyle: string }> = {
 	"Social media": {
-		avatarStyle: "text-blue-700 dark:text-blue-300",
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
 	Banking: {
-		avatarStyle: "text-emerald-700 dark:text-emerald-300",
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
 	Games: {
-		avatarStyle: "text-fuchsia-700 dark:text-fuchsia-300",
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
 	Work: {
-		avatarStyle: "text-amber-700 dark:text-amber-300",
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
 	Other: {
-		avatarStyle: "text-violet-700 dark:text-violet-300",
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
 };
@@ -50,73 +46,16 @@ const categoryIcons = {
 
 type PasswordTileProps = {
 	entry: PasswordEntry;
+	layout: "grid" | "list";
 	onClick: () => void;
 	onCopyPassword: (entry: PasswordEntry) => Promise<void>;
 	onDelete: (entry: PasswordEntry) => void;
+	onToggleFavorite: (entry: PasswordEntry) => Promise<void>;
+	favoritePending: boolean;
 };
 
-const categoryVectorPositions: Record<Category, { left: string; right: string }> = {
-	"Social media": { left: "left-3 top-10", right: "right-3 bottom-2" },
-	Banking: { left: "left-2 bottom-1", right: "right-5 top-8" },
-	Games: { left: "left-4 bottom-3", right: "right-2 top-12" },
-	Work: { left: "left-1 top-14", right: "right-6 bottom-1" },
-	Other: { left: "left-5 top-8", right: "right-2 bottom-5" },
-};
-
-function PasswordCategoryVector({ category, mirrored = false }: { category: Category; mirrored?: boolean }) {
-	const position = categoryVectorPositions[category][mirrored ? "left" : "right"];
-
-	if (category === "Games") {
-		return (
-			<span aria-hidden="true" className={`pointer-events-none absolute z-0 flex h-24 w-16 items-center justify-center text-violet-500/15 dark:text-violet-300/15 ${position}`}>
-				<Gamepad2 size={42} strokeWidth={1.35} className={mirrored ? "-rotate-12" : "rotate-12"} />
-			</span>
-		);
-	}
-
-	return (
-		<svg aria-hidden="true" viewBox="0 0 120 180" preserveAspectRatio="xMidYMid meet" className={`pointer-events-none absolute z-0 h-24 w-16 text-violet-500/15 dark:text-violet-300/15 ${position}`}>
-			<g transform={mirrored ? "translate(120 0) scale(-1 1)" : undefined} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
-				{category === "Social media" && <>
-					<rect x="20" y="25" width="36" height="36" rx="10" />
-					<circle cx="38" cy="43" r="8" />
-					<circle cx="48" cy="33" r="1.5" fill="currentColor" stroke="none" />
-					<path d="M70 70h27a9 9 0 0 1 9 9v8a9 9 0 0 1-9 9H84l-9 7v-7h-5a9 9 0 0 1-9-9v-8a9 9 0 0 1 9-9z" />
-					<circle cx="78" cy="83" r="1.5" fill="currentColor" stroke="none" />
-					<circle cx="86" cy="83" r="1.5" fill="currentColor" stroke="none" />
-					<circle cx="94" cy="83" r="1.5" fill="currentColor" stroke="none" />
-					<rect x="25" y="113" width="30" height="25" rx="7" />
-					<path d="m37 120 9 5-9 5z" fill="currentColor" stroke="none" />
-				</>}
-				{category === "Banking" && <>
-					<rect x="15" y="26" width="48" height="34" rx="7" />
-					<path d="M16 36h46m-37 9h10v8H25zm18 4h11" />
-					<circle cx="88" cy="47" r="20" />
-					<circle cx="88" cy="47" r="14" />
-					<path d="M94 40c-2-3-10-4-12 0-3 5 11 5 9 11-2 5-10 4-13 1m7-17v22" />
-					<path d="m15 115 32-17 32 17m-56 4h48m-42 3v20m16-20v20m16-20v20m-46 4h52" />
-				</>}
-				{category === "Work" && <>
-					<path d="M18 87V35h43v52M14 87h51" />
-					<path d="M27 45h7m12 0h7m-26 12h7m12 0h7m-26 12h7m12 0h7" />
-					<rect x="67" y="77" width="39" height="34" rx="6" />
-					<path d="M78 77v-8h17v8m-28 12h39m-23 0v6h7v-6" />
-					<rect x="20" y="113" width="35" height="31" rx="5" />
-					<path d="M27 122h20m-20 7h11m3 7 4 4 8-9" />
-				</>}
-				{category === "Other" && <>
-					<circle cx="60" cy="70" r="31" />
-					<circle cx="60" cy="70" r="18" strokeDasharray="2 6" />
-					<path d="M22 130c18-20 58-20 76 0" />
-				</>}
-			</g>
-		</svg>
-	);
-}
-
-export function PasswordTile({ entry, onClick, onCopyPassword, onDelete }: PasswordTileProps) {
+export function PasswordTile({ entry, layout, onClick, onCopyPassword, onDelete, onToggleFavorite, favoritePending }: PasswordTileProps) {
 	const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "failed">("idle");
-	const theme = passwordCategoryStyles[entry.category];
 	const CategoryIcon = categoryIcons[entry.category];
 	const isSecure = getStrength(entry.password).score >= 4;
 	const SecurityIcon = isSecure ? ShieldCheck : ShieldAlert;
@@ -132,74 +71,57 @@ export function PasswordTile({ entry, onClick, onCopyPassword, onDelete }: Passw
 		}
 	}
 
-	return (
-		<article className="group relative flex min-h-[380px] w-full flex-col overflow-hidden rounded-[26px] border border-blue-100 bg-white shadow-lg shadow-blue-200/50 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-300/50 focus-within:ring-2 focus-within:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30 dark:hover:shadow-black/50">
-			<div className={`relative flex h-[144px] w-full shrink-0 items-start justify-between overflow-visible bg-linear-to-r px-4 pt-4 ${theme.bannerStyle}`}>
-				<svg aria-hidden="true" viewBox="0 0 420 144" preserveAspectRatio="xMidYMid slice" className="pointer-events-none absolute inset-0 size-full overflow-hidden">
-					<circle cx="303" cy="116" r="54" fill="none" stroke="white" strokeDasharray="3 8" strokeOpacity=".2" strokeWidth="1.5" />
-					<path d="M205 151c24-31 45-48 71-51 23-3 38 8 57 3" fill="none" stroke="white" strokeLinecap="round" strokeOpacity=".18" strokeWidth="1.5" />
-					<path d="m97 75 4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="white" fillOpacity=".5" />
-					<circle cx="281" cy="37" r="2" fill="white" fillOpacity=".65" />
-					<circle cx="315" cy="67" r="1.5" fill="white" fillOpacity=".5" />
-				</svg>
-				<span className="relative z-10 flex items-center gap-1.5">
-					<span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-blue-950/15 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm backdrop-blur-sm">
-						<CategoryIcon size={14} />
-						{entry.category}
-					</span>
-					<span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold shadow-sm ${isSecure ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-						<SecurityIcon size={12} />
-						{isSecure ? "Secure" : "Review"}
-					</span>
-				</span>
-				{websiteUrl && (
-					<a
-						href={websiteUrl}
-						target="_blank"
-						rel="noreferrer"
-						aria-label={`Open ${entry.website} website in a new tab`}
-						className="relative z-10 grid size-8 place-items-center rounded-lg border border-white/25 bg-white/15 text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-					>
-						<ExternalLink size={15} />
-					</a>
-				)}
+	if (layout === "list") {
+		return (
+			<article className="group relative flex min-h-[62px] min-w-0 items-center gap-3 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm shadow-slate-900/5 transition-colors hover:border-violet-200 hover:bg-violet-50/30 focus-within:ring-2 focus-within:ring-violet-500/30 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 sm:gap-4 sm:px-4">
 				<button
 					type="button"
 					onClick={onClick}
 					aria-label={`View ${entry.website} password details`}
-					className={`absolute left-1/2 top-[60px] z-20 grid size-[144px] -translate-x-1/2 place-items-center overflow-hidden rounded-full border-[5px] border-white bg-white p-0 shadow-xl shadow-blue-950/25 ring-2 ring-white/70 transition-transform duration-200 group-hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500 dark:border-slate-900 dark:bg-slate-900 dark:ring-slate-700 ${theme.avatarStyle}`}
+					className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
 				>
-					<PasswordAvatar category={entry.category} className="size-[134px]" />
+					<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full" />
 				</button>
-			</div>
-			<button
-				type="button"
-				onClick={onClick}
-				aria-label={`View ${entry.website} password details`}
-				className="relative isolate flex w-full flex-1 flex-col items-center bg-white px-4 pb-3 pt-[64px] text-center focus-visible:outline-none dark:bg-slate-950"
-			>
-				<PasswordCategoryVector category={entry.category} mirrored />
-				<PasswordCategoryVector category={entry.category} />
-				<span className="relative z-10 max-w-full truncate text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">{entry.website}</span>
-				<span className="relative z-10 mt-1 max-w-full truncate text-base font-medium text-slate-500 dark:text-slate-400">{entry.username}</span>
-			</button>
-			<div className="mx-3 mb-3 flex min-h-[62px] items-center gap-2 rounded-[18px] border border-slate-200 bg-white px-2.5 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-				<span className="grid size-9 shrink-0 place-items-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
-					<Globe size={17} />
-				</span>
-				<span className="min-w-0 flex-1 text-left">
-					<span className="block text-[9px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Website</span>
-					<span className="block truncate text-[11px] font-semibold text-slate-900 dark:text-slate-100">{entry.url}</span>
-				</span>
-				<span aria-hidden="true" className="mx-0.5 h-8 w-px shrink-0 bg-blue-200 dark:bg-slate-700" />
-				<div className="flex shrink-0 items-center gap-1.5">
+				<button
+					type="button"
+					onClick={onClick}
+					aria-label={`View ${entry.website} password details`}
+					className="min-w-0 flex-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+				>
+					<span className="block truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{entry.website}</span>
+					<span className="mt-0.5 block truncate text-xs text-slate-500 dark:text-slate-400">{entry.username || entry.url}</span>
+				</button>
+				<div className="flex shrink-0 items-center gap-1">
+					{websiteUrl && (
+						<a
+							href={websiteUrl}
+							target="_blank"
+							rel="noreferrer"
+							aria-label={`Open ${entry.website} website in a new tab`}
+							title="Open website"
+							className="grid size-9 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+						>
+							<ExternalLink size={16} />
+						</a>
+					)}
+					<button
+						type="button"
+						onClick={() => void onToggleFavorite(entry)}
+						disabled={favoritePending}
+						aria-label={entry.favorite ? `Remove ${entry.website} from favorites` : `Add ${entry.website} to favorites`}
+						aria-pressed={entry.favorite}
+						title={entry.favorite ? "Remove from favorites" : "Add to favorites"}
+						className={`grid size-9 place-items-center rounded-full transition-colors disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:focus-visible:ring-violet-300 ${entry.favorite ? "bg-amber-100/80 text-amber-600 hover:bg-amber-100 dark:bg-amber-300/15 dark:text-amber-300 dark:hover:bg-amber-300/25" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"}`}
+					>
+						<Star size={16} fill={entry.favorite ? "currentColor" : "none"} />
+					</button>
 					<button
 						type="button"
 						onClick={() => void handleCopyPassword()}
 						disabled={copyStatus === "copying"}
 						aria-label={copyStatus === "copied" ? "Password copied" : copyStatus === "failed" ? "Password copy failed" : copyStatus === "copying" ? "Copying password" : "Copy password"}
 						title={copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy password"}
-						className={`grid size-9 place-items-center rounded-full bg-slate-100 shadow-sm transition-colors hover:bg-blue-100 disabled:opacity-60 dark:bg-slate-800 dark:hover:bg-slate-700 ${copyStatus === "copied" ? "text-emerald-600 dark:text-emerald-300" : copyStatus === "failed" ? "text-rose-600 dark:text-rose-300" : "text-slate-500 dark:text-slate-300"}`}
+						className={`grid size-9 place-items-center rounded-full transition-colors disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${copyStatus === "copied" ? "text-emerald-600 dark:text-emerald-300" : copyStatus === "failed" ? "text-rose-600 dark:text-rose-300" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"}`}
 					>
 						{copyStatus === "copied" ? <Check size={16} /> : <Copy size={16} />}
 					</button>
@@ -208,7 +130,105 @@ export function PasswordTile({ entry, onClick, onCopyPassword, onDelete }: Passw
 						onClick={() => onDelete(entry)}
 						aria-label={`Delete ${entry.website} password`}
 						title="Delete password"
-						className="grid size-9 place-items-center rounded-full bg-slate-100 text-slate-500 shadow-sm transition-colors hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/50 dark:hover:text-rose-300"
+						className="grid size-9 place-items-center rounded-full text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 dark:text-slate-400 dark:hover:bg-rose-950/50 dark:hover:text-rose-300"
+					>
+						<Trash2 size={16} />
+					</button>
+				</div>
+				<span className="sr-only" aria-live="polite">
+					{copyStatus === "copied" ? "Password copied to clipboard." : copyStatus === "failed" ? "Password could not be copied." : ""}
+				</span>
+			</article>
+		);
+	}
+
+	return (
+		<article className="group relative flex min-h-[390px] w-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-slate-900/10 focus-within:ring-2 focus-within:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30 dark:hover:shadow-black/50">
+			<div className="relative flex h-[160px] w-full shrink-0 items-start justify-end overflow-visible bg-linear-to-b from-sky-200 via-orange-100 to-amber-100 px-4 pt-4 dark:from-slate-950 dark:via-slate-900 dark:to-stone-900">
+				<span aria-hidden="true" className="pointer-events-none absolute -bottom-7 left-1/2 h-20 w-3/4 -translate-x-1/2 rounded-full bg-amber-400/30 blur-2xl dark:bg-amber-500/20" />
+				<svg aria-hidden="true" viewBox="0 0 420 160" preserveAspectRatio="xMidYMid slice" className="pointer-events-none absolute inset-0 size-full overflow-hidden">
+					<path d="M0 132h420" fill="none" stroke="#d6a15e" strokeOpacity=".55" strokeWidth="1" />
+					<path d="m0 144 57-19 26 7 31-22 23 15 31-21 22 17 28-19 30 23 25-14 29 18 37-26 29 19 22-16 30 12v42H0z" fill="#a6bdc7" className="dark:fill-[#111820]" />
+					<path d="m0 151 65-18 35 8 44-13 30 12 48-14 34 16 35-12 37 13 43-18 49 13v22H0z" fill="#dbeafe" className="dark:fill-[#080b10]" />
+				</svg>
+				<div className="relative z-10 inline-flex items-center gap-0.5 rounded-full border border-white/60 bg-white/45 p-1 shadow-sm shadow-slate-900/5 backdrop-blur-md dark:border-white/10 dark:bg-slate-950/35 dark:shadow-black/20">
+					{websiteUrl && (
+						<a
+							href={websiteUrl}
+							target="_blank"
+							rel="noreferrer"
+							aria-label={`Open ${entry.website} website in a new tab`}
+							className="grid size-8 place-items-center rounded-full text-slate-600 transition-colors hover:bg-white/70 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-violet-300"
+						>
+							<ExternalLink size={15} />
+						</a>
+					)}
+					<button
+						type="button"
+						onClick={() => void onToggleFavorite(entry)}
+						disabled={favoritePending}
+						aria-label={entry.favorite ? `Remove ${entry.website} from favorites` : `Add ${entry.website} to favorites`}
+						aria-pressed={entry.favorite}
+						title={entry.favorite ? "Remove from favorites" : "Add to favorites"}
+						className={`grid size-8 place-items-center rounded-full transition-colors disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:focus-visible:ring-violet-300 ${entry.favorite ? "bg-amber-100/80 text-amber-600 hover:bg-amber-100 dark:bg-amber-300/15 dark:text-amber-300 dark:hover:bg-amber-300/25" : "text-slate-600 hover:bg-white/70 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white"}`}
+					>
+						<Star size={15} fill={entry.favorite ? "currentColor" : "none"} />
+					</button>
+				</div>
+				<button
+					type="button"
+					onClick={onClick}
+					aria-label={`View ${entry.website} password details`}
+					className="absolute left-1/2 top-[124px] z-20 grid size-[72px] -translate-x-1/2 place-items-center overflow-hidden rounded-full border-0 bg-transparent p-0 transition-transform duration-200 group-hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500"
+				>
+					<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full" />
+				</button>
+			</div>
+			<button
+				type="button"
+				onClick={onClick}
+				aria-label={`View ${entry.website} password details`}
+				className="relative isolate flex w-full flex-1 flex-col items-center bg-[linear-gradient(180deg,_#dbeafe_0%,_#eff6ff_28%,_#ffffff_62%)] px-4 pb-4 pt-[48px] text-center focus-visible:outline-none dark:bg-[linear-gradient(180deg,_#080b10_0%,_#0b101b_38%,_#020617_78%)]"
+			>
+				<span className="relative z-10 max-w-full truncate text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">{entry.website}</span>
+				<span className="relative z-10 mt-1 max-w-full truncate text-sm font-medium text-slate-500 dark:text-slate-400">{entry.username}</span>
+				<span className="relative z-10 mt-3 flex items-center justify-center gap-2">
+					<span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+						<CategoryIcon size={12} />
+						{entry.category}
+					</span>
+					<span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${isSecure ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"}`}>
+						<SecurityIcon size={12} />
+						{isSecure ? "Secure" : "Review"}
+					</span>
+				</span>
+			</button>
+			<div className="mx-3 mb-3 flex min-h-[60px] items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-900/60">
+				<span className="grid size-9 shrink-0 place-items-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-300">
+					<Globe size={17} />
+				</span>
+				<span className="min-w-0 flex-1 text-left">
+					<span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Website</span>
+					<span className="block truncate text-xs font-semibold text-slate-900 dark:text-slate-100">{entry.url}</span>
+				</span>
+				<span aria-hidden="true" className="mx-0.5 h-8 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
+				<div className="flex shrink-0 items-center gap-1.5">
+					<button
+						type="button"
+						onClick={() => void handleCopyPassword()}
+						disabled={copyStatus === "copying"}
+						aria-label={copyStatus === "copied" ? "Password copied" : copyStatus === "failed" ? "Password copy failed" : copyStatus === "copying" ? "Copying password" : "Copy password"}
+						title={copyStatus === "copied" ? "Copied" : copyStatus === "failed" ? "Copy failed" : "Copy password"}
+						className={`grid size-9 place-items-center rounded-xl border border-slate-200 bg-white shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 ${copyStatus === "copied" ? "text-emerald-600 dark:text-emerald-300" : copyStatus === "failed" ? "text-rose-600 dark:text-rose-300" : "text-slate-500 dark:text-slate-300"}`}
+					>
+						{copyStatus === "copied" ? <Check size={16} /> : <Copy size={16} />}
+					</button>
+					<button
+						type="button"
+						onClick={() => onDelete(entry)}
+						aria-label={`Delete ${entry.website} password`}
+						title="Delete password"
+						className="grid size-9 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-rose-950/50 dark:hover:text-rose-300"
 					>
 						<Trash2 size={16} />
 					</button>

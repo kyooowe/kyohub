@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { createBudgetBill, deleteBudgetBill, getBudgetData, saveMonthlyBudget, setBudgetBillPaid, updateBudgetBill } from "@/features/budget/actions/budget-actions";
 import { BudgetBillList } from "@/features/budget/components/budget-bill-list";
 import { BudgetExpenseChart } from "@/features/budget/components/budget-expense-chart";
@@ -11,9 +10,9 @@ import { BudgetForms } from "@/features/budget/components/budget-forms";
 import { BudgetHeader } from "@/features/budget/components/budget-header";
 import { BudgetSummary } from "@/features/budget/components/budget-summary";
 import { billOccurrencesForMonth, billOccurrencesInWindow, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, isBillOccurrenceOverdue, monthKey, type ExpensePoint } from "@/features/budget/lib/budget-utils";
-import type { BudgetBill, BillFrequency, MonthlyBudget } from "@/features/budget/types";
+import type { BudgetBill, BillFrequency, BudgetCategory, MonthlyBudget } from "@/features/budget/types";
 
-export function BudgetPlanner() {
+export function BudgetPlanner({ initialData, initialError }: { initialData: { budgets: MonthlyBudget[]; bills: BudgetBill[] }; initialError: string }) {
 	const currentKey = monthKey(new Date());
 	const billWindowStart = new Date();
 	billWindowStart.setHours(0, 0, 0, 0);
@@ -21,10 +20,14 @@ export function BudgetPlanner() {
 	const billWindowEnd = new Date(billWindowStart);
 	billWindowEnd.setDate(billWindowEnd.getDate() + 9);
 	const [selectedMonth, setSelectedMonth] = useState(currentKey);
-	const [budgets, setBudgets] = useState<MonthlyBudget[]>([]);
-	const [bills, setBills] = useState<BudgetBill[]>([]);
-	const [budgetInput, setBudgetInput] = useState("");
+	const [budgets, setBudgets] = useState<MonthlyBudget[]>(initialData.budgets);
+	const [bills, setBills] = useState<BudgetBill[]>(initialData.bills);
+	const [budgetInput, setBudgetInput] = useState(() => {
+		const selectedBudget = initialData.budgets.find((item) => item.monthKey === currentKey);
+		return selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "";
+	});
 	const [billTitle, setBillTitle] = useState("");
+	const [billCategory, setBillCategory] = useState<BudgetCategory>("utility");
 	const [billAmount, setBillAmount] = useState("");
 	const [billDueDay, setBillDueDay] = useState("");
 	const [billFrequency, setBillFrequency] = useState<BillFrequency>("recurring");
@@ -32,9 +35,8 @@ export function BudgetPlanner() {
 	const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
 	const [billDialogOpen, setBillDialogOpen] = useState(false);
 	const billFormRef = useRef<HTMLFormElement>(null);
-	const [ready, setReady] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
-	const [error, setError] = useState("");
+	const [error, setError] = useState(initialError);
 
 	const budget = budgets.find((item) => item.monthKey === selectedMonth);
 	const monthBills = billsForMonth(bills, selectedMonth);
@@ -74,29 +76,8 @@ export function BudgetPlanner() {
 			setBudgetInput(selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "");
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not load budget data.");
-		} finally {
-			setReady(true);
 		}
 	}
-
-	useEffect(() => {
-		let active = true;
-		getBudgetData()
-			.then((data) => {
-				if (!active) return;
-				setBudgets(data.budgets);
-				setBills(data.bills);
-				const selectedBudget = data.budgets.find((item) => item.monthKey === selectedMonth);
-				setBudgetInput(selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "");
-			})
-			.catch((cause: unknown) => {
-				if (active) setError(cause instanceof Error ? cause.message : "Could not load budget data.");
-			})
-			.finally(() => {
-				if (active) setReady(true);
-			});
-		return () => { active = false; };
-	}, [selectedMonth]);
 
 	function selectMonth(value: string) {
 		setSelectedMonth(value);
@@ -127,6 +108,7 @@ export function BudgetPlanner() {
 	function resetBillForm() {
 		setEditingBillId(null);
 		setBillTitle("");
+		setBillCategory("utility");
 		setBillAmount("");
 		setBillDueDay("");
 		setBillFrequency("recurring");
@@ -136,6 +118,7 @@ export function BudgetPlanner() {
 	function editBill(bill: BudgetBill) {
 		setEditingBillId(bill.id);
 		setBillTitle(bill.title);
+		setBillCategory(bill.category);
 		setBillAmount(formatAmountInput((bill.amountCents / 100).toFixed(2)));
 		setBillDueDay(bill.dueDay?.toString() ?? "");
 		setBillFrequency(bill.frequency);
@@ -163,6 +146,7 @@ export function BudgetPlanner() {
 		try {
 			const billData = {
 				title,
+				category: billCategory,
 				amountCents: amount,
 				frequency: billFrequency,
 				monthKey: billFrequency === "one-time"
@@ -223,7 +207,6 @@ export function BudgetPlanner() {
 
 	return <>
 		{error && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</div>}
-		{!ready && <LoadingIndicator />}
 		<BudgetHeader selectedMonth={selectedMonth} onSelectMonth={selectMonth} />
 		<BudgetSummary
 			selectedMonth={selectedMonth}
@@ -245,6 +228,8 @@ export function BudgetPlanner() {
 			onSubmitBudget={submitBudget}
 			billTitle={billTitle}
 			onBillTitleChange={setBillTitle}
+			billCategory={billCategory}
+			onBillCategoryChange={setBillCategory}
 			billAmount={billAmount}
 			onBillAmountChange={setBillAmount}
 			billDueDay={billDueDay}

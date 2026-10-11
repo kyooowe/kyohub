@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "AppSetting": {
+      "model": "AppSetting",
+      "namespace": "public"
+    },
     "BabyNeed": {
       "model": "BabyNeed",
       "namespace": "public"
@@ -33,6 +37,37 @@
     "namespaces": {
       "public": {
         "models": {
+          "AppSetting": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "value": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "value": {
+                  "column": "value"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AppSetting"
+            }
+          },
           "BabyNeed": {
             "fields": {
               "createdAt": {
@@ -123,6 +158,13 @@
                   "kind": "scalar"
                 }
               },
+              "category": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -179,6 +221,9 @@
               "fields": {
                 "amountCents": {
                   "column": "amountCents"
+                },
+                "category": {
+                  "column": "category"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -334,6 +379,13 @@
                   "kind": "scalar"
                 }
               },
+              "favorite": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -378,6 +430,9 @@
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "favorite": {
+                  "column": "favorite"
                 },
                 "id": {
                   "column": "id"
@@ -469,6 +524,28 @@
       "public": {
         "entries": {
           "table": {
+            "AppSetting": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "value": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "BabyNeed": {
               "columns": {
                 "createdAt": {
@@ -549,6 +626,15 @@
                 "amountCents": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "category": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "utility"
+                  },
+                  "nativeType": "text",
                   "nullable": false
                 },
                 "createdAt": {
@@ -734,6 +820,15 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "favorite": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -822,7 +917,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e1c6194fcdeda7572279aa0c4cf8e6d0622ad32882d82943c7b4d088cb6b2c7c"
+    "storageHash": "7dbcd05686575a5fbedbda8d3edd0268f58b5e8d791124b54dc58032a2504741"
   },
   "execution": {
     "executionHash": "e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649",

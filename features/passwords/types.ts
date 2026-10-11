@@ -7,4 +7,5 @@ export type PasswordEntry = {
 	category: Category;
 	username: string;
 	password: string;
+	favorite: boolean;
 };

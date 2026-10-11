@@ -20,13 +20,11 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 	return <Dialog open={entry !== null} onOpenChange={onOpenChange}>
 		<DialogContent className="max-w-md overflow-hidden rounded-[24px] border-slate-200 bg-white p-0 shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900">
 			{entry && theme && <>
-				<header className={`relative isolate overflow-hidden bg-linear-to-r ${theme.bannerStyle} px-5 py-5 sm:px-6`}>
-					<div aria-hidden="true" className="absolute -right-8 -top-12 size-40 rounded-full border-[24px] border-white/10" />
-					<div aria-hidden="true" className="absolute -bottom-16 right-24 size-32 rounded-full bg-white/10 blur-2xl" />
+				<header className={`dialog-palette-header relative isolate overflow-hidden bg-linear-to-r ${theme.bannerStyle} px-5 py-5 sm:px-6`}>
 					<div className="relative flex items-center justify-between gap-4">
 						<div className="flex min-w-0 items-center gap-3.5">
-							<span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/50 bg-white/90 p-1 shadow-lg shadow-slate-950/10">
-								<PasswordAvatar category={entry.category} className="size-full rounded-xl" />
+							<span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/15 p-1 shadow-sm backdrop-blur-sm">
+								<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full rounded-xl" />
 							</span>
 							<div className="min-w-0">
 								<p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/75">Saved login</p>
@@ -56,8 +54,9 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 							<span className="min-w-0 truncate">{entry.username}</span>
 						</div>
 					</div>
-					<div className="space-y-1.5">
-						<div className="flex items-center justify-between gap-3">
+					<div className="space-y-2">
+						<div className="space-y-1.5">
+							<div className="flex items-center justify-between gap-3">
 							<p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Password</p>
 							<span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500"><KeyRound size={12} /> Private</span>
 						</div>
@@ -66,15 +65,18 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 							<Button type="button" variant="ghost" size="icon-sm" aria-label={revealed ? "Hide password" : "Reveal password"} onClick={onToggleReveal} className="shrink-0 rounded-lg text-slate-500 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-violet-950/40 dark:hover:text-violet-300">{revealed ? <EyeOff size={16} /> : <Eye size={16} />}</Button>
 						</div>
 					</div>
-					<div className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950/60">
-						<ShieldCheck size={16} className="shrink-0 text-slate-400 dark:text-slate-500" />
+					<div className="flex min-w-0 items-center gap-2.5 px-3 py-2.5">
+						<span className="grid size-8 shrink-0 place-items-center rounded-lg text-violet-700 dark:text-violet-300">
+							<ShieldCheck size={16} />
+						</span>
 						<span className="shrink-0 text-xs font-semibold text-slate-600 dark:text-slate-300">Strength</span>
 						<PasswordStrength password={entry.password} />
 					</div>
 				</div>
-				<footer className="flex flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50/70 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:flex-row sm:justify-between sm:px-6">
-					<Button type="button" variant="outline" className="border-rose-200 bg-white text-rose-600 shadow-sm hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40" onClick={onDelete}><Trash2 size={15} />Delete</Button>
-					<Button type="button" className="bg-linear-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-600/20 hover:from-violet-700 hover:to-indigo-700" onClick={onEdit}><Pencil size={15} />Edit password</Button>
+				</div>
+				<footer className="flex flex-row flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-3 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:px-6">
+					<Button type="button" variant="outline" className="h-10 rounded-xl border-rose-200 bg-white px-4 text-rose-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 hover:shadow-md active:translate-y-0 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40" onClick={onDelete}><Trash2 size={16} />Delete</Button>
+					<Button type="button" className="h-10 rounded-xl bg-linear-to-r from-violet-600 via-violet-600 to-indigo-600 px-5 text-white shadow-lg shadow-violet-600/20 transition-all hover:-translate-y-0.5 hover:from-violet-700 hover:to-indigo-700 hover:shadow-xl active:translate-y-0 active:scale-[0.98]" onClick={onEdit}><Pencil size={16} />Edit password</Button>
 				</footer>
 			</>}
 		</DialogContent>
