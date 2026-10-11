@@ -70,7 +70,7 @@ export function BudgetExpenseChart({ data, bills }: { data: ExpensePoint[]; bill
 		</FeatureSectionHeader>
 		<CardContent className="mx-3 mb-1 rounded-2xl border border-rose-100 bg-white p-4 shadow-lg shadow-slate-300/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:mx-4 sm:mb-1 sm:p-5">
 			<div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 dark:border-slate-800 dark:bg-slate-950/50">
-				<div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+				<div data-page-palette-preserve className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-slate-600 dark:text-slate-300">
 					<span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-sky-500" /> Budget</span>
 					<span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-sm bg-rose-500" /> {expenseLabel}</span>
 				</div>

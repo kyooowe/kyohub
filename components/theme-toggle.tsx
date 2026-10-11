@@ -1,13 +1,31 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { useSyncExternalStore } from "react";
+
+function themeSnapshot() {
+	return document.documentElement.classList.contains("dark");
+}
+
+function subscribeToTheme(onChange: () => void) {
+	const observer = new MutationObserver(onChange);
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+	return () => observer.disconnect();
+}
+
+export function useDarkModePreference() {
+	return useSyncExternalStore(subscribeToTheme, themeSnapshot, () => false);
+}
+
+export function setDarkMode(isDark: boolean) {
+	document.documentElement.classList.toggle("dark", isDark);
+	document.documentElement.style.colorScheme = isDark ? "dark" : "light";
+	localStorage.setItem("kyohub-theme", isDark ? "dark" : "light");
+}
 
 export function ThemeToggle() {
 	function toggleTheme() {
-		const nextIsDark = !document.documentElement.classList.contains("dark");
-		document.documentElement.classList.toggle("dark", nextIsDark);
-		document.documentElement.style.colorScheme = nextIsDark ? "dark" : "light";
-		localStorage.setItem("kyohub-theme", nextIsDark ? "dark" : "light");
+		setDarkMode(!document.documentElement.classList.contains("dark"));
 	}
 
 	return (

@@ -3,7 +3,7 @@
 import { db } from "@/prisma/db";
 import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
-import type { BillFrequency, BudgetBill, MonthlyBudget } from "@/features/budget/types";
+import { isBudgetCategory, type BillFrequency, type BudgetBill, type BudgetCategory, type MonthlyBudget } from "@/features/budget/types";
 
 const budgetTag = "budget-planner";
 
@@ -42,6 +42,11 @@ function validateFrequency(value: unknown): BillFrequency {
 	return value;
 }
 
+function validateCategory(value: unknown): BudgetCategory {
+	if (!isBudgetCategory(value)) throw new Error("Choose a valid bill category.");
+	return value;
+}
+
 function validateDueDay(value: unknown): number | null {
 	if (value === null) return null;
 	if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1 || value > 31) throw new Error("Choose a due day from 1 to 31.");
@@ -59,7 +64,7 @@ const getCachedBudgetData = unstable_cache(
 	async () => {
 		const [budgets, bills] = await Promise.all([
 			db.orm.public.MonthlyBudget.select("id", "monthKey", "amountCents").all(),
-			db.orm.public.BudgetBill.select("id", "title", "amountCents", "frequency", "monthKey", "dueDay", "paidMonthKeys", "createdAt")
+			db.orm.public.BudgetBill.select("id", "title", "category", "amountCents", "frequency", "monthKey", "dueDay", "paidMonthKeys", "createdAt")
 				.orderBy([(bill) => bill.createdAt.asc(), (bill) => bill.id.asc()])
 				.all(),
 		]);
@@ -68,6 +73,7 @@ const getCachedBudgetData = unstable_cache(
 			bills: bills.map((bill) => ({
 				...bill,
 				frequency: validateFrequency(bill.frequency),
+				category: validateCategory(bill.category),
 			})) as BudgetBill[],
 		};
 	},
@@ -98,12 +104,14 @@ export async function createBudgetBill(value: unknown): Promise<void> {
 	if (!value || typeof value !== "object") throw new Error("Invalid bill.");
 	const bill = value as Record<string, unknown>;
 	const frequency = validateFrequency(bill.frequency);
+	const category = validateCategory(bill.category);
 	const monthKey = frequency === "one-time" ? validateMonthKey(bill.monthKey) : null;
 	const dueDay = validateMonthlyDueDay(bill.dueDay);
 	const title = validateTitle(bill.title);
 	await ensureUniqueBillTitle(title);
 	await db.orm.public.BudgetBill.create({
 		title,
+		category,
 		amountCents: validateAmountCents(bill.amountCents),
 		frequency,
 		monthKey,
@@ -117,6 +125,7 @@ export async function updateBudgetBill(id: unknown, value: unknown): Promise<voi
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") throw new Error("Invalid bill.");
 	const bill = value as Record<string, unknown>;
 	const frequency = validateFrequency(bill.frequency);
+	const category = validateCategory(bill.category);
 	const monthKey = frequency === "one-time" ? validateMonthKey(bill.monthKey) : null;
 	const dueDay = validateDueDay(bill.dueDay);
 	const existing = await db.orm.public.BudgetBill.first({ id });
@@ -125,6 +134,7 @@ export async function updateBudgetBill(id: unknown, value: unknown): Promise<voi
 	await ensureUniqueBillTitle(title, id);
 	await db.orm.public.BudgetBill.where({ id }).update({
 		title,
+		category,
 		amountCents: validateAmountCents(bill.amountCents),
 		frequency,
 		monthKey,

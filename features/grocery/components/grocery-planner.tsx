@@ -1,7 +1,6 @@
 "use client";
 
-import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,30 +19,13 @@ function groupByDate(items: GroceryRecord[]) {
 	}, {});
 }
 
-export function GroceryPlanner() {
-	const [groceries, setGroceries] = useState<Record<string, GroceryItem[]>>({});
+export function GroceryPlanner({ initialItems, initialError }: { initialItems: GroceryRecord[]; initialError: string }) {
+	const [groceries, setGroceries] = useState<Record<string, GroceryItem[]>>(() => groupByDate(initialItems));
 	const [selectedDate, setSelectedDate] = useState(() => new Date());
 	const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 	const [dialogEntry, setDialogEntry] = useState<GroceryItem | "new" | null>(null);
-	const [storageError, setStorageError] = useState("");
-	const [ready, setReady] = useState(false);
+	const [storageError, setStorageError] = useState(initialError);
 	const [submitting, setSubmitting] = useState(false);
-
-	useEffect(() => {
-		let active = true;
-		async function loadGroceries() {
-			try {
-				const items = await getGroceryItems();
-				if (active) setGroceries(groupByDate(items));
-			} catch (error) {
-				if (active) setStorageError(error instanceof Error ? `Could not load groceries: ${error.message}` : "Could not load groceries from the database.");
-			} finally {
-				if (active) setReady(true);
-			}
-		}
-		void loadGroceries();
-		return () => { active = false; };
-	}, []);
 
 	const selectedKey = getDateKey(selectedDate);
 	const dayItems = groceries[selectedKey] ?? [];
@@ -104,7 +86,6 @@ export function GroceryPlanner() {
 	return (
 		<>
 			{storageError && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{storageError}</div>}
-			{!ready && <LoadingIndicator />}
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div>
 					<p className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-widest text-blue-700 dark:text-blue-300"><span className="grid size-6 place-items-center rounded-md bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300"><CalendarDays size={14} /></span> PLAN YOUR WEEK</p>
@@ -136,7 +117,7 @@ export function GroceryPlanner() {
 								</button>;
 							})}
 						</div>
-						<div className="mt-4 flex gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-blue-600 ring-2 ring-blue-100 dark:ring-blue-950" /> Today</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-indigo-600" /> Has groceries</span></div>
+						<div data-page-palette-preserve className="mt-4 flex gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-blue-600 ring-2 ring-blue-100 dark:ring-blue-950" /> Today</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-indigo-600" /> Has groceries</span></div>
 					</CardContent>
 				</Card>
 				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">

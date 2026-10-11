@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.PasswordEntry.favorite",
+    "label": "Add column \"favorite\" to \"PasswordEntry\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "favorite",
+        "table": "PasswordEntry"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"favorite\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PasswordEntry",
+          "favorite"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"favorite\"",
+        "sql": "ALTER TABLE \"public\".\"PasswordEntry\" ADD COLUMN \"favorite\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"favorite\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "PasswordEntry",
+          "favorite"
+        ]
+      }
+    ]
+  }
+]

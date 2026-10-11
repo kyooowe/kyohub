@@ -14,7 +14,7 @@ Kyohub is a family space for keeping everyday plans together—from grocery runs
 | 🗓️ | **Baby calendar** | Schedule vaccinations and important dates, add notes, and track completed needs. |
 | 💰 | **Budget planner** | Set budgets by month, add recurring or one-time bills, and compare expenses across six months. |
 | 🔐 | **Password manager** | Organize logins by category, search entries, and check password strength. |
-| 👋 | **Simple sign-in** | Use a configured six-digit PIN to access the shared family workspace. |
+| 👋 | **Simple sign-in** | Use a configured six-digit PIN to access the shared family workspace, with app settings saved across devices. |
 
 ## Get started
 

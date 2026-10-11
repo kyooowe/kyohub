@@ -1,6 +1,8 @@
 import type { Category } from "../types";
 
-export const categories: Category[] = ["Social media", "Banking", "Games", "Work", "Other"];
+export const categories: Category[] = ["Social media", "Banking", "Games", "Work"];
+export const allCategories: Category[] = [...categories, "Other"];
+export const socialMediaIconUrl = "https://img.icons8.com/fluency/96/verified-badge--v1.png";
 
 export function getStrength(password: string) {
 	let score = 0;

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e1c6194fcdeda7572279aa0c4cf8e6d0622ad32882d82943c7b4d088cb6b2c7c'>;
+  StorageHashBase<'7dbcd05686575a5fbedbda8d3edd0268f58b5e8d791124b54dc58032a2504741'>;
 export type ExecutionHash =
   ExecutionHashBase<'e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649'>;
 export type ProfileHash =
@@ -250,6 +250,10 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly AppSetting: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly value: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -261,6 +265,7 @@ export type FieldOutputTypes = {
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dueDay: CodecTypes['pg/int4@1']['output'] | null;
       readonly frequency: CodecTypes['pg/text@1']['output'];
@@ -285,6 +290,7 @@ export type FieldOutputTypes = {
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly favorite: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
       readonly url: CodecTypes['pg/text@1']['output'];
@@ -302,6 +308,10 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly AppSetting: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly value: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -313,6 +323,7 @@ export type FieldInputTypes = {
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dueDay: CodecTypes['pg/int4@1']['input'] | null;
       readonly frequency: CodecTypes['pg/text@1']['input'];
@@ -337,6 +348,7 @@ export type FieldInputTypes = {
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly favorite: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
       readonly url: CodecTypes['pg/text@1']['input'];
@@ -354,6 +366,10 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly AppSetting: {
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly value: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -365,6 +381,7 @@ export type StorageColumnTypes = {
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['output'];
+      readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dueDay: CodecTypes['pg/int4@1']['output'] | null;
       readonly frequency: CodecTypes['pg/text@1']['output'];
@@ -389,6 +406,7 @@ export type StorageColumnTypes = {
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly favorite: CodecTypes['pg/bool@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
       readonly url: CodecTypes['pg/text@1']['output'];
@@ -406,6 +424,10 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly AppSetting: {
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly value: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -417,6 +439,7 @@ export type StorageColumnInputTypes = {
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['input'];
+      readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dueDay: CodecTypes['pg/int4@1']['input'] | null;
       readonly frequency: CodecTypes['pg/text@1']['input'];
@@ -441,6 +464,7 @@ export type StorageColumnInputTypes = {
     readonly PasswordEntry: {
       readonly category: CodecTypes['pg/text@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly favorite: CodecTypes['pg/bool@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
       readonly url: CodecTypes['pg/text@1']['input'];
@@ -458,6 +482,11 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_AppSetting = {
+    id: CodecTypes['pg/text@1']['output'];
+    value: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_BabyNeed = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     dateKey: CodecTypes['pg/text@1']['output'];
@@ -470,6 +499,7 @@ export namespace Models {
   };
   export type public_BudgetBill = {
     amountCents: CodecTypes['pg/int4@1']['output'];
+    category: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     dueDay: CodecTypes['pg/int4@1']['output'] | null;
     frequency: CodecTypes['pg/text@1']['output'];
@@ -497,6 +527,7 @@ export namespace Models {
   export type public_PasswordEntry = {
     category: CodecTypes['pg/text@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    favorite: CodecTypes['pg/bool@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
     password: CodecTypes['pg/text@1']['output'];
     url: CodecTypes['pg/text@1']['output'];
@@ -516,6 +547,7 @@ export namespace Models {
 
 export declare const models: {
   public: {
+    AppSetting: Models.public_AppSetting;
     BabyNeed: Models.public_BabyNeed;
     BudgetBill: Models.public_BudgetBill;
     GroceryItem: Models.public_GroceryItem;
@@ -543,6 +575,24 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly AppSetting: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly value: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly BabyNeed: {
               columns: {
                 readonly createdAt: {
@@ -608,6 +658,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
+                };
+                readonly category: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'utility'>;
+                  };
                 };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
@@ -755,6 +814,15 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
+                readonly favorite: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                };
                 readonly id: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
@@ -831,6 +899,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly AppSetting: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'AppSetting';
+    };
     readonly BabyNeed: { readonly namespace: 'public' & NamespaceId; readonly model: 'BabyNeed' };
     readonly BudgetBill: {
       readonly namespace: 'public' & NamespaceId;
@@ -857,6 +929,27 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly AppSetting: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly value: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'AppSetting';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly value: { readonly column: 'value' };
+              };
+            };
+          };
           readonly BabyNeed: {
             readonly fields: {
               readonly createdAt: {
@@ -912,6 +1005,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly category: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -951,6 +1048,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly amountCents: { readonly column: 'amountCents' };
+                readonly category: { readonly column: 'category' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly dueDay: { readonly column: 'dueDay' };
                 readonly frequency: { readonly column: 'frequency' };
@@ -1047,6 +1145,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
+              readonly favorite: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -1075,6 +1177,7 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly category: { readonly column: 'category' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly favorite: { readonly column: 'favorite' };
                 readonly id: { readonly column: 'id' };
                 readonly password: { readonly column: 'password' };
                 readonly url: { readonly column: 'url' };

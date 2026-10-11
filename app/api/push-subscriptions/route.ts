@@ -1,8 +1,6 @@
 import { isAuthenticated } from "@/features/auth/lib/session";
 import { db } from "@/prisma/db";
 
-export const runtime = "nodejs";
-
 type SubscriptionInput = {
 	endpoint: string;
 	p256dh: string;
