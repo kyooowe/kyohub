@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { DashboardLoading } from "@/components/layout/dashboard-loading";
 import { getGroceryItems, type GroceryRecord } from "@/features/grocery/actions/grocery-actions";
 import { GroceryPlanner } from "@/features/grocery/components/grocery-planner";
+
+export const instant = false;
 
 async function GroceryContent() {
 	await connection();
@@ -18,7 +19,7 @@ async function GroceryContent() {
 
 export default function GroceryPage() {
 	return (
-		<Suspense fallback={<DashboardLoading />}>
+		<Suspense fallback={null}>
 			<GroceryContent />
 		</Suspense>
 	);

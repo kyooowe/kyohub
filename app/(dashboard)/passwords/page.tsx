@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { DashboardLoading } from "@/components/layout/dashboard-loading";
 import { getPasswordEntries } from "@/features/passwords/actions/password-actions";
 import { PasswordManager } from "@/features/passwords/components/password-manager";
 import type { PasswordEntry } from "@/features/passwords/types";
@@ -21,7 +20,7 @@ async function PasswordsContent() {
 
 export default function PasswordsPage() {
 	return (
-		<Suspense fallback={<DashboardLoading />}>
+		<Suspense fallback={null}>
 			<PasswordsContent />
 		</Suspense>
 	);

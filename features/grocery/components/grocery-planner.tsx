@@ -26,6 +26,7 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 	const [dialogEntry, setDialogEntry] = useState<GroceryItem | "new" | null>(null);
 	const [storageError, setStorageError] = useState(initialError);
 	const [submitting, setSubmitting] = useState(false);
+	const [completionBlockedIds, setCompletionBlockedIds] = useState<Set<string>>(() => new Set());
 
 	const selectedKey = getDateKey(selectedDate);
 	const dayItems = groceries[selectedKey] ?? [];
@@ -66,20 +67,30 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 	}
 
 	async function updateItem(id: string, update: (item: GroceryItem) => GroceryItem | null) {
-		if (submitting) return;
+		if (submitting || completionBlockedIds.has(id)) return;
 		const item = dayItems.find((entry) => entry.id === id);
 		if (!item) return;
 		const updated = update(item);
-		setSubmitting(true);
+		const changingCompletion = Boolean(updated && updated.done !== item.done);
+		if (changingCompletion) setCompletionBlockedIds((ids) => new Set(ids).add(id));
+		else setSubmitting(true);
 		try {
 			if (updated) await updateGroceryItem(id, { name: updated.name, done: updated.done });
 			else await deleteGroceryItem(id);
 			setGroceries(groupByDate(await getGroceryItems()));
 			setStorageError("");
+			if (changingCompletion) {
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+			}
 		} catch (error) {
 			setStorageError(error instanceof Error ? `Could not update grocery: ${error.message}` : "Could not update grocery.");
 		} finally {
-			setSubmitting(false);
+			if (changingCompletion) setCompletionBlockedIds((ids) => {
+				const nextIds = new Set(ids);
+				nextIds.delete(id);
+				return nextIds;
+			});
+			else setSubmitting(false);
 		}
 	}
 
@@ -96,32 +107,41 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 			</div>
 			<div className="grid items-start gap-5 lg:grid-cols-2">
 				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
-					<FeatureSectionHeader theme="blue" icon={CalendarDays} title="Your calendar" description="Select a day to see its grocery list.">
+					<FeatureSectionHeader theme="blue" icon={CalendarDays} title="Your calendar" description="Select a day to see its grocery list." className="min-h-[104px]">
 						<div className="flex items-center justify-between gap-2 sm:justify-end sm:gap-3">
 							<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))} aria-label="Previous month"><ChevronLeft size={18} strokeWidth={2.5} /></Button>
 							<span className="min-w-28 text-center text-sm font-bold text-white">{dateLabel(month, { month: "long", year: "numeric" })}</span>
 							<Button type="button" variant="outline" size="icon-sm" className="rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))} aria-label="Next month"><ChevronRight size={18} strokeWidth={2.5} /></Button>
 						</div>
 					</FeatureSectionHeader>
-					<CardContent className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-300/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:p-5">
-						<div className="grid grid-cols-7 gap-1 text-center">
-							{["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => <span key={day} className="grid h-8 place-items-center text-xs font-semibold text-slate-400 dark:text-slate-500">{day}</span>)}
+					<CardContent className="rounded-3xl border border-slate-200/80 bg-white p-4 shadow-[0_16px_40px_-28px_rgba(37,99,235,0.5)] ring-1 ring-white/70 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 dark:ring-slate-800 sm:p-5">
+						<div className="grid grid-cols-7 gap-2 text-center">
+							{["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => <span key={day} className="grid h-9 place-items-center text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">{day}</span>)}
 							{calendar.map((date, index) => {
-								if (!date) return <span key={index} />;
+								if (!date) return <span key={index} className="aspect-square" />;
 								const key = getDateKey(date);
 								const selected = key === selectedKey;
 								const today = key === getDateKey(new Date());
 								const hasItems = (groceries[key]?.length ?? 0) > 0;
-								return <button type="button" key={key} onClick={() => setSelectedDate(date)} aria-label={`${dateLabel(date, { dateStyle: "full" })}${hasItems ? ", has grocery items" : ""}`} className={`relative grid aspect-square place-items-center rounded-xl text-sm transition-all hover:bg-blue-100 dark:hover:bg-slate-800 ${selected ? "bg-linear-to-br from-blue-700 via-indigo-700 to-violet-700 font-semibold text-white shadow-lg shadow-indigo-300 hover:from-blue-800 hover:via-indigo-800 hover:to-violet-800 dark:shadow-indigo-950/70" : today ? "bg-blue-100 font-semibold text-blue-900 ring-1 ring-inset ring-blue-300 dark:bg-blue-950 dark:text-blue-200 dark:ring-blue-800" : "text-slate-700 dark:text-slate-200"}`}>
-									{date.getDate()}{hasItems && <i className={`absolute bottom-1.5 size-1 rounded-full ${selected ? "bg-white" : "bg-indigo-500"}`} />}
+								const dayStyle = selected && today
+									? "bg-linear-to-br from-emerald-500 to-teal-600 font-semibold text-white shadow-lg shadow-emerald-500/25 ring-2 ring-inset ring-white/80 dark:shadow-emerald-950/70"
+									: selected
+										? "bg-linear-to-br from-blue-600 to-indigo-600 font-semibold text-white shadow-lg shadow-blue-500/25 ring-1 ring-blue-500 dark:shadow-blue-950/70"
+										: today
+										? "bg-emerald-50 font-semibold text-emerald-900 ring-1 ring-inset ring-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:ring-emerald-800"
+											: hasItems
+												? "bg-indigo-50 text-indigo-950 ring-1 ring-inset ring-indigo-200/80 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-200 dark:ring-indigo-800"
+												: "bg-slate-50/70 text-slate-700 hover:bg-white hover:text-blue-800 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800";
+											return <button type="button" key={key} data-page-palette-preserve={hasItems || today ? true : undefined} onClick={() => setSelectedDate(date)} aria-pressed={selected} aria-current={today ? "date" : undefined} aria-label={`${dateLabel(date, { dateStyle: "full" })}${hasItems ? ", has grocery items" : ""}`} className={`relative grid aspect-square place-items-center rounded-2xl text-sm font-medium transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${dayStyle}`}>
+									{date.getDate()}{hasItems && <i aria-hidden="true" className={`absolute bottom-1.5 size-1.5 rounded-full ${selected ? "bg-white" : "bg-indigo-500"}`} />}
 								</button>;
 							})}
 						</div>
-						<div data-page-palette-preserve className="mt-4 flex gap-4 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-blue-600 ring-2 ring-blue-100 dark:ring-blue-950" /> Today</span><span className="flex items-center gap-2"><i className="size-2 rounded-full bg-indigo-600" /> Has groceries</span></div>
+						<div data-page-palette-preserve className="mt-5 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-950/50"><div className="flex flex-wrap gap-2 text-[11px] font-medium text-slate-600 dark:text-slate-300"><span className="inline-flex items-center gap-2 rounded-full border border-white bg-white px-3 py-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900"><i className="size-2 rounded-full bg-emerald-600 ring-2 ring-emerald-100 dark:ring-emerald-950" /> Today</span><span className="inline-flex items-center gap-2 rounded-full border border-white bg-white px-3 py-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-900"><i className="size-2 rounded-full bg-indigo-600" /> Has groceries</span></div></div>
 					</CardContent>
 				</Card>
 				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
-					<FeatureSectionHeader theme="blue" icon={ShoppingCart} title={selectedKey === getDateKey(new Date()) ? "Today’s list" : dateLabel(selectedDate, { weekday: "long" })} description={dateLabel(selectedDate, { month: "long", day: "numeric", year: "numeric" })} mobileRow>
+					<FeatureSectionHeader theme="blue" icon={ShoppingCart} title={selectedKey === getDateKey(new Date()) ? "Today’s list" : dateLabel(selectedDate, { weekday: "long" })} description={dateLabel(selectedDate, { month: "long", day: "numeric", year: "numeric" })} mobileRow className="min-h-[104px]">
 						<div className="flex shrink-0 items-center gap-2">
 							<span className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10"><span className="text-[9px] font-semibold uppercase">{dateLabel(selectedDate, { month: "short" })}</span><strong className="text-lg leading-5">{selectedDate.getDate()}</strong></span>
 							<Button type="button" variant="outline" size="icon-sm" className="size-9 shrink-0 touch-manipulation rounded-xl border border-white/25 bg-white/10 text-white shadow-inner shadow-white/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:bg-white/20 hover:text-white hover:shadow-lg" onClick={() => setDialogEntry("new")} aria-label="Add an item"><Plus size={16} strokeWidth={2.5} /></Button>
@@ -129,7 +149,7 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 					</FeatureSectionHeader>
 					<CardContent className="rounded-2xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-300/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:p-5">
 						<GrocerySummary items={dayItems} doneCount={doneCount} />
-						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} submitting={submitting} />
+						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} submitting={submitting} completionBlockedIds={completionBlockedIds} />
 					</CardContent>
 				</Card>
 			</div>

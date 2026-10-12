@@ -85,7 +85,7 @@ export function PinGate() {
                     {/* Brand */}
                     <div className="mb-12 flex flex-col items-center">
                         <div className="flex items-center gap-2.5">
-                            <div className="grid size-10 grid-cols-2 gap-1 rounded-[11px] bg-blue-600 p-1.5 shadow-sm shadow-blue-600/20">
+                            <div className="grid size-10 grid-cols-2 gap-1 rounded-[11px] bg-linear-to-br from-fuchsia-400 to-violet-500 p-1.5 shadow-sm shadow-violet-500/25">
                                 <span className="rounded-[3px] bg-white" />
                                 <span className="rounded-[3px] bg-white/60" />
                                 <span className="rounded-[3px] bg-white/60" />
@@ -93,7 +93,7 @@ export function PinGate() {
                             </div>
 
                             <span className="text-[22px] font-semibold tracking-[-0.03em] text-slate-950">
-                                Kyohub
+                                Kyohub.
                             </span>
                         </div>
 
@@ -202,11 +202,6 @@ export function PinGate() {
                             <DeleteIcon className="size-[21px]" strokeWidth={1.8} />
                         </Button>
                     </div>
-
-                    {/* Keyboard hint */}
-                    <p className="mt-8 text-center text-xs text-slate-400">
-                        You can also use your keyboard
-                    </p>
                 </div>
             </div>
         </main>
