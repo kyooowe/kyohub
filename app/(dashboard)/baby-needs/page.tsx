@@ -1,7 +1,9 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
+import { DashboardNavigationReady } from "@/components/layout/dashboard-navigation-progress";
 import { getFamilyAppointments, type FamilyAppointmentRecord } from "@/features/family-calendar/actions/family-calendar-actions";
 import { FamilyCalendar } from "@/features/family-calendar/components/family-calendar";
+
+export const instant = false;
 
 async function FamilyCalendarContent() {
 	await connection();
@@ -12,13 +14,14 @@ async function FamilyCalendarContent() {
 	} catch (error) {
 		initialError = error instanceof Error ? `Could not load family calendar: ${error.message}` : "Could not load family calendar from the database.";
 	}
-	return <FamilyCalendar initialEntries={initialEntries} initialError={initialError} />;
+	return (
+		<>
+			<DashboardNavigationReady href="/baby-needs" />
+			<FamilyCalendar initialEntries={initialEntries} initialError={initialError} />
+		</>
+	);
 }
 
 export default function FamilyCalendarPage() {
-	return (
-		<Suspense fallback={null}>
-			<FamilyCalendarContent />
-		</Suspense>
-	);
+	return <FamilyCalendarContent />;
 }

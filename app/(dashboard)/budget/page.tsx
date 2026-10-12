@@ -1,7 +1,10 @@
 import { connection } from "next/server";
+import { DashboardNavigationReady } from "@/components/layout/dashboard-navigation-progress";
 import { getBudgetData } from "@/features/budget/actions/budget-actions";
 import { BudgetPlanner } from "@/features/budget/components/budget-planner";
 import type { BudgetBill, MonthlyBudget } from "@/features/budget/types";
+
+export const instant = false;
 
 async function BudgetContent() {
 	await connection();
@@ -12,7 +15,12 @@ async function BudgetContent() {
 	} catch (error) {
 		initialError = error instanceof Error ? error.message : "Could not load budget data.";
 	}
-	return <BudgetPlanner initialData={initialData} initialError={initialError} />;
+	return (
+		<>
+			<DashboardNavigationReady href="/budget" />
+			<BudgetPlanner initialData={initialData} initialError={initialError} />
+		</>
+	);
 }
 
 export default function BudgetPage() {
