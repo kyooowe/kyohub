@@ -3,7 +3,7 @@
 import { db } from "@/prisma/db";
 import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
-import type { FamilyAppointment, FamilyAppointmentType } from "@/features/family-calendar/family-calendar-types";
+import { isFamilyAppointmentType, type FamilyAppointment, type FamilyAppointmentType } from "@/features/family-calendar/family-calendar-types";
 
 export type FamilyAppointmentRecord = FamilyAppointment & { dateKey: string };
 
@@ -20,7 +20,7 @@ const getCachedFamilyAppointments = unstable_cache(
 );
 
 function validateType(value: unknown): FamilyAppointmentType {
-	if (value === "Vaccination" || value === "Important date") return value;
+	if (isFamilyAppointmentType(value)) return value;
 	throw new Error("Invalid appointment type.");
 }
 

@@ -1,6 +1,4 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
-import { DashboardLoading } from "@/components/layout/dashboard-loading";
 import { getBudgetData } from "@/features/budget/actions/budget-actions";
 import { BudgetPlanner } from "@/features/budget/components/budget-planner";
 import type { BudgetBill, MonthlyBudget } from "@/features/budget/types";
@@ -18,9 +16,5 @@ async function BudgetContent() {
 }
 
 export default function BudgetPage() {
-	return (
-		<Suspense fallback={<DashboardLoading />}>
-			<BudgetContent />
-		</Suspense>
-	);
+	return <BudgetContent />;
 }

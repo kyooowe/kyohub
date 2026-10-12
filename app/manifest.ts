@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "KyoHub",
-    short_name: "KyoHub",
+    name: "Kyohub.",
+    short_name: "Kyohub.",
     description: "Keep passwords, grocery lists, and family appointments organized in one place.",
     start_url: "/",
     scope: "/",

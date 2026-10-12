@@ -3,7 +3,7 @@ import type { FamilyAppointment } from "../family-calendar-types";
 function getUpcomingAppointment(needs: Record<string, FamilyAppointment[]>, todayKey: string, type: FamilyAppointment["type"]) {
 	return Object.entries(needs)
 		.flatMap(([key, items]) => items
-			.filter((item) => item.type === type && !item.done && key >= todayKey)
+			.filter((item) => item.type === type && key >= todayKey)
 			.map((item) => ({ ...item, dateKey: key })))
 		.sort((first, second) => first.dateKey.localeCompare(second.dateKey))[0];
 }

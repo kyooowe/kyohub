@@ -1,12 +1,20 @@
-import { Check, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Cake, CalendarHeart, Loader2, PartyPopper, Pencil, Syringe, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { FamilyAppointment } from "@/features/family-calendar/family-calendar-types";
 
+const eventStyles = {
+	"Vaccination": { Icon: Syringe, color: "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300" },
+	"Important date": { Icon: CalendarHeart, color: "bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300" },
+	"Holiday": { Icon: PartyPopper, color: "bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300" },
+	"Birthday": { Icon: Cake, color: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300" },
+} as const;
+
 export function FamilyAppointmentItem({ need, onUpdate, onEdit, submitting = false }: { need: FamilyAppointment; onUpdate: (id: string, update: (item: FamilyAppointment) => FamilyAppointment | null) => void; onEdit: (need: FamilyAppointment) => void; submitting?: boolean }) {
-	return <div className="flex min-h-14 items-center gap-3 border-b border-slate-100 py-2 dark:border-slate-800">
-		<button type="button" disabled={submitting} aria-label={need.done ? `Mark ${need.title} incomplete` : `Mark ${need.title} complete`} onClick={() => onUpdate(need.id, (item) => ({ ...item, done: !item.done }))} className={`grid size-5 shrink-0 place-items-center rounded border ${need.done ? "border-teal-600 bg-teal-600 text-white" : "border-slate-300 hover:border-teal-500 dark:border-slate-600 dark:hover:border-teal-500"}`}>{submitting ? <Loader2 size={13} className="animate-spin" /> : need.done && <Check size={13} />}</button>
-		<div className="min-w-0 flex-1"><p className={`truncate text-sm font-medium ${need.done ? "text-slate-400 line-through dark:text-slate-500" : "text-slate-800 dark:text-slate-100"}`}>{need.title}</p><p className="text-xs text-slate-500 dark:text-slate-400">{need.type}{need.notes ? ` · ${need.notes}` : ""}</p></div>
-		<Button type="button" disabled={submitting} variant="ghost" size="icon-xs" aria-label={`Edit ${need.title}`} onClick={() => onEdit(need)}><Pencil size={14} /></Button>
-		<Button type="button" disabled={submitting} variant="ghost" size="icon-xs" aria-label={`Remove ${need.title}`} onClick={() => onUpdate(need.id, () => null)}>{submitting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}</Button>
+	const { Icon, color } = eventStyles[need.type];
+	return <div className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-100 bg-white px-2.5 py-1.5 shadow-[0_6px_18px_-18px_rgba(15,23,42,0.35)] transition-all hover:border-teal-200 dark:border-slate-800 dark:bg-slate-950/50 dark:hover:border-teal-900">
+		<span data-page-palette-preserve className={`grid size-8 shrink-0 place-items-center rounded-lg ${color}`}><Icon size={16} aria-hidden="true" /></span>
+		<div className="min-w-0 flex-1"><p className="truncate text-xs font-medium text-slate-800 dark:text-slate-100">{need.title}</p><p className="truncate text-[11px] text-slate-500 dark:text-slate-400">{need.type}{need.notes ? ` · ${need.notes}` : ""}</p></div>
+		<Button type="button" disabled={submitting} variant="ghost" size="icon-xs" className="rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800" aria-label={`Edit ${need.title}`} onClick={() => onEdit(need)}><Pencil size={13} /></Button>
+		<Button type="button" disabled={submitting} variant="ghost" size="icon-xs" className="rounded-full bg-slate-50 text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-rose-950" aria-label={`Remove ${need.title}`} onClick={() => onUpdate(need.id, () => null)}>{submitting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}</Button>
 	</div>;
 }

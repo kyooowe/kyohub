@@ -14,10 +14,20 @@ export function LoadingIndicator({ label = "Loading your items" }: { label?: str
 	if (!visible) return null;
 
 	return (
-		<div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-6">
-			<div className="flex animate-in items-center gap-2.5 rounded-full border border-white/60 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-lg shadow-slate-400/30 backdrop-blur-md duration-300 fade-in slide-in-from-bottom-4">
-				<Loader2 size={16} className="animate-spin text-blue-600" />
-				<span>{label}…</span>
+		<div role="status" aria-live="polite" className="fixed inset-0 z-[100] grid place-items-center bg-white px-6 dark:bg-slate-950">
+			<div className="flex animate-in flex-col items-center text-center duration-300 fade-in">
+				<div className="flex items-center gap-2.5">
+					<span className="grid size-9 grid-cols-2 gap-1 rounded-xl bg-linear-to-br from-fuchsia-400 to-violet-500 p-1.5 shadow-md shadow-violet-500/20">
+						<i className="rounded-sm bg-white" />
+						<i className="rounded-sm bg-white/65" />
+						<i className="rounded-sm bg-white/65" />
+						<i className="rounded-sm bg-white" />
+					</span>
+					<strong className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Kyohub.</strong>
+				</div>
+				<p className="mt-1 text-xs text-slate-400">Your family space</p>
+				<span className="sr-only">{label}…</span>
+				<Loader2 size={15} className="mt-5 animate-spin text-violet-400" aria-hidden="true" />
 			</div>
 		</div>
 	);

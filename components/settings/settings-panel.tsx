@@ -53,7 +53,7 @@ function SettingsSection({ value, icon, title, description, children }: {
 	</AccordionItem>;
 }
 
-export function SettingsPanel({ trigger }: { trigger: "sidebar" | "header" | "floating" }) {
+export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar" | "header" | "floating"; compact?: boolean }) {
 	const [open, setOpen] = useState(false);
 	const [draggingHref, setDraggingHref] = useState<NavigationHref | null>(null);
 	const { settings, updateSettings, saveError } = useAppSettings();
@@ -156,11 +156,13 @@ export function SettingsPanel({ trigger }: { trigger: "sidebar" | "header" | "fl
 		<Button
 			type="button"
 			variant="ghost"
-			size={trigger === "sidebar" ? "default" : "icon"}
+			size={trigger === "sidebar" ? "default" : compact ? "icon-sm" : "icon"}
 			className={trigger === "sidebar"
 				? "hidden min-h-11 w-full justify-start gap-3 rounded-md bg-transparent px-3 text-violet-100/65 transition-colors hover:bg-white/5 hover:text-white md:flex"
 				: trigger === "header"
 					? "text-violet-700 md:hidden dark:text-violet-200"
+					: compact
+						? "relative z-10 grid size-9 shrink-0 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-violet-200"
 					: "relative z-10 grid size-11 shrink-0 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-violet-200"}
 			aria-label={trigger === "sidebar" ? undefined : "Open settings"}
 			onClick={() => setOpen(true)}

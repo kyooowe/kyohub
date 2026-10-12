@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import Script from "next/script";
+import { StartupSplash } from "@/app/startup-splash";
 
 const sourceSans3Heading = Source_Sans_3({subsets:['latin'],variable:'--font-heading'});
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {`const theme = localStorage.getItem("kyohub-theme"); if (theme === "dark") { document.documentElement.classList.add("dark"); document.documentElement.style.colorScheme = "dark"; }`}
         </Script>
         {children}
+        <StartupSplash />
         <Toaster position="top-right" richColors />
       </body>
     </html>

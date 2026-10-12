@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, Globe, Key, KeyRound, Loader2, MoreVertical, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, Globe, Key, KeyRound, Loader2, Plus, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -136,15 +136,16 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-500 text-white"><Key size={19} strokeWidth={1.8} /></span>
 						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Saved logins</p>
 					</div>
-					<div className="flex h-10 w-24 items-center justify-end"><MoreVertical aria-hidden="true" size={17} className="text-blue-400/70" /></div>
+					<div aria-hidden="true" className="flex h-10 w-24 items-center justify-end">
+						<span className="flex h-7 items-end justify-end gap-1">
+							{[14, 20, 24, 32].map((height, index) => <i key={index} className="w-1.5 rounded-full bg-blue-500/60" style={{ height }} />)}
+						</span>
+					</div>
 					<div className="self-end">
 						<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{passwords.length}</p>
 						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Accounts saved</p>
 					</div>
-					<div className="grid w-24 grid-rows-[1.75rem_1.75rem] justify-items-stretch gap-1.5 self-end">
-						<div aria-hidden="true" className="flex h-7 items-end justify-end gap-1">
-							{[14, 20, 24, 32].map((height, index) => <i key={index} className="w-1.5 rounded-full bg-blue-500/60" style={{ height }} />)}
-						</div>
+					<div className="flex w-24 self-end">
 						<button type="button" onClick={() => showPasswordList()} className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-full bg-blue-500/10 px-2 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-300">
 							<ArrowRight size={12} /> View all
 						</button>
@@ -175,15 +176,16 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-500 text-white"><Globe size={19} strokeWidth={1.8} /></span>
 						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Categories</p>
 					</div>
-					<div className="flex h-10 w-24 items-center justify-end"><MoreVertical aria-hidden="true" size={17} className="text-amber-500/70" /></div>
+					<div aria-hidden="true" className="flex h-10 w-24 items-center justify-end">
+						<span className="flex h-7 items-center justify-end gap-1">
+							<i className="size-2.5 rounded-full bg-amber-400" /><i className="size-2.5 rounded-full bg-violet-500" /><i className="size-2.5 rounded-full bg-emerald-500" /><i className="size-2.5 rounded-full bg-blue-500" />
+						</span>
+					</div>
 					<div className="self-end">
 						<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{new Set(passwords.filter((entry) => entry.category !== "Other").map((entry) => entry.category)).size}</p>
 						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Categories used</p>
 					</div>
-					<div className="grid w-24 grid-rows-[1.75rem_1.75rem] justify-items-stretch gap-1.5 self-end">
-						<span aria-hidden="true" className="flex h-7 items-center justify-end gap-1">
-							<i className="size-2.5 rounded-full bg-amber-400" /><i className="size-2.5 rounded-full bg-violet-500" /><i className="size-2.5 rounded-full bg-emerald-500" /><i className="size-2.5 rounded-full bg-blue-500" />
-						</span>
+					<div className="flex w-24 self-end">
 						<button type="button" onClick={() => showPasswordList("Custom")} className="inline-flex h-7 w-full items-center justify-center gap-1 rounded-full bg-amber-500/10 px-2 text-[11px] font-medium text-amber-800 transition-colors hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:text-amber-300">
 							<ArrowRight size={12} /> View all
 						</button>

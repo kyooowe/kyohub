@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { db } from "@/prisma/db";
+import { isFamilyAppointmentType } from "@/features/family-calendar/family-calendar-types";
 import webpush from "web-push";
 
 function matchesSecret(provided: string | null, expected: string) {
@@ -51,11 +52,11 @@ export async function GET(request: Request) {
 		.where({ dateKey: tomorrowKey, done: false })
 		.all();
 	const reminders = needs
-		.filter((need) => need.type === "Important date" || need.type === "Vaccination")
+		.filter((need) => isFamilyAppointmentType(need.type))
 		.map((need) => `${need.type}: ${need.title}`);
 	const payload = JSON.stringify({
 		title: "Reminders Tomorrow",
-		body: reminders.length ? reminders.join("\n") : "No important dates or vaccinations scheduled for tomorrow.",
+		body: reminders.length ? reminders.join("\n") : "No family events scheduled for tomorrow.",
 		url: "/baby-needs",
 	});
 	const subscriptions = await db.orm.public.PushSubscription

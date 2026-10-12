@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import { DashboardLoading } from "@/components/layout/dashboard-loading";
 import { getFamilyAppointments, type FamilyAppointmentRecord } from "@/features/family-calendar/actions/family-calendar-actions";
 import { FamilyCalendar } from "@/features/family-calendar/components/family-calendar";
 
@@ -18,7 +17,7 @@ async function FamilyCalendarContent() {
 
 export default function FamilyCalendarPage() {
 	return (
-		<Suspense fallback={<DashboardLoading />}>
+		<Suspense fallback={null}>
 			<FamilyCalendarContent />
 		</Suspense>
 	);

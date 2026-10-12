@@ -1,4 +1,10 @@
-export type FamilyAppointmentType = "Vaccination" | "Important date";
+export const familyAppointmentTypes = ["Vaccination", "Important date", "Holiday", "Birthday"] as const;
+
+export type FamilyAppointmentType = (typeof familyAppointmentTypes)[number];
+
+export function isFamilyAppointmentType(value: unknown): value is FamilyAppointmentType {
+	return typeof value === "string" && familyAppointmentTypes.some((type) => type === value);
+}
 
 export type FamilyAppointment = {
 	id: string;
