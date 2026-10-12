@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import { connection } from "next/server";
+import { DashboardNavigationReady } from "@/components/layout/dashboard-navigation-progress";
 import { getPasswordEntries } from "@/features/passwords/actions/password-actions";
 import { PasswordManager } from "@/features/passwords/components/password-manager";
 import type { PasswordEntry } from "@/features/passwords/types";
@@ -15,13 +15,14 @@ async function PasswordsContent() {
 	} catch (error) {
 		initialError = error instanceof Error ? `Could not load passwords: ${error.message}` : "Could not load passwords from the database.";
 	}
-	return <PasswordManager initialEntries={initialEntries} initialError={initialError} />;
+	return (
+		<>
+			<DashboardNavigationReady href="/passwords" />
+			<PasswordManager initialEntries={initialEntries} initialError={initialError} />
+		</>
+	);
 }
 
 export default function PasswordsPage() {
-	return (
-		<Suspense fallback={null}>
-			<PasswordsContent />
-		</Suspense>
-	);
+	return <PasswordsContent />;
 }

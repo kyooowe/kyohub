@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -16,6 +16,10 @@ import { toast } from "sonner";
 import { logout } from "@/features/auth/actions/auth-actions";
 import type { AuthUser } from "@/features/auth/lib/session";
 import { SettingsPanel } from "@/components/settings/settings-panel";
+import {
+  DashboardNavigationProgress,
+  DashboardNavigationReadyProvider,
+} from "@/components/layout/dashboard-navigation-progress";
 import {
   SettingsProvider,
   useAppSettings,
@@ -58,6 +62,10 @@ function DashboardShell({
   const router = useRouter();
   const { settings } = useAppSettings();
   const [locking, setLocking] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<{ targetPath: string } | null>(null);
+  const [showNavigationProgress, setShowNavigationProgress] = useState(false);
+  const [displayedPathname, setDisplayedPathname] = useState(pathname);
+  const shouldShowNavigationProgress = showNavigationProgress;
   const icons = {
     "/passwords": Key,
     "/grocery": ShoppingCart,
@@ -70,7 +78,7 @@ function DashboardShell({
   });
   const activeIndex = Math.max(
     0,
-    navigation.findIndex((item) => pathname.startsWith(item.href)),
+    navigation.findIndex((item) => displayedPathname.startsWith(item.href)),
   );
   const current = navigation[activeIndex];
   const pagePalette = settings.pagePalettes[current.href];
@@ -81,6 +89,30 @@ function DashboardShell({
     width: 0,
     height: 0,
   });
+
+  function handleNavigationClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      href === pathname
+    ) {
+      return;
+    }
+    setShowNavigationProgress(false);
+    setPendingNavigation({ targetPath: href });
+  }
+
+  const handleRouteReady = useCallback((href: string) => {
+    if (href !== pathname) return;
+    setDisplayedPathname(href);
+    if (pendingNavigation?.targetPath !== href) return;
+    setPendingNavigation(null);
+    setShowNavigationProgress(false);
+  }, [pathname, pendingNavigation]);
 
   async function lockApp() {
     if (locking) return;
@@ -94,6 +126,23 @@ function DashboardShell({
       setLocking(false);
     }
   }
+
+  useEffect(() => {
+    if (!pendingNavigation) return;
+    const timeout = window.setTimeout(() => setShowNavigationProgress(true), 150);
+    return () => window.clearTimeout(timeout);
+  }, [pendingNavigation]);
+
+  useEffect(() => {
+    function clearPendingNavigation() {
+      setShowNavigationProgress(false);
+      setPendingNavigation({
+        targetPath: window.location.pathname,
+      });
+    }
+    window.addEventListener("popstate", clearPendingNavigation);
+    return () => window.removeEventListener("popstate", clearPendingNavigation);
+  }, []);
 
   useLayoutEffect(() => {
     const nav = floatingNavRef.current;
@@ -131,6 +180,7 @@ function DashboardShell({
       >
         <Link
           href="/"
+          onClick={(event) => handleNavigationClick(event, "/")}
           className="mb-5 flex items-center gap-3 px-2 text-xl font-bold tracking-tight text-white md:mb-12"
         >
           <span className="grid size-8 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-lg shadow-fuchsia-500/20">
@@ -155,6 +205,7 @@ function DashboardShell({
                 key={href}
                 href={href}
                 prefetch={true}
+                onClick={(event) => handleNavigationClick(event, href)}
                 aria-current={active ? "page" : undefined}
                 className={`inline-flex min-h-14 min-w-0 touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-center text-[10px] leading-tight transition-all md:min-h-11 md:flex-row md:justify-start md:gap-3 md:rounded-md md:px-3 md:py-0 md:text-left md:text-sm ${active ? "bg-linear-to-r from-violet-500/25 to-fuchsia-500/10 text-white shadow-inner shadow-white/5" : "text-violet-100/65 hover:bg-white/5 hover:text-white"}`}
               >
@@ -189,6 +240,7 @@ function DashboardShell({
             <Link
               data-page-palette-preserve
               href="/"
+              onClick={(event) => handleNavigationClick(event, "/")}
               className="flex shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:hidden dark:text-white"
             >
               <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-md shadow-fuchsia-500/20">
@@ -203,6 +255,7 @@ function DashboardShell({
               <Link
                 data-page-palette-preserve
                 href="/"
+                onClick={(event) => handleNavigationClick(event, "/")}
                 className="hidden shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:flex dark:text-white"
               >
                 <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-md shadow-fuchsia-500/20">
@@ -244,12 +297,16 @@ function DashboardShell({
             </span>
           </div>
         </header>
-        <div
-          key={pathname}
-          className={`mx-auto max-w-6xl animate-in space-y-6 p-4 pb-24 fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none md:px-8 md:pt-8 ${settings.desktopNavigation === "floating" ? "md:pb-28" : "md:pb-8"}`}
-        >
-          {children}
-        </div>
+        {shouldShowNavigationProgress && <DashboardNavigationProgress />}
+        <DashboardNavigationReadyProvider onRouteReady={handleRouteReady}>
+          <div
+            inert={shouldShowNavigationProgress}
+            aria-busy={shouldShowNavigationProgress}
+            className={`mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-6xl flex-col animate-in space-y-6 p-4 pb-24 fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none md:px-8 md:pt-8 ${settings.desktopNavigation === "floating" ? "md:pb-28" : "md:pb-8"}`}
+          >
+            {children}
+          </div>
+        </DashboardNavigationReadyProvider>
       </section>
       <nav
         data-page-palette-preserve
@@ -268,6 +325,7 @@ function DashboardShell({
               key={href}
               href={href}
               prefetch={true}
+              onClick={(event) => handleNavigationClick(event, href)}
               aria-label={label}
               aria-current={active ? "page" : undefined}
               title={label}
@@ -307,6 +365,7 @@ function DashboardShell({
                 key={href}
                 href={href}
                 prefetch={true}
+                onClick={(event) => handleNavigationClick(event, href)}
                 aria-current={active ? "page" : undefined}
                 data-active={active ? "true" : undefined}
                 className={`group relative z-10 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-[color,background-color,translate,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.02] motion-reduce:transition-none ${active ? "text-white" : "text-slate-600 hover:bg-violet-500/10 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-violet-400/10 dark:hover:text-violet-200"}`}
@@ -369,7 +428,7 @@ function LockButton({
       {holding && (
         createPortal(
           <div aria-hidden="true" className="fixed inset-x-0 top-14 z-[60] h-0.5 bg-slate-200/70 dark:bg-slate-700/70">
-            <div className="relative h-full w-0 overflow-hidden rounded-full bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-400 animate-lock-progress after:absolute after:inset-y-0 after:-left-1/3 after:w-1/3 after:bg-linear-to-r after:from-transparent after:via-white/45 after:to-transparent after:content-[''] after:animate-lock-progress-shimmer" />
+            <div style={{ backgroundImage: "linear-gradient(to right, #fda4af, #f87171, #fecaca)" }} className="relative h-full w-0 overflow-hidden rounded-full animate-lock-progress after:absolute after:inset-y-0 after:-left-1/3 after:w-1/3 after:bg-linear-to-r after:from-transparent after:via-white/45 after:to-transparent after:content-[''] after:animate-lock-progress-shimmer" />
           </div>,
           document.body,
         )

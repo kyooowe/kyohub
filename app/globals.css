@@ -20,6 +20,15 @@
 	animation: lock-progress-shimmer 700ms ease-in-out infinite;
 }
 
+@keyframes navigation-progress {
+	from { transform: translateX(-100%); }
+	to { transform: translateX(400%); }
+}
+
+.animate-navigation-progress {
+	animation: navigation-progress 1.2s ease-in-out infinite;
+}
+
 [data-page-palette="violet"] {
 	--page-accent-50: #faf5ff;
 	--page-accent-100: #f3e8ff;
@@ -417,7 +426,7 @@
 }
 
 :root.dark main[data-page-palette] {
-	background-color: color-mix(in oklab, var(--page-accent-950) 25%, #13111f);
+	background-color: color-mix(in oklab, var(--page-accent-950) 10%, #13111f);
 }
 
 main[data-page-palette] {
