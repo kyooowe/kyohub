@@ -15,9 +15,7 @@ export function PasswordAvatar({ category, className }: { category: Category; cl
 		return <Image src={socialMediaIconUrl} width={96} height={96} alt="" className={`${className} object-contain`} />;
 	}
 	if (category === "Banking") {
-		return <span className={`relative block overflow-hidden ${className}`}>
-			<Image src="/icon/piggy-bank.png" width={512} height={512} alt="" className="relative z-10 size-full object-cover" />
-		</span>;
+		return <Image src="/icon/bank-type-v2.png" width={512} height={512} alt="" className={`${className} object-contain`} />;
 	}
 	if (category === "Games") {
 		return <span className={`relative block overflow-hidden ${className}`}>

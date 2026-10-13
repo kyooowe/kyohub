@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { AlertTriangle, Check, DollarSign, Receipt, Wallet, X } from "lucide-react";
+import { AlertTriangle, Check, DollarSign, Receipt, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { monthLabel, money, type BillOccurrence } from "@/features/budget/lib/budget-utils";
 import type { BudgetBill } from "@/features/budget/types";
 
@@ -51,14 +52,8 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 			<span className="shrink-0 text-xs font-semibold text-amber-900 group-hover:underline dark:text-amber-200">View bills</span>
 		</button>}
 		<Dialog open={overdueDialogOpen} onOpenChange={setOverdueDialogOpen}>
-			<DialogContent className="max-w-lg overflow-hidden border-amber-200 bg-white p-0 shadow-2xl shadow-amber-950/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50 sm:rounded-2xl">
-				<div className="dialog-palette-header flex items-start justify-between border-b border-amber-200 bg-linear-to-r from-amber-50 to-orange-50/70 px-6 py-5 dark:border-amber-900 dark:from-amber-950 dark:to-amber-900">
-					<div className="flex items-start gap-3.5">
-						<div className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200"><AlertTriangle size={19} /></div>
-						<div><DialogTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">Overdue bills</DialogTitle><DialogDescription className="mt-1 text-sm text-slate-500 dark:text-slate-300">{overdueBills.length} unpaid bill{overdueBills.length === 1 ? "" : "s"} past the due date</DialogDescription></div>
-					</div>
-					<DialogClose aria-label="Close dialog" className="grid size-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-white/80 hover:text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-200 dark:hover:bg-slate-700 dark:hover:text-amber-200"><X size={17} /></DialogClose>
-				</div>
+			<DialogContent className="palette-dialog-panel max-w-lg overflow-hidden border-amber-200 bg-white p-0 shadow-2xl shadow-amber-950/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50 sm:rounded-2xl">
+				<PaletteDialogHeader tone="warning" eyebrow="BUDGET PLANNER" title="Overdue bills" description={`${overdueBills.length} unpaid bill${overdueBills.length === 1 ? "" : "s"} past the due date`} icon={<AlertTriangle size={19} />} closeLabel="Close dialog" />
 				<div className="max-h-[60vh] space-y-2 overflow-y-auto px-6 py-5">
 					{error && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">{error}</p>}
 					{overdueBills.map(({ bill, monthKey }) => <div key={`${bill.id}-${monthKey}`} className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/40">
@@ -79,7 +74,7 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 			</DialogContent>
 		</Dialog>
 		<div data-page-palette-preserve className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-		<Card className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-2xl border border-sky-100 bg-[#eaf6ff] py-0 shadow-sm shadow-sky-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
+		<Card data-budget-outline="sky" className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-sky-100 bg-[#eaf6ff] py-0 shadow-sm shadow-sky-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
 			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
 				<div className="flex min-w-0 items-center gap-2.5">
 					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-600 text-white"><Wallet size={19} /></span>
@@ -97,7 +92,7 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 				</div>
 			</CardContent>
 		</Card>
-		<Card className="metric-summary-card metric-summary-card--rose relative gap-0 overflow-hidden rounded-2xl border border-rose-100 bg-[#fff0f3] py-0 shadow-sm shadow-rose-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
+		<Card data-budget-outline="rose" className="metric-summary-card metric-summary-card--rose relative gap-0 overflow-hidden rounded-3xl border border-rose-100 bg-[#fff0f3] py-0 shadow-sm shadow-rose-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
 			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
 				<div className="flex min-w-0 items-center gap-2.5">
 					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-600 text-white"><Receipt size={19} /></span>
@@ -117,7 +112,7 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 				</div>
 			</CardContent>
 		</Card>
-		<Card className="metric-summary-card metric-summary-card--emerald relative gap-0 overflow-hidden rounded-2xl border border-emerald-100 bg-[#eafbf3] py-0 shadow-sm shadow-emerald-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b] sm:order-2 xl:order-3">
+		<Card data-budget-outline="emerald" className="metric-summary-card metric-summary-card--emerald relative gap-0 overflow-hidden rounded-3xl border border-emerald-100 bg-[#eafbf3] py-0 shadow-sm shadow-emerald-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b] sm:order-2 xl:order-3">
 			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
 				<div className="flex min-w-0 items-center gap-2.5">
 					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white"><DollarSign size={19} /></span>

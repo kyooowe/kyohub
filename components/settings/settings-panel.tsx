@@ -1,15 +1,17 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, Settings2, ShoppingCart, Sun, X, type LucideIcon } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from "@/components/ui/accordion";
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { setDarkMode, useDarkModePreference } from "@/components/theme-toggle";
 import { FamilyReminderSettings } from "@/features/family-calendar/components/family-reminder-settings";
+import { defaultSettings } from "@/components/settings/settings-model";
 import { navigationItems, useAppSettings, type NavigationHref } from "@/components/settings/settings-context";
-import { getPagePaletteStyles, pagePaletteOptions } from "@/components/settings/page-palettes";
+import { getPagePaletteStyles, pagePaletteOptions, type NamedPagePalette } from "@/components/settings/page-palettes";
 
 const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: string }> = {
 	"/passwords": { icon: KeyRound, color: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300" },
@@ -23,6 +25,16 @@ const defaultPaletteSwatches: Record<NavigationHref, string> = {
 	"/grocery": "from-blue-500 to-cyan-400",
 	"/baby-needs": "from-emerald-500 to-teal-400",
 	"/budget": "from-orange-500 to-rose-500",
+};
+
+const paletteOptionDetails: Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }> = {
+	violet: { icon: Heart, description: "Gentle, cool tones for a calm workspace.", tone: "Soft purple", iconColor: "text-[#654878]" },
+	blue: { icon: CloudSun, description: "Bright, calm blues for a clear view.", tone: "A softer blue", iconColor: "text-[#426f8a]" },
+	teal: { icon: Sprout, description: "Natural, peaceful greens.", tone: "Muted botanical", iconColor: "text-[#466044]" },
+	rose: { icon: Handshake, description: "Warm, personal earthy tones.", tone: "An earthy red", iconColor: "text-[#995c49]" },
+	yellow: { icon: Sun, description: "Cheerful, soft sunshine.", tone: "Creamy yellow", iconColor: "text-[#80631c]" },
+	orange: { icon: Sunrise, description: "Friendly, warm color.", tone: "A soft peach", iconColor: "text-[#8d5735]" },
+	gray: { icon: House, description: "Minimal, neutral tones.", tone: "A warm gray", iconColor: "text-[#55534d]" },
 };
 
 function SectionHeading({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
@@ -55,6 +67,8 @@ function SettingsSection({ value, icon, title, description, children }: {
 
 export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar" | "header" | "floating"; compact?: boolean }) {
 	const [open, setOpen] = useState(false);
+	const [confirmRestore, setConfirmRestore] = useState(false);
+	const [restoreNotice, setRestoreNotice] = useState(false);
 	const [draggingHref, setDraggingHref] = useState<NavigationHref | null>(null);
 	const { settings, updateSettings, saveError } = useAppSettings();
 	const isDarkMode = useDarkModePreference();
@@ -62,7 +76,11 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 	const navigationItemRefs = useRef<Partial<Record<NavigationHref, HTMLDivElement>>>({});
 	const activePointer = useRef<{ href: NavigationHref; pointerId: number } | null>(null);
 	const previousItemPositions = useRef<Map<NavigationHref, number> | null>(null);
+	const restoreNoticeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+	useEffect(() => () => {
+		if (restoreNoticeTimeout.current) clearTimeout(restoreNoticeTimeout.current);
+	}, []);
 	useLayoutEffect(() => {
 		const previous = previousItemPositions.current;
 		if (!previous) return;
@@ -162,28 +180,27 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 				: trigger === "header"
 					? "text-violet-700 md:hidden dark:text-violet-200"
 					: compact
-						? "relative z-10 grid size-9 shrink-0 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-violet-200"
-					: "relative z-10 grid size-11 shrink-0 place-items-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-violet-200"}
+					? "floating-navigation-action relative z-10 grid size-9 shrink-0 place-items-center justify-self-center rounded-full transition-colors"
+					: "floating-navigation-action relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition-colors"}
 			aria-label={trigger === "sidebar" ? undefined : "Open settings"}
 			onClick={() => setOpen(true)}
 		>
 			<Settings2 size={18} />{trigger === "sidebar" && "Settings"}
 		</Button>
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogContent pagePalette={null} className="flex max-h-[min(90dvh,52rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border-violet-200 bg-[#f8f6ff] p-0 dark:border-slate-700 dark:bg-slate-950">
-				<div className="shrink-0 border-b border-violet-100 bg-white/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/90 sm:px-6">
-					<div className="flex items-center justify-between gap-4">
-						<div className="flex items-center gap-3">
-							<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"><Settings2 size={18} /></span>
-							<div>
-								<DialogTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">Settings</DialogTitle>
-								<DialogDescription className="text-xs text-slate-500 dark:text-slate-400">Personalize how Kyohub looks and works.</DialogDescription>
-							</div>
-						</div>
-						<DialogClose render={<Button type="button" variant="ghost" size="icon" aria-label="Close settings" className="shrink-0 text-slate-500 hover:bg-violet-50 hover:text-violet-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-violet-200" />}>
-							<X size={18} />
-						</DialogClose>
-					</div>
+		<Dialog open={open} onOpenChange={(nextOpen) => {
+			setOpen(nextOpen);
+			if (!nextOpen) {
+				setConfirmRestore(false);
+				setRestoreNotice(false);
+				if (restoreNoticeTimeout.current) {
+					clearTimeout(restoreNoticeTimeout.current);
+					restoreNoticeTimeout.current = null;
+				}
+			}
+		}}>
+			<DialogContent pagePalette={null} className="palette-dialog-panel flex max-h-[min(90dvh,52rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border-violet-200 bg-[#f8f6ff] p-0 dark:border-slate-700 dark:bg-slate-950">
+				<div className="shrink-0">
+					<PaletteDialogHeader eyebrow="KYOHUB PREFERENCES" title="Settings" description="Personalize how Kyohub looks and works." icon={<Settings2 size={18} />} closeLabel="Close settings" />
 				</div>
 				<div className="settings-dialog-scroll min-h-0 flex-1 space-y-6 overflow-y-auto bg-[#f7f7ff] p-5 sm:p-6 dark:bg-slate-950">
 					{saveError && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{saveError}</p>}
@@ -266,25 +283,45 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 										<span className="min-w-0 flex-1 truncate">{label}</span>
 										<span className={`grid size-5 shrink-0 place-items-center rounded-full ${palette !== "default" ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200" : "text-slate-400 dark:text-slate-500"}`}>{palette !== "default" ? <Check size={12} /> : <ChevronRight size={16} />}</span>
 									</PopoverTrigger>
-									<PopoverContent align="start" className="w-52">
-										<p className="mb-3 text-xs font-semibold text-slate-700 dark:text-slate-200">Choose a color</p>
-										<div className="grid grid-cols-4 justify-items-center gap-2">
-											{paletteChoices.map((option) => <PopoverClose
-												key={option.value}
-												type="button"
-												aria-label={`${option.label} palette${option.value === "default" ? ` for ${label}` : ""}`}
-												aria-pressed={palette === option.value}
-												title={`${option.label} palette`}
-												onClick={() => updateSettings((current) => ({
-													...current,
-													pagePalettes: { ...current.pagePalettes, [href]: option.value },
-												}))}
-												className="grid size-10 place-items-center rounded-full outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-											>
-												<span className={`grid size-9 place-items-center rounded-full ${option.swatch} shadow-sm`}>
-													{palette === option.value && <Check size={15} className={option.value === "default" ? "text-white" : "text-slate-700"} />}
-												</span>
-											</PopoverClose>)}
+									<PopoverContent align="start" className="max-h-[min(65dvh,36rem)] w-72 overflow-y-auto p-2">
+										<p className="px-2 pb-2 pt-1 text-xs font-semibold text-slate-700 dark:text-slate-200">Choose a color</p>
+										<div className="space-y-1">
+											{paletteChoices.map((option) => {
+												const details = option.value === "default"
+													? { icon: Icon, description: "Keep this page’s original accent colors.", tone: "Original colors", iconColor: "text-white" }
+													: paletteOptionDetails[option.value];
+												const OptionIcon = details.icon;
+												const gradient = option.value === "default" ? defaultPaletteSwatches[href] : getPagePaletteStyles(option.value).iconGradient;
+												return <PopoverClose
+													key={option.value}
+													type="button"
+													aria-label={`${option.label} palette${option.value === "default" ? ` for ${label}` : ""}`}
+													aria-pressed={palette === option.value}
+													title={`${option.label} palette`}
+													className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${palette === option.value ? "border-violet-300 bg-violet-50/80 shadow-sm dark:border-violet-700 dark:bg-violet-950/40" : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/80"}`}
+													onClick={() => updateSettings((current) => ({
+														...current,
+														pagePalettes: { ...current.pagePalettes, [href]: option.value },
+													}))}
+												>
+													<span className={`grid size-11 shrink-0 place-items-center rounded-xl ${option.swatch} ${details.iconColor}`}>
+														<OptionIcon size={19} strokeWidth={1.8} />
+													</span>
+													<span className="min-w-0 flex-1">
+														<span className="flex items-center justify-between gap-2">
+															<span className="truncate text-xs font-semibold text-slate-800 dark:text-slate-100">{option.label}</span>
+															<span className={`grid size-5 shrink-0 place-items-center rounded-full ${palette === option.value ? "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200" : "text-transparent"}`}>
+																{palette === option.value && <Check size={12} strokeWidth={2.5} />}
+															</span>
+														</span>
+														<span className="mt-0.5 block truncate text-[10px] leading-4 text-slate-500 dark:text-slate-400">{details.description}</span>
+														<span className="mt-1.5 flex items-center gap-2">
+															<span className={`h-1.5 flex-1 rounded-full bg-linear-to-r ${gradient}`} />
+															<span className="shrink-0 text-[9px] font-medium text-slate-400 dark:text-slate-500">{details.tone}</span>
+														</span>
+													</span>
+												</PopoverClose>;
+											})}
 										</div>
 									</PopoverContent>
 								</Popover>;
@@ -315,6 +352,34 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 					</SettingsSection>
 					</Accordion>
 				</div>
+				<footer className="flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 bg-white/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/90 sm:px-6">
+					<p className="max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">Restore the default page colors, navigation layout, order, and password view.</p>
+					{restoreNotice && <div role="status" aria-live="polite" className="relative isolate flex w-full basis-full items-center gap-3 overflow-hidden rounded-2xl border border-emerald-200/80 bg-linear-to-br from-emerald-50 via-white to-green-50/70 px-4 py-3 shadow-md shadow-slate-900/5 ring-1 ring-inset ring-white/70 dark:border-emerald-900/80 dark:from-emerald-950/70 dark:via-slate-900 dark:to-green-950/30 dark:shadow-black/20 dark:ring-white/5">
+						<span aria-hidden="true" className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-emerald-400" />
+						<span aria-hidden="true" className="pointer-events-none absolute -right-5 -top-10 size-28 rounded-full border border-white/70 bg-white/10 dark:border-white/5 dark:bg-white/[0.02]" />
+						<span className="relative grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-emerald-100 to-green-100 text-emerald-800 shadow-sm ring-1 ring-inset ring-white/80 dark:from-emerald-950 dark:to-green-950 dark:text-emerald-200 dark:ring-white/5"><Check size={18} /></span>
+						<span className="relative min-w-0 flex-1">
+							<span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">All reset!</span>
+							<span className="mt-0.5 block text-xs font-semibold leading-4 text-slate-900 dark:text-slate-100">Everything is back to its default settings.</span>
+						</span>
+					</div>}
+					<Button type="button" autoFocus={confirmRestore} variant="outline" className="palette-dialog-footer-button border-violet-200 bg-white text-violet-800 shadow-sm transition-colors hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-200 dark:hover:bg-violet-950/40" onClick={() => {
+						if (!confirmRestore) {
+							setConfirmRestore(true);
+							return;
+						}
+						updateSettings(() => defaultSettings);
+						setConfirmRestore(false);
+						setRestoreNotice(true);
+						if (restoreNoticeTimeout.current) clearTimeout(restoreNoticeTimeout.current);
+						restoreNoticeTimeout.current = setTimeout(() => {
+							setRestoreNotice(false);
+							restoreNoticeTimeout.current = null;
+						}, 2000);
+					}}>
+						{confirmRestore ? <><Check size={15} />Confirm</> : <><RotateCcw size={15} />Restore defaults</>}
+					</Button>
+				</footer>
 			</DialogContent>
 		</Dialog>
 	</>;

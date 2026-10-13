@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -29,6 +29,14 @@ import {
   type AppSettings,
   type NavigationHref,
 } from "@/components/settings/settings-model";
+import { getPagePaletteStyles, type NamedPagePalette } from "@/components/settings/page-palettes";
+
+const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
+  "/passwords": "violet",
+  "/grocery": "blue",
+  "/baby-needs": "teal",
+  "/budget": "rose",
+};
 
 export default function Dashboard({
   children,
@@ -82,14 +90,8 @@ function DashboardShell({
   );
   const current = navigation[activeIndex];
   const pagePalette = settings.pagePalettes[current.href];
-  const floatingNavRef = useRef<HTMLElement | null>(null);
-  const [floatingIndicator, setFloatingIndicator] = useState({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-  });
-
+  const backgroundPalette = pagePalette === "default" ? defaultPagePalettes[current.href] : pagePalette;
+  const paletteAccent = getPagePaletteStyles(backgroundPalette).accent;
   function handleNavigationClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
     if (
       event.defaultPrevented ||
@@ -144,35 +146,12 @@ function DashboardShell({
     return () => window.removeEventListener("popstate", clearPendingNavigation);
   }, []);
 
-  useLayoutEffect(() => {
-    const nav = floatingNavRef.current;
-    const activeLink = nav?.querySelector<HTMLElement>("[data-active='true']");
-    if (!nav || !activeLink) return;
-    const navElement = nav;
-    const activeElement = activeLink;
-
-    function updateIndicator() {
-      const navBounds = navElement.getBoundingClientRect();
-      const linkBounds = activeElement.getBoundingClientRect();
-      setFloatingIndicator({
-        left: linkBounds.left - navBounds.left - navElement.clientLeft,
-        top: linkBounds.top - navBounds.top - navElement.clientTop,
-        width: linkBounds.width,
-        height: linkBounds.height,
-      });
-    }
-
-    updateIndicator();
-    const observer = new ResizeObserver(updateIndicator);
-    observer.observe(navElement);
-    observer.observe(activeElement);
-    return () => observer.disconnect();
-  }, [activeIndex, settings.desktopNavigation]);
-
   return (
     <main
       data-page-palette={pagePalette === "default" ? undefined : pagePalette}
-      className="min-h-screen bg-[#f5f4fb] text-slate-800 dark:bg-[#13111f] dark:text-slate-100 md:flex"
+      data-dashboard-page
+      style={{ "--page-accent-base": paletteAccent } as CSSProperties}
+      className="min-h-screen text-slate-800 dark:text-slate-100 md:flex"
     >
       <aside
         data-page-palette-preserve
@@ -302,7 +281,7 @@ function DashboardShell({
           <div
             inert={shouldShowNavigationProgress}
             aria-busy={shouldShowNavigationProgress}
-            className={`mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-6xl flex-col animate-in space-y-6 p-4 pb-24 fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none md:px-8 md:pt-8 ${settings.desktopNavigation === "floating" ? "md:pb-28" : "md:pb-8"}`}
+            className={`mx-auto flex min-h-[calc(100dvh-3.5rem)] max-w-6xl flex-col animate-in space-y-6 p-4 pb-[5.375rem] fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none md:px-8 md:pt-8 ${settings.desktopNavigation === "floating" ? "md:pb-[6.875rem]" : "md:pb-8"}`}
           >
             {children}
           </div>
@@ -311,13 +290,8 @@ function DashboardShell({
       <nav
         data-page-palette-preserve
         aria-label="Main navigation"
-        className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/80 bg-white/85 p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/90 md:hidden"
+        className="floating-navigation-bar fixed bottom-3 left-1/2 z-50 grid h-[3.875rem] w-[min(calc(100%_-_1.5rem),28rem)] -translate-x-1/2 grid-cols-6 items-center gap-0.5 rounded-2xl border p-1 backdrop-blur-xl md:hidden"
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1.5 top-1.5 size-11 rounded-full bg-linear-to-br from-[#7f22fe] to-[#c026d3] shadow-md shadow-violet-500/30 transition-transform duration-300 ease-out motion-reduce:transition-none"
-          style={{ transform: `translateX(${activeIndex * 50}px)` }}
-        />
         {navigation.map(({ href, label, icon: Icon }) => {
           const active = current.href === href;
           return (
@@ -329,58 +303,47 @@ function DashboardShell({
               aria-label={label}
               aria-current={active ? "page" : undefined}
               title={label}
-              className={`relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition-[color,transform] duration-300 ease-out active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${active ? "scale-110 text-white" : "scale-100 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"}`}
+              className="floating-navigation-link relative z-10 flex h-12 w-full min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-transparent px-0.5 py-1 text-center text-[9px] font-medium leading-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--page-accent-base)] focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
             >
-              <Icon size={20} />
+              <Icon size={18} className="shrink-0" />
             </Link>
           );
         })}
-        <span
-          aria-hidden="true"
-          className="mx-1 h-7 w-px shrink-0 bg-slate-300/80 dark:bg-slate-600"
-        />
-        <LockButton onLock={lockApp} disabled={locking} />
-        <SettingsPanel trigger="floating" />
+        <LockButton onLock={lockApp} disabled={locking} compact className="floating-navigation-action justify-self-center" />
+        <SettingsPanel trigger="floating" compact />
       </nav>
       {settings.desktopNavigation === "floating" && (
         <nav
-          ref={floatingNavRef}
           data-page-palette-preserve
           aria-label="Main navigation"
-          className="fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-white/80 bg-white/90 p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.22)] backdrop-blur-xl md:flex dark:border-slate-700/80 dark:bg-slate-900/90"
+          className="desktop-floating-navigation-bar fixed bottom-6 left-1/2 z-50 hidden h-[3.875rem] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center justify-between gap-2 rounded-2xl border p-2.5 backdrop-blur-xl md:flex"
         >
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute left-0 top-0 z-0 rounded-full bg-linear-to-r from-[#7f22fe] to-[#c026d3] shadow-md shadow-violet-500/30 transition-[transform,width,height] duration-300 ease-out motion-reduce:transition-none"
-            style={{
-              width: floatingIndicator.width,
-              height: floatingIndicator.height,
-              transform: `translate3d(${floatingIndicator.left}px, ${floatingIndicator.top}px, 0)`,
-            }}
-          />
-          {navigation.map(({ href, label, icon: Icon }) => {
-            const active = current.href === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                prefetch={true}
-                onClick={(event) => handleNavigationClick(event, href)}
-                aria-current={active ? "page" : undefined}
-                data-active={active ? "true" : undefined}
-                className={`group relative z-10 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-[color,background-color,translate,scale] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:scale-[1.02] motion-reduce:transition-none ${active ? "text-white" : "text-slate-600 hover:bg-violet-500/10 hover:text-violet-700 dark:text-slate-300 dark:hover:bg-violet-400/10 dark:hover:text-violet-200"}`}
-              >
-                <Icon size={16} className="transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105 motion-reduce:transition-none" />
-                {label}
-              </Link>
-            );
-          })}
-          <span
-            aria-hidden="true"
-            className="mx-1 h-6 w-px shrink-0 bg-slate-300/80 dark:bg-slate-600"
-          />
-          <LockButton onLock={lockApp} disabled={locking} compact />
-          <SettingsPanel trigger="floating" compact />
+          <div className="flex min-w-0 items-center gap-1">
+            <span className="shrink-0 px-2 text-[10px] font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
+              WORKSPACE
+            </span>
+            {navigation.map(({ href, label, icon: Icon }) => {
+              const active = current.href === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  prefetch={true}
+                  onClick={(event) => handleNavigationClick(event, href)}
+                  aria-current={active ? "page" : undefined}
+                  title={label}
+                  className="desktop-floating-navigation-link inline-flex h-10 min-w-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-transparent px-2 text-xs font-medium transition-colors motion-reduce:transition-none md:text-[11px] lg:gap-2 lg:px-2.5 lg:text-xs"
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="max-w-16 truncate lg:max-w-none">{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="flex shrink-0 items-center gap-1 border-l border-slate-200 pl-2 dark:border-slate-700">
+            <LockButton onLock={lockApp} disabled={locking} compact className="floating-navigation-action" />
+            <SettingsPanel trigger="floating" compact />
+          </div>
         </nav>
       )}
     </main>

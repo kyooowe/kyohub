@@ -1,9 +1,10 @@
-import { Eye, EyeOff, ExternalLink, Globe, KeyRound, Pencil, ShieldCheck, Trash2, X } from "lucide-react";
+import { Eye, EyeOff, ExternalLink, Globe, KeyRound, Pencil, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
+import { useAppSettings } from "@/components/settings/settings-context";
 import { PasswordAvatar } from "@/features/passwords/components/password-avatar";
 import { PasswordStrength } from "@/features/passwords/components/password-strength";
-import { passwordCategoryStyles } from "@/features/passwords/components/password-tile";
 import type { PasswordEntry } from "@/features/passwords/types";
 
 export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleReveal, onEdit, onDelete }: {
@@ -14,29 +15,15 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 	onEdit: () => void;
 	onDelete: () => void;
 }) {
-	const theme = entry ? passwordCategoryStyles[entry.category] : null;
+	const { settings } = useAppSettings();
+	const configuredPalette = settings.pagePalettes["/passwords"];
+	const dialogPalette = configuredPalette === "default" ? "violet" : configuredPalette;
 	const url = entry ? (/^https?:\/\//i.test(entry.url) ? entry.url : `https://${entry.url}`) : "";
 
 	return <Dialog open={entry !== null} onOpenChange={onOpenChange}>
-		<DialogContent className="max-w-md overflow-hidden rounded-[24px] border-slate-200 bg-white p-0 shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900">
-			{entry && theme && <>
-				<header className={`dialog-palette-header relative isolate overflow-hidden bg-linear-to-r ${theme.bannerStyle} px-5 py-5 sm:px-6`}>
-					<div className="relative flex items-center justify-between gap-4">
-						<div className="flex min-w-0 items-center gap-3.5">
-							<span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-white/15 p-1 shadow-sm backdrop-blur-sm">
-								<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full rounded-xl" />
-							</span>
-							<div className="min-w-0">
-								<p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/75">Saved login</p>
-								<DialogTitle className="mt-0.5 truncate text-xl font-bold tracking-tight text-white">{entry.website}</DialogTitle>
-								<DialogDescription className="mt-1 text-xs font-medium text-white/80">{entry.category}</DialogDescription>
-							</div>
-						</div>
-						<DialogClose aria-label="Close details" className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/70">
-							<X size={17} />
-						</DialogClose>
-					</div>
-				</header>
+		<DialogContent pagePalette={dialogPalette} data-page-palette-surface className="palette-dialog-panel max-w-md overflow-hidden rounded-[24px] border-slate-200 bg-white p-0 shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900">
+			{entry && <>
+				<PaletteDialogHeader eyebrow="SAVED LOGIN" title={entry.website} description={entry.category} icon={<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-10 rounded-xl" />} closeLabel="Close details" />
 				<div className="space-y-5 px-5 py-5 sm:px-6">
 					<a href={url} target="_blank" rel="noreferrer" className="group flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 transition-colors hover:border-violet-200 hover:bg-violet-50/60 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-violet-800 dark:hover:bg-violet-950/20">
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-violet-600 shadow-sm dark:bg-slate-800 dark:text-violet-300">
@@ -75,8 +62,8 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 				</div>
 				</div>
 				<footer className="flex flex-row flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-3 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:px-6">
-					<Button type="button" variant="outline" className="h-10 rounded-xl border-rose-200 bg-white px-4 text-rose-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 hover:shadow-md active:translate-y-0 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40" onClick={onDelete}><Trash2 size={16} />Delete</Button>
-					<Button type="button" className="h-10 rounded-xl bg-linear-to-r from-violet-600 via-violet-600 to-indigo-600 px-5 text-white shadow-lg shadow-violet-600/20 transition-all hover:-translate-y-0.5 hover:from-violet-700 hover:to-indigo-700 hover:shadow-xl active:translate-y-0 active:scale-[0.98]" onClick={onEdit}><Pencil size={16} />Edit password</Button>
+					<Button type="button" variant="outline" className="palette-dialog-footer-button border-rose-200 bg-white text-rose-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 hover:shadow-md active:translate-y-0 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40" onClick={onDelete}><Trash2 size={16} />Delete</Button>
+					<Button type="button" variant="ghost" className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150" onClick={onEdit}><Pencil size={16} />Edit password</Button>
 				</footer>
 			</>}
 		</DialogContent>

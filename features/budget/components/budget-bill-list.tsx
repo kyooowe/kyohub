@@ -1,33 +1,33 @@
-import { Banknote, CalendarDays, Check, Circle, House, Pencil, Receipt, Trash2, Utensils, Zap, type LucideIcon } from "lucide-react";
+import { Banknote, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, Circle, House, ListFilter, Pencil, Receipt, Trash2, Utensils, Zap, type LucideIcon } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FeatureSectionHeader } from "@/components/feature-section-header";
 import { monthLabel, money, isBillOccurrenceOverdue, type BillOccurrence } from "@/features/budget/lib/budget-utils";
-import { budgetCategoryLabels, type BudgetBill, type BudgetCategory } from "@/features/budget/types";
+import { budgetCategories, budgetCategoryLabels, type BudgetBill, type BudgetCategory } from "@/features/budget/types";
 
-const categoryStyles: Record<BudgetCategory, { icon: LucideIcon; rail: string; iconBox: string; badge: string }> = {
+const dueDayOptions = [5, 15, 20, 30] as const;
+const rowsPerPageOptions = [5, 15, 20, 30] as const;
+
+const categoryStyles: Record<BudgetCategory, { icon: LucideIcon; iconBox: string; badge: string }> = {
 	utility: {
 		icon: Zap,
-		rail: "bg-rose-500",
-		iconBox: "from-rose-500 to-red-600 shadow-rose-500/20",
+		iconBox: "from-rose-100 to-red-50 text-rose-700 shadow-rose-200/50 dark:from-rose-950/70 dark:to-red-950/50 dark:text-rose-200 dark:shadow-black/20",
 		badge: "bg-rose-500/10 text-rose-700 dark:bg-rose-400/10 dark:text-rose-200",
 	},
 	housing: {
 		icon: House,
-		rail: "bg-amber-500",
-		iconBox: "from-amber-400 to-orange-500 shadow-amber-500/20",
+		iconBox: "from-amber-100 to-orange-50 text-amber-800 shadow-amber-200/50 dark:from-amber-950/70 dark:to-orange-950/50 dark:text-amber-200 dark:shadow-black/20",
 		badge: "bg-amber-500/10 text-amber-700 dark:bg-amber-400/10 dark:text-amber-200",
 	},
 	loan: {
 		icon: Banknote,
-		rail: "bg-sky-500",
-		iconBox: "from-sky-500 to-blue-600 shadow-sky-500/20",
+		iconBox: "from-sky-100 to-blue-50 text-sky-700 shadow-sky-200/50 dark:from-sky-950/70 dark:to-blue-950/50 dark:text-sky-200 dark:shadow-black/20",
 		badge: "bg-sky-500/10 text-sky-700 dark:bg-sky-400/10 dark:text-sky-200",
 	},
 	foods: {
 		icon: Utensils,
-		rail: "bg-emerald-500",
-		iconBox: "from-emerald-500 to-teal-600 shadow-emerald-500/20",
+		iconBox: "from-emerald-100 to-teal-50 text-emerald-700 shadow-emerald-200/50 dark:from-emerald-950/70 dark:to-teal-950/50 dark:text-emerald-200 dark:shadow-black/20",
 		badge: "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200",
 	},
 };
@@ -42,19 +42,81 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 	onPaymentChange: (bill: BudgetBill, month: string, paid: boolean) => void;
 	onDelete: (id: string) => void;
 }) {
+	const [dueDayFilter, setDueDayFilter] = useState<number | null>(null);
+	const [categoryFilter, setCategoryFilter] = useState<BudgetCategory | null>(null);
+	const [rowsPerPage, setRowsPerPage] = useState<number>(rowsPerPageOptions[0]);
+	const [currentPage, setCurrentPage] = useState(1);
 	const sortedOccurrences = [...occurrences].sort((first, second) => {
 		const firstIsOverdue = !first.bill.paidMonthKeys.includes(first.monthKey) && isBillOccurrenceOverdue(first.bill, first.monthKey, today);
 		const secondIsOverdue = !second.bill.paidMonthKeys.includes(second.monthKey) && isBillOccurrenceOverdue(second.bill, second.monthKey, today);
 		return Number(secondIsOverdue) - Number(firstIsOverdue);
 	});
+	const filteredOccurrences = sortedOccurrences.filter(({ bill }) =>
+		(dueDayFilter === null || bill.dueDay === dueDayFilter)
+		&& (categoryFilter === null || bill.category === categoryFilter),
+	);
+	const pageCount = Math.max(1, Math.ceil(filteredOccurrences.length / rowsPerPage));
+	const activePage = Math.min(currentPage, pageCount);
+	const firstVisibleIndex = (activePage - 1) * rowsPerPage;
+	const pageOccurrences = filteredOccurrences.slice(firstVisibleIndex, firstVisibleIndex + rowsPerPage);
+	const visibleTotalCents = filteredOccurrences.reduce((total, { bill }) => total + bill.amountCents, 0);
+	const rangeStart = filteredOccurrences.length > 0 ? firstVisibleIndex + 1 : 0;
+	const rangeEnd = Math.min(firstVisibleIndex + rowsPerPage, filteredOccurrences.length);
 
 	return <Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
-		<FeatureSectionHeader theme="rose" icon={Receipt} title={`Bills for ${monthLabel(selectedMonth)}`} description={hiddenOverdueCount > 0 ? "Overdue bills are available in the alert above." : "Monthly bills included in the total."}>
-			{occurrences.length > 0 && <span className="inline-flex min-h-14 w-fit items-center rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white shadow-inner shadow-white/10">{occurrences.length} bill{occurrences.length === 1 ? "" : "s"} · {money.format(occurrences.reduce((total, { bill }) => total + bill.amountCents, 0) / 100)}</span>}
+		<FeatureSectionHeader theme="rose" icon={Receipt} title={`Bills for ${monthLabel(selectedMonth)}`} description={hiddenOverdueCount > 0 ? "Overdue bills are available in the alert above." : "Monthly bills included in the total."} appearance="soft" className="min-h-[96px]">
+			{filteredOccurrences.length > 0 && <span className="password-library-badge inline-flex min-h-10 w-fit items-center rounded-full px-3 py-1.5 text-xs font-semibold">{filteredOccurrences.length} bill{filteredOccurrences.length === 1 ? "" : "s"} · {money.format(visibleTotalCents / 100)}</span>}
 		</FeatureSectionHeader>
-		<CardContent className="mx-3 mb-1 p-0 sm:mx-4 sm:mb-1">
-			<section aria-label={`Bills for ${monthLabel(selectedMonth)}`} className="space-y-3">
-				{occurrences.length ? <div className="space-y-2">{sortedOccurrences.map(({ bill, monthKey: occurrenceMonth }) => {
+		<CardContent className="mb-2 p-0 sm:mx-4 sm:mb-2">
+			<section aria-label={`Bills for ${monthLabel(selectedMonth)}`} className="space-y-2">
+				<div data-page-palette-surface className="planner-filter-panel budget-filter-toolbar flex flex-col gap-3 rounded-3xl border p-3 sm:flex-row sm:items-center sm:justify-between sm:p-3.5">
+					<div className="budget-filter-controls flex min-w-0 flex-wrap items-center gap-2">
+						<span aria-hidden="true" className="budget-filter-toolbar-icon planner-filter-icon grid size-9 place-items-center rounded-xl"><ListFilter size={16} /></span>
+						<label className="budget-filter-field">
+							<span className="budget-filter-label">Due day</span>
+							<span className="relative">
+								<select aria-label="Filter by due day" value={dueDayFilter ?? ""} onChange={(event) => {
+									setDueDayFilter(event.target.value ? Number(event.target.value) : null);
+									setCurrentPage(1);
+								}} className="budget-filter-value min-w-20 appearance-none pr-5">
+									<option value="">All days</option>
+									{dueDayOptions.map((day) => <option key={day} value={day}>{day}</option>)}
+								</select>
+								<ChevronDown aria-hidden="true" size={12} className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-slate-500" />
+							</span>
+						</label>
+						<label className="budget-filter-field">
+							<span className="budget-filter-label">Type</span>
+							<span className="relative">
+								<select aria-label="Filter by type" value={categoryFilter ?? ""} onChange={(event) => {
+									const value = event.target.value;
+									setCategoryFilter(budgetCategories.find((category) => category === value) ?? null);
+									setCurrentPage(1);
+								}} className="budget-filter-value min-w-24 appearance-none pr-5">
+									<option value="">All types</option>
+									{budgetCategories.map((category) => <option key={category} value={category}>{budgetCategoryLabels[category]}</option>)}
+								</select>
+								<ChevronDown aria-hidden="true" size={12} className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-slate-500" />
+							</span>
+						</label>
+						<label className="budget-filter-field">
+							<span className="budget-filter-label">Rows</span>
+							<span className="relative">
+								<select aria-label="Rows per page" value={rowsPerPage} onChange={(event) => {
+									setRowsPerPage(Number(event.target.value));
+									setCurrentPage(1);
+								}} className="budget-filter-value min-w-8 appearance-none pr-5">
+									{rowsPerPageOptions.map((rows) => <option key={rows} value={rows}>{rows}</option>)}
+								</select>
+								<ChevronDown aria-hidden="true" size={12} className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-slate-500" />
+							</span>
+						</label>
+					</div>
+					{occurrences.length > 0 && <p role="status" className="budget-filter-status shrink-0 text-xs">
+						<span className="text-slate-500 dark:text-slate-400">Showing</span> <span className="font-semibold text-slate-800 dark:text-slate-100">{rangeStart}–{rangeEnd}</span> <span className="text-slate-500 dark:text-slate-400">of {filteredOccurrences.length} bills</span>
+					</p>}
+				</div>
+				{filteredOccurrences.length ? <div className="space-y-2">{pageOccurrences.map(({ bill, monthKey: occurrenceMonth }) => {
 				const isPaid = bill.paidMonthKeys.includes(occurrenceMonth);
 				const isOverdue = !isPaid && isBillOccurrenceOverdue(bill, occurrenceMonth, today);
 				const occurrenceLabel = occurrenceMonth === selectedMonth ? "" : ` · from ${monthLabel(occurrenceMonth)}`;
@@ -75,9 +137,8 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 				const CategoryIcon = categoryStyles[bill.category].icon;
 				const categoryStyle = categoryStyles[bill.category];
 				const statusLabel = isOverdue ? "Overdue · unpaid" : isPaid ? "Paid" : "Unpaid";
-				return <article key={`${bill.id}-${occurrenceMonth}`} data-page-palette-preserve className="group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 overflow-hidden rounded-2xl border border-slate-200 bg-white px-3 py-3 shadow-sm shadow-slate-900/5 transition-all hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/30 dark:hover:border-slate-700 sm:px-4 md:grid-cols-[auto_minmax(0,1fr)_auto]">
-					<span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${categoryStyle.rail}`} />
-					<span className={`ml-1 grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br text-white shadow-lg ${categoryStyle.iconBox}`}>
+				return <article key={`${bill.id}-${occurrenceMonth}`} data-page-palette-preserve className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 overflow-hidden rounded-3xl border px-3 py-3 transition-all hover:-translate-y-0.5 sm:px-4 md:grid-cols-[auto_minmax(0,1fr)_auto]">
+					<span className={`grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br shadow-md ${categoryStyle.iconBox}`}>
 						<CategoryIcon size={22} />
 					</span>
 					<div className="min-w-0">
@@ -100,14 +161,35 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 								{dueLabel}
 							</span>
 						</div>
-						<div className="flex shrink-0 items-center gap-1">
-							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="size-9 rounded-full text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-950/50 dark:hover:text-rose-300" aria-label={`Edit ${bill.title}`} title="Edit bill" onClick={() => onEdit(bill)}><Pencil size={16} /></Button>
-							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="size-9 rounded-full text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-400 dark:hover:bg-emerald-950/50 dark:hover:text-emerald-300" aria-label={isPaid ? `Mark ${bill.title} unpaid for ${monthLabel(occurrenceMonth)}` : `Mark ${bill.title} paid for ${monthLabel(occurrenceMonth)}`} title={isPaid ? "Mark unpaid" : "Mark paid"} onClick={() => onPaymentChange(bill, occurrenceMonth, !isPaid)}>{isPaid ? <Check size={16} className="text-emerald-600" /> : <Circle size={16} className="text-slate-400" />}</Button>
-							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="size-9 rounded-full text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/50 dark:hover:text-rose-300" aria-label={`Delete ${bill.title}`} title="Delete bill" onClick={() => onDelete(bill.id)}><Trash2 size={16} /></Button>
+						<div className="budget-bill-actions ml-auto flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
+							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--edit size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={`Edit ${bill.title}`} title="Edit bill" onClick={() => onEdit(bill)}><Pencil size={15} /></Button>
+							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--payment size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={isPaid ? `Mark ${bill.title} unpaid for ${monthLabel(occurrenceMonth)}` : `Mark ${bill.title} paid for ${monthLabel(occurrenceMonth)}`} title={isPaid ? "Mark unpaid" : "Mark paid"} onClick={() => onPaymentChange(bill, occurrenceMonth, !isPaid)}>{isPaid ? <Check size={16} className="text-emerald-600" /> : <Circle size={16} className="text-slate-400" />}</Button>
+							<Button type="button" disabled={submitting} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--delete size-8 rounded-xl text-slate-400 transition-colors dark:text-slate-400" aria-label={`Delete ${bill.title}`} title="Delete bill" onClick={() => onDelete(bill.id)}><Trash2 size={15} /></Button>
 						</div>
 					</div>
 				</article>;
-				})}</div> : <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">{hiddenOverdueCount > 0 ? "Overdue bills are available in the alert above." : "No bills scheduled for this month."}</div>}
+				})}</div> : <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-950/30 dark:text-slate-400">
+					{occurrences.length === 0
+						? hiddenOverdueCount > 0 ? "Overdue bills are available in the alert above." : "No bills scheduled for this month."
+						: dueDayFilter !== null && categoryFilter !== null
+							? `No ${budgetCategoryLabels[categoryFilter].toLowerCase()} bills due on day ${dueDayFilter}.`
+							: dueDayFilter !== null
+								? `No bills due on day ${dueDayFilter}.`
+								: categoryFilter !== null
+									? `No ${budgetCategoryLabels[categoryFilter].toLowerCase()} bills scheduled for this month.`
+									: "No bills match these filters."}
+				</div>}
+				{filteredOccurrences.length > 0 && pageCount > 1 && <nav aria-label="Bills pagination" className="shared-pagination flex justify-center pt-3">
+					<div className="shared-pagination-controls inline-flex items-center gap-1.5 rounded-2xl border p-1.5">
+						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Previous page" title="Previous page" disabled={activePage === 1} onClick={() => setCurrentPage(activePage - 1)}><ChevronLeft size={16} /></Button>
+						<p aria-live="polite" className="shared-pagination-page flex min-w-28 items-center justify-center gap-1.5 px-2 text-xs">
+							<span className="font-medium">Page</span>
+							<span className="shared-pagination-current grid size-7 place-items-center rounded-lg font-bold">{activePage}</span>
+							<span className="font-medium">of {pageCount}</span>
+						</p>
+						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Next page" title="Next page" disabled={activePage === pageCount} onClick={() => setCurrentPage(activePage + 1)}><ChevronRight size={16} /></Button>
+					</div>
+				</nav>}
 			</section>
 		</CardContent>
 	</Card>;
