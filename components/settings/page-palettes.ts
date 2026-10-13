@@ -1,96 +1,118 @@
+
 const pagePaletteStyles = {
-	violet: {
-		label: "Violet",
-		swatch: "bg-[#d4bfd0]",
-		iconGradient: "from-violet-600 to-fuchsia-500",
-		passwordHeading: "from-violet-900 via-violet-800 to-fuchsia-700 dark:from-slate-100 dark:via-violet-200 dark:to-fuchsia-300",
-		featureHeader: {
-			gradient: "from-violet-800 via-violet-700 to-fuchsia-700",
-			shadow: "shadow-violet-300/30",
-			darkShadow: "dark:shadow-violet-950/60",
-			description: "text-violet-100/85",
-			glow: "bg-fuchsia-200/15",
-		},
-	},
-	blue: {
-		label: "Blue",
-		swatch: "bg-[#b9d6eb]",
-		iconGradient: "from-blue-500 to-cyan-400",
-		passwordHeading: "from-slate-900 via-blue-950 to-blue-700 dark:from-slate-100 dark:via-blue-200 dark:to-blue-400",
-		featureHeader: {
-			gradient: "from-blue-800 via-indigo-800 to-violet-800",
-			shadow: "shadow-blue-300/30",
-			darkShadow: "dark:shadow-blue-950/60",
-			description: "text-blue-100/85",
-			glow: "bg-violet-200/15",
-		},
-	},
-	teal: {
-		label: "Teal",
-		swatch: "bg-[#b2d8d3]",
-		iconGradient: "from-emerald-500 to-teal-400",
-		passwordHeading: "from-slate-900 via-teal-950 to-teal-700 dark:from-slate-100 dark:via-teal-200 dark:to-teal-400",
-		featureHeader: {
-			gradient: "from-teal-800 via-teal-700 to-cyan-700",
-			shadow: "shadow-teal-300/30",
-			darkShadow: "dark:shadow-teal-950/60",
-			description: "text-teal-100/85",
-			glow: "bg-cyan-200/15",
-		},
-	},
-	rose: {
-		label: "Rose",
-		swatch: "bg-[#e3c1ad]",
-		iconGradient: "from-orange-500 to-rose-400",
-		passwordHeading: "from-slate-900 via-rose-950 to-rose-700 dark:from-slate-100 dark:via-rose-200 dark:to-rose-400",
-		featureHeader: {
-			gradient: "from-rose-800 via-rose-700 to-orange-700",
-			shadow: "shadow-rose-300/30",
-			darkShadow: "dark:shadow-rose-950/60",
-			description: "text-rose-100/85",
-			glow: "bg-orange-200/15",
-		},
-	},
-	yellow: {
-		label: "Yellow",
-		swatch: "bg-[#efe3a0]",
-		iconGradient: "from-yellow-500 to-amber-400",
-		passwordHeading: "from-slate-900 via-amber-950 to-yellow-700 dark:from-slate-100 dark:via-yellow-200 dark:to-amber-400",
-		featureHeader: {
-			gradient: "from-amber-800 via-yellow-700 to-orange-700",
-			shadow: "shadow-yellow-300/30",
-			darkShadow: "dark:shadow-yellow-950/60",
-			description: "text-yellow-100/90",
-			glow: "bg-amber-200/20",
-		},
-	},
-	orange: {
-		label: "Orange",
-		swatch: "bg-[#edc19e]",
-		iconGradient: "from-orange-500 to-amber-400",
-		passwordHeading: "from-slate-900 via-orange-950 to-orange-700 dark:from-slate-100 dark:via-orange-200 dark:to-amber-400",
-		featureHeader: {
-			gradient: "from-orange-800 via-orange-700 to-amber-700",
-			shadow: "shadow-orange-300/30",
-			darkShadow: "dark:shadow-orange-950/60",
-			description: "text-orange-100/90",
-			glow: "bg-amber-200/20",
-		},
-	},
-	gray: {
-		label: "Grey",
-		swatch: "bg-[#cbd0d8]",
-		iconGradient: "from-slate-500 to-gray-400",
-		passwordHeading: "from-slate-900 via-gray-800 to-slate-600 dark:from-slate-100 dark:via-gray-200 dark:to-slate-400",
-		featureHeader: {
-			gradient: "from-slate-800 via-slate-700 to-gray-700",
-			shadow: "shadow-slate-300/30",
-			darkShadow: "dark:shadow-slate-950/60",
-			description: "text-slate-100/85",
-			glow: "bg-gray-200/15",
-		},
-	},
+  violet: {
+    label: "Lavender",
+    swatch: "bg-[#C9B8D9]",
+    accent: "#8D73A8",
+    iconGradient: "from-[#8D73A8] to-[#B59ACB]",
+    pageHeading:
+      "from-[#59416D] via-[#76578F] to-[#9A7AB0] dark:from-[#E8DDF0] dark:via-[#D5C2E5] dark:to-[#BFA3D7]",
+    featureHeader: {
+      gradient: "from-[#76578F] via-[#8D73A8] to-[#A78ABC]",
+      shadow: "shadow-[#B59ACB]/20",
+      darkShadow: "dark:shadow-[#4C365E]/30",
+      description: "text-white/85",
+      glow: "bg-[#E8DDF0]/15",
+    },
+  },
+
+  blue: {
+    label: "Sky",
+    swatch: "bg-[#BFD9E8]",
+    accent: "#5686A2",
+    iconGradient: "from-[#669BB9] to-[#8DBBD2]",
+    pageHeading:
+      "from-[#315C75] via-[#426F8A] to-[#669BB9] dark:from-[#DCECF5] dark:via-[#BFD9E8] dark:to-[#91BED5]",
+    featureHeader: {
+      gradient: "from-[#426F8A] via-[#5686A2] to-[#669BB9]",
+      shadow: "shadow-[#8DBBD2]/20",
+      darkShadow: "dark:shadow-[#203F52]/35",
+      description: "text-white/90",
+      glow: "bg-[#DCECF5]/15",
+    },
+  },
+
+  teal: {
+    label: "Sage",
+    swatch: "bg-[#C8D8C0]",
+    accent: "#587451",
+    iconGradient: "from-[#829D77] to-[#A9BE9D]",
+    pageHeading:
+      "from-[#466044] via-[#587451] to-[#829D77] dark:from-[#E1EBDD] dark:via-[#C8D8C0] dark:to-[#A9BE9D]",
+    featureHeader: {
+      gradient: "from-[#466044] via-[#587451] to-[#829D77]",
+      shadow: "shadow-[#A9BE9D]/20",
+      darkShadow: "dark:shadow-[#293C28]/35",
+      description: "text-white/90",
+      glow: "bg-[#E1EBDD]/15",
+    },
+  },
+
+  rose: {
+    label: "Terracotta",
+    swatch: "bg-[#E3B6A5]",
+    accent: "#B66F57",
+    iconGradient: "from-[#C47F67] to-[#D99B82]",
+    pageHeading:
+      "from-[#804D3D] via-[#995C49] to-[#C47F67] dark:from-[#F4E0D7] dark:via-[#E3B6A5] dark:to-[#D99B82]",
+    featureHeader: {
+      gradient: "from-[#995C49] via-[#B66F57] to-[#C47F67]",
+      shadow: "shadow-[#D99B82]/20",
+      darkShadow: "dark:shadow-[#593529]/35",
+      description: "text-white/90",
+      glow: "bg-[#F4E0D7]/15",
+    },
+  },
+
+  yellow: {
+    label: "Butter",
+    swatch: "bg-[#F0DFA0]",
+    accent: "#9B7B2E",
+    iconGradient: "from-[#B99A43] to-[#D4B95E]",
+    pageHeading:
+      "from-[#80631C] via-[#9B7B2E] to-[#B99A43] dark:from-[#F8EDC8] dark:via-[#F0DFA0] dark:to-[#DCC775]",
+    featureHeader: {
+      gradient: "from-[#80631C] via-[#9B7B2E] to-[#B99A43]",
+      shadow: "shadow-[#DCC775]/20",
+      darkShadow: "dark:shadow-[#514015]/35",
+      description: "text-white/95",
+      glow: "bg-[#F8EDC8]/20",
+    },
+  },
+
+  orange: {
+    label: "Peach",
+    swatch: "bg-[#F0C9A9]",
+    accent: "#C07E53",
+    iconGradient: "from-[#D99B72] to-[#E8B18A]",
+    pageHeading:
+      "from-[#8D5735] via-[#A96D47] to-[#C8865B] dark:from-[#F8E5D5] dark:via-[#F0C9A9] dark:to-[#E8B18A]",
+    featureHeader: {
+      gradient: "from-[#A96D47] via-[#C07E53] to-[#D99B72]",
+      shadow: "shadow-[#E8B18A]/20",
+      darkShadow: "dark:shadow-[#603B26]/35",
+      description: "text-white/95",
+      glow: "bg-[#F8E5D5]/20",
+    },
+  },
+
+  gray: {
+    label: "Stone",
+    swatch: "bg-[#D2CEC5]",
+    accent: "#817D73",
+    iconGradient: "from-[#969187] to-[#B5B0A5]",
+    pageHeading:
+      "from-[#55534D] via-[#69665F] to-[#969187] dark:from-[#F0EEE9] dark:via-[#D2CEC5] dark:to-[#B5B0A5]",
+    featureHeader: {
+      gradient: "from-[#69665F] via-[#817D73] to-[#969187]",
+      shadow: "shadow-[#B5B0A5]/20",
+      darkShadow: "dark:shadow-[#36342F]/35",
+      description: "text-white/90",
+      glow: "bg-[#F0EEE9]/15",
+    },
+  },
 } as const;
+
 
 export type NamedPagePalette = keyof typeof pagePaletteStyles;
 export type PagePalette = "default" | NamedPagePalette;

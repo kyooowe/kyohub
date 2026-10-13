@@ -1,34 +1,37 @@
 import {
-	BriefcaseBusiness,
 	ChevronDown,
-	Gamepad2,
 	Grid2X2,
-	Landmark,
 	Search,
 	ShieldAlert,
 	ShieldCheck,
 	SlidersHorizontal,
 	Star,
-	type LucideIcon,
 } from "lucide-react";
-import Image from "next/image";
+import type { CSSProperties } from "react";
 import { Input } from "@/components/ui/input";
-import { categories, socialMediaIconUrl } from "@/features/passwords/lib/password-utils";
-import type { Category } from "@/features/passwords/types";
+import { PasswordAvatar } from "@/features/passwords/components/password-avatar";
+import { categories } from "@/features/passwords/lib/password-utils";
 
 const filterCategories = categories;
-const categoryIcons: Partial<Record<Category, LucideIcon>> = {
-	Banking: Landmark,
-	Games: Gamepad2,
-	Work: BriefcaseBusiness,
-};
 
-export function PasswordSearch({ query, onQueryChange, filter, onFilterChange }: { query: string; onQueryChange: (value: string) => void; filter: string; onFilterChange: (value: string) => void }) {
+export function PasswordSearch({ query, onQueryChange, filter, onFilterChange, rowsPerPage, onRowsPerPageChange, paletteAccent }: {
+	query: string;
+	onQueryChange: (value: string) => void;
+	filter: string;
+	onFilterChange: (value: string) => void;
+	rowsPerPage: number;
+	onRowsPerPageChange: (value: number) => void;
+	paletteAccent: string;
+}) {
 	const customFilterExpanded = filter !== "All" && filter !== "Favorites";
 	const selectedCategory = filterCategories.find((category) => category === filter) ?? "";
 
-	return <div className="mb-3 w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-violet-100 bg-white p-3 shadow-sm shadow-violet-950/5 dark:border-slate-700 dark:bg-slate-900">
-		<div className="flex w-full min-w-0 flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
+	return <div
+		style={{ "--password-accent": paletteAccent } as CSSProperties}
+		className="password-library-header relative mb-2 w-full min-w-0 max-w-full overflow-hidden rounded-3xl border p-3 shadow-lg sm:p-4"
+	>
+		<span aria-hidden="true" className="password-library-orbit pointer-events-none absolute -right-5 -top-10 size-28 rounded-full" />
+		<div className="relative z-10 flex w-full min-w-0 flex-col gap-3 xl:flex-row xl:flex-wrap xl:items-center">
 			<div className="w-full min-w-0 shrink-0 xl:w-auto">
 				<label className="relative block w-full min-w-0 xl:w-[19rem]">
 					<Search size={17} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
@@ -37,18 +40,18 @@ export function PasswordSearch({ query, onQueryChange, filter, onFilterChange }:
 						onChange={(event) => onQueryChange(event.target.value)}
 						placeholder="Search passwords..."
 						aria-label="Search passwords"
-						className="h-11 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-900 shadow-none placeholder:text-slate-400 focus-visible:border-violet-300 focus-visible:ring-2 focus-visible:ring-violet-500/15 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+						className="h-11 rounded-xl border-white/80 bg-white/75 pl-10 pr-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:border-violet-300 focus-visible:ring-2 focus-visible:ring-violet-500/15 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100 dark:placeholder:text-slate-500"
 					/>
 				</label>
 			</div>
 
-			<div className="flex w-full min-w-0 flex-wrap items-center gap-3 xl:min-w-0 xl:flex-1 xl:flex-nowrap">
-				<fieldset className="flex shrink-0 items-center gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+			<div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:gap-3 xl:min-w-0 xl:flex-1 xl:flex-nowrap">
+				<fieldset className="password-filter-mode-group flex shrink-0 items-center gap-1 rounded-xl border p-1 shadow-sm">
 					<legend className="sr-only">Filter mode</legend>
 					{(["All", "Favorites", "Custom"] as const).map((option) => {
 						const active = option === "Custom" ? customFilterExpanded : filter === option;
 						const ModeIcon = option === "All" ? Grid2X2 : option === "Favorites" ? Star : SlidersHorizontal;
-						return <label key={option} className={`inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-colors focus-within:ring-2 focus-within:ring-violet-400 ${active ? "bg-linear-to-r from-violet-600 to-purple-600 text-white shadow-sm shadow-violet-500/25" : "text-slate-600 hover:bg-white hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"}`}>
+						return <label key={option} className={`password-filter-mode-option inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors focus-within:outline-none sm:gap-2 sm:px-3 ${active ? "password-filter-mode-option--active" : "border-transparent text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/70 dark:hover:text-white"}`}>
 							<input
 								type="radio"
 								name="password-filter-mode"
@@ -66,10 +69,20 @@ export function PasswordSearch({ query, onQueryChange, filter, onFilterChange }:
 						</label>;
 					})}
 				</fieldset>
-
+				<label className="password-row-count-control ml-auto inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border px-2 text-xs font-semibold sm:gap-2 sm:px-3">
+					<span>Rows</span>
+					<select
+						aria-label="Rows per page"
+						value={rowsPerPage}
+						onChange={(event) => onRowsPerPageChange(Number(event.target.value))}
+						className="password-row-count-select rounded-md bg-transparent px-1 py-1 text-xs font-semibold outline-none"
+					>
+						{[6, 9, 12, 18].map((rows) => <option key={rows} value={rows}>{rows}</option>)}
+					</select>
+				</label>
 			</div>
 			{customFilterExpanded && <div className="grid w-full min-w-0 basis-full grid-cols-1 gap-3 border-t border-violet-100 pt-3 dark:border-slate-700 md:grid-cols-[max-content_minmax(0,1fr)]">
-				<fieldset className="min-w-0 rounded-xl bg-slate-50/70 p-2.5 dark:bg-slate-950/50">
+				<fieldset className="password-search-filter-panel min-w-0 rounded-xl border p-2.5">
 					<legend className="px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Password strength</legend>
 					<div className="flex flex-wrap items-center gap-1.5">
 						{(["Strong", "Weak"] as const).map((strength) => {
@@ -93,11 +106,10 @@ export function PasswordSearch({ query, onQueryChange, filter, onFilterChange }:
 						})}
 					</div>
 				</fieldset>
-				<fieldset className="min-w-0 rounded-xl bg-slate-50/70 p-2.5 dark:bg-slate-950/50">
+				<fieldset className="password-search-filter-panel min-w-0 rounded-xl border p-2.5">
 					<legend className="px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Category</legend>
 					<div className="flex min-w-0 flex-wrap items-center gap-1.5">
 						{filterCategories.map((category) => {
-							const CategoryIcon = categoryIcons[category];
 							const active = selectedCategory === category;
 							return <label key={category} className={`inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors focus-within:ring-2 focus-within:ring-violet-400 ${active ? "border-violet-200 bg-violet-50 text-violet-800 shadow-sm dark:border-violet-800 dark:bg-violet-950/60 dark:text-violet-200" : "border-transparent bg-white text-slate-600 hover:border-slate-200 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:text-white"}`}>
 								<input
@@ -108,9 +120,7 @@ export function PasswordSearch({ query, onQueryChange, filter, onFilterChange }:
 									onChange={() => onFilterChange(category)}
 									className="sr-only"
 								/>
-								{category === "Social media"
-									? <Image src={socialMediaIconUrl} width={96} height={96} alt="" className="size-3.5 shrink-0 object-contain" />
-									: CategoryIcon && <CategoryIcon size={14} className={active ? "text-violet-600 dark:text-violet-300" : "text-slate-400 dark:text-slate-400"} />}
+								<PasswordAvatar category={category} className="size-3.5 shrink-0" />
 								{category}
 							</label>;
 						})}

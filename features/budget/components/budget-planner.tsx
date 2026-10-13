@@ -3,22 +3,19 @@
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { PageCallout } from "@/components/page-callout";
 import { createBudgetBill, deleteBudgetBill, getBudgetData, saveMonthlyBudget, setBudgetBillPaid, updateBudgetBill } from "@/features/budget/actions/budget-actions";
 import { BudgetBillList } from "@/features/budget/components/budget-bill-list";
 import { BudgetExpenseChart } from "@/features/budget/components/budget-expense-chart";
 import { BudgetForms } from "@/features/budget/components/budget-forms";
 import { BudgetHeader } from "@/features/budget/components/budget-header";
 import { BudgetSummary } from "@/features/budget/components/budget-summary";
-import { billOccurrencesForMonth, billOccurrencesInWindow, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, isBillOccurrenceOverdue, monthKey, type ExpensePoint } from "@/features/budget/lib/budget-utils";
+import { billOccurrencesForMonth, billOccurrencesInWindow, billWindowForDate, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, isBillOccurrenceOverdue, monthKey, type ExpensePoint } from "@/features/budget/lib/budget-utils";
 import type { BudgetBill, BillFrequency, BudgetCategory, MonthlyBudget } from "@/features/budget/types";
 
 export function BudgetPlanner({ initialData, initialError }: { initialData: { budgets: MonthlyBudget[]; bills: BudgetBill[] }; initialError: string }) {
 	const currentKey = monthKey(new Date());
-	const billWindowStart = new Date();
-	billWindowStart.setHours(0, 0, 0, 0);
-	billWindowStart.setDate(billWindowStart.getDate() - 4);
-	const billWindowEnd = new Date(billWindowStart);
-	billWindowEnd.setDate(billWindowEnd.getDate() + 9);
+	const { start: billWindowStart, end: billWindowEnd } = billWindowForDate(new Date());
 	const [selectedMonth, setSelectedMonth] = useState(currentKey);
 	const [budgets, setBudgets] = useState<MonthlyBudget[]>(initialData.budgets);
 	const [bills, setBills] = useState<BudgetBill[]>(initialData.bills);
@@ -263,6 +260,6 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			/>
 			<BudgetExpenseChart data={chart} bills={bills} />
 		</div>
-		<p className="flex items-center gap-2 rounded-lg border border-rose-100 bg-rose-50 p-3 text-xs text-rose-950/70 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-200"><Wallet size={16} className="shrink-0 text-rose-700 dark:text-rose-300" /><span><strong>Monthly budget overview:</strong> Plan your spending, keep bills on track, and see how much is left.</span></p>
+		<PageCallout icon={Wallet} title="Monthly budget overview" description="Plan your spending, keep bills on track, and see how much is left." fallbackPalette="rose" />
 	</>;
 }

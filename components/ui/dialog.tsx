@@ -2,7 +2,9 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { usePathname } from "next/navigation";
+import type { CSSProperties } from "react";
 import { cn } from "cn";
+import { getPagePaletteStyles } from "@/components/settings/page-palettes";
 import { navigationItems, useAppSettings, type PagePalette } from "@/components/settings/settings-context";
 
 const Dialog = DialogPrimitive.Root;
@@ -27,6 +29,9 @@ function DialogContent({
   const pagePalette = paletteOverride === undefined
     ? page ? settings.pagePalettes[page] : "default"
     : paletteOverride;
+  const paletteAccent = pagePalette && pagePalette !== "default"
+    ? getPagePaletteStyles(pagePalette).accent
+    : undefined;
 
   return (
     <DialogPrimitive.Portal>
@@ -40,6 +45,10 @@ function DialogContent({
           )}
           {...props}
           data-page-palette={pagePalette && pagePalette !== "default" ? pagePalette : undefined}
+          style={{
+            ...(props.style ?? {}),
+            ...(paletteAccent ? { "--page-accent-base": paletteAccent } as CSSProperties : {}),
+          }}
         >
           {children}
         </DialogPrimitive.Popup>

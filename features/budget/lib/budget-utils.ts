@@ -112,6 +112,22 @@ export function billOccurrencesInWindow(bills: BudgetBill[], start: Date, end: D
 	return occurrences;
 }
 
+export function billWindowForDate(date: Date) {
+	const day = date.getDate();
+	const [startDay, endDay] = day <= 5
+		? [1, 5]
+		: day <= 15
+			? [6, 15]
+			: day <= 20
+				? [16, 20]
+				: [21, 30];
+	const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+	return {
+		start: new Date(date.getFullYear(), date.getMonth(), startDay),
+		end: new Date(date.getFullYear(), date.getMonth(), Math.min(endDay, daysInMonth)),
+	};
+}
+
 export function billWindowLabel(start: Date, end: Date) {
 	const format = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 	return `${format.format(start)}–${format.format(end)}`;

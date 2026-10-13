@@ -17,13 +17,13 @@ export type AppSettings = {
 };
 
 export const defaultSettings: AppSettings = {
-	desktopNavigation: "sidebar",
+	desktopNavigation: "floating",
 	navigationOrder: navigationItems.map(({ href }) => href),
 	pagePalettes: {
-		"/passwords": "default",
-		"/grocery": "default",
-		"/baby-needs": "default",
-		"/budget": "default",
+		"/passwords": "teal",
+		"/grocery": "yellow",
+		"/baby-needs": "blue",
+		"/budget": "orange",
 	},
 	passwordView: "grid",
 };
@@ -41,13 +41,13 @@ export function normalizeAppSettings(value: unknown): AppSettings {
 		: {};
 
 	return {
-		desktopNavigation: saved.desktopNavigation === "floating" ? "floating" : "sidebar",
+		desktopNavigation: saved.desktopNavigation === "sidebar" ? "sidebar" : "floating",
 		navigationOrder: [...order, ...allowedHrefs.filter((href) => !order.includes(href))],
 		pagePalettes: {
-			"/passwords": isPagePalette(savedPalettes["/passwords"]) ? savedPalettes["/passwords"] : "default",
-			"/grocery": isPagePalette(savedPalettes["/grocery"]) ? savedPalettes["/grocery"] : "default",
-			"/baby-needs": isPagePalette(savedPalettes["/baby-needs"]) ? savedPalettes["/baby-needs"] : "default",
-			"/budget": isPagePalette(savedPalettes["/budget"]) ? savedPalettes["/budget"] : "default",
+			"/passwords": isPagePalette(savedPalettes["/passwords"]) ? savedPalettes["/passwords"] : defaultSettings.pagePalettes["/passwords"],
+			"/grocery": isPagePalette(savedPalettes["/grocery"]) ? savedPalettes["/grocery"] : defaultSettings.pagePalettes["/grocery"],
+			"/baby-needs": isPagePalette(savedPalettes["/baby-needs"]) ? savedPalettes["/baby-needs"] : defaultSettings.pagePalettes["/baby-needs"],
+			"/budget": isPagePalette(savedPalettes["/budget"]) ? savedPalettes["/budget"] : defaultSettings.pagePalettes["/budget"],
 		},
 		passwordView: saved.passwordView === "list" ? "list" : "grid",
 	};
