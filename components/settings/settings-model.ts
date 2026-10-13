@@ -1,4 +1,4 @@
-import { isPagePalette, type PagePalette } from "@/components/settings/page-palettes";
+import { isPagePalette, type NamedPagePalette, type PagePalette } from "@/components/settings/page-palettes";
 
 export const navigationItems = [
 	{ href: "/passwords", label: "Password manager" },
@@ -16,15 +16,17 @@ export type AppSettings = {
 	passwordView: "grid" | "list";
 };
 
+export const defaultSettingsPagePalettes = {
+	"/passwords": "teal",
+	"/grocery": "yellow",
+	"/baby-needs": "blue",
+	"/budget": "orange",
+} satisfies Record<NavigationHref, NamedPagePalette>;
+
 export const defaultSettings: AppSettings = {
 	desktopNavigation: "floating",
 	navigationOrder: navigationItems.map(({ href }) => href),
-	pagePalettes: {
-		"/passwords": "teal",
-		"/grocery": "yellow",
-		"/baby-needs": "blue",
-		"/budget": "orange",
-	},
+	pagePalettes: { ...defaultSettingsPagePalettes },
 	passwordView: "grid",
 };
 

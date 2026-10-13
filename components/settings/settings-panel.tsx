@@ -9,7 +9,7 @@ import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTri
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { setDarkMode, useDarkModePreference } from "@/components/theme-toggle";
 import { FamilyReminderSettings } from "@/features/family-calendar/components/family-reminder-settings";
-import { defaultSettings } from "@/components/settings/settings-model";
+import { defaultSettings, defaultSettingsPagePalettes } from "@/components/settings/settings-model";
 import { navigationItems, useAppSettings, type NavigationHref } from "@/components/settings/settings-context";
 import { getPagePaletteStyles, pagePaletteOptions, type NamedPagePalette } from "@/components/settings/page-palettes";
 
@@ -20,13 +20,6 @@ const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: strin
 	"/budget": { icon: ChartNoAxesColumn, color: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300" },
 };
 
-const defaultPaletteSwatches: Record<NavigationHref, string> = {
-	"/passwords": "from-violet-600 to-fuchsia-500",
-	"/grocery": "from-blue-500 to-cyan-400",
-	"/baby-needs": "from-emerald-500 to-teal-400",
-	"/budget": "from-orange-500 to-rose-500",
-};
-
 const paletteOptionDetails: Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }> = {
 	violet: { icon: Heart, description: "Gentle, cool tones for a calm workspace.", tone: "Soft purple", iconColor: "text-[#654878]" },
 	blue: { icon: CloudSun, description: "Bright, calm blues for a clear view.", tone: "A softer blue", iconColor: "text-[#426f8a]" },
@@ -35,6 +28,22 @@ const paletteOptionDetails: Record<NamedPagePalette, { icon: LucideIcon; descrip
 	yellow: { icon: Sun, description: "Cheerful, soft sunshine.", tone: "Creamy yellow", iconColor: "text-[#80631c]" },
 	orange: { icon: Sunrise, description: "Friendly, warm color.", tone: "A soft peach", iconColor: "text-[#8d5735]" },
 	gray: { icon: House, description: "Minimal, neutral tones.", tone: "A warm gray", iconColor: "text-[#55534d]" },
+	mint: { icon: Sprout, description: "Fresh, gentle green tones.", tone: "Fresh mint", iconColor: "text-[#285d42]" },
+	coral: { icon: Sun, description: "Bright, lively warm tones.", tone: "Warm coral", iconColor: "text-[#963f38]" },
+	berry: { icon: Heart, description: "Rich, playful pink tones.", tone: "Soft berry", iconColor: "text-[#78324f]" },
+	ocean: { icon: CloudSun, description: "Cool, refreshing blue-green tones.", tone: "Sea glass", iconColor: "text-[#205653]" },
+	honeyGold: { icon: Sun, description: "Warm, golden tones with a soft glow.", tone: "Honey gold", iconColor: "text-[#71501c]" },
+	berryRose: { icon: Heart, description: "Soft rosy tones with a rich berry accent.", tone: "Berry rose", iconColor: "text-[#642b40]" },
+	mistyBlue: { icon: CloudSun, description: "Soft blue tones for a calm, airy feel.", tone: "Misty blue", iconColor: "text-[#29466b]" },
+	warmSand: { icon: House, description: "Warm neutral tones inspired by natural sand.", tone: "Warm sand", iconColor: "text-[#59402d]" },
+	dustyLavender: { icon: Heart, description: "Muted lavender tones with a gentle warmth.", tone: "Dusty lavender", iconColor: "text-[#49365f]" },
+	oliveCream: { icon: Sprout, description: "Soft olive greens with a creamy finish.", tone: "Olive cream", iconColor: "text-[#3f4927]" },
+	buttercream: { icon: Sun, description: "Soft buttery yellow tones.", tone: "Buttercream pastel", iconColor: "text-[#74551f]" },
+	powderLilac: { icon: Heart, description: "Light lavender tones with a powdery finish.", tone: "Powder lilac pastel", iconColor: "text-[#4d3a70]" },
+	mintCloud: { icon: Sprout, description: "Light, airy mint-green tones.", tone: "Mint cloud pastel", iconColor: "text-[#285743]" },
+	pinkCloud: { icon: Heart, description: "Soft pink tones with a gentle warmth.", tone: "Pink cloud pastel", iconColor: "text-[#713047]" },
+	babyBlue: { icon: CloudSun, description: "Light, airy blue tones.", tone: "Baby blue pastel", iconColor: "text-[#2f5278]" },
+	apricotCream: { icon: Sunrise, description: "Soft peachy tones with a creamy finish.", tone: "Apricot cream pastel", iconColor: "text-[#77452c]" },
 };
 
 function SectionHeading({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
@@ -268,9 +277,11 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 							{navigationItems.map(({ href, label }) => {
 								const { icon: Icon } = navigationVisuals[href];
 								const palette = settings.pagePalettes[href];
-								const swatch = palette === "default" ? defaultPaletteSwatches[href] : getPagePaletteStyles(palette).iconGradient;
+								const originalPalette = defaultSettingsPagePalettes[href];
+								const originalPaletteStyles = getPagePaletteStyles(originalPalette);
+								const swatch = palette === "default" ? originalPaletteStyles.iconGradient : getPagePaletteStyles(palette).iconGradient;
 								const paletteChoices = [
-									{ value: "default" as const, label: "Original", swatch: `bg-linear-to-br ${defaultPaletteSwatches[href]}` },
+									{ value: "default" as const, label: "Original", swatch: `bg-linear-to-br ${originalPaletteStyles.iconGradient}` },
 									...pagePaletteOptions,
 								];
 								return <Popover key={href}>
@@ -283,15 +294,15 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 										<span className="min-w-0 flex-1 truncate">{label}</span>
 										<span className={`grid size-5 shrink-0 place-items-center rounded-full ${palette !== "default" ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200" : "text-slate-400 dark:text-slate-500"}`}>{palette !== "default" ? <Check size={12} /> : <ChevronRight size={16} />}</span>
 									</PopoverTrigger>
-									<PopoverContent align="start" className="max-h-[min(65dvh,36rem)] w-72 overflow-y-auto p-2">
+									<PopoverContent align="start" className="max-h-[min(var(--available-height),50dvh,28rem)] max-w-[var(--available-width)] w-72 overscroll-contain overflow-y-auto p-2">
 										<p className="px-2 pb-2 pt-1 text-xs font-semibold text-slate-700 dark:text-slate-200">Choose a color</p>
 										<div className="space-y-1">
 											{paletteChoices.map((option) => {
 												const details = option.value === "default"
-													? { icon: Icon, description: "Keep this page’s original accent colors.", tone: "Original colors", iconColor: "text-white" }
+													? { icon: Icon, description: "Keep this page’s original accent colors.", tone: "Original colors", iconColor: paletteOptionDetails[originalPalette].iconColor }
 													: paletteOptionDetails[option.value];
 												const OptionIcon = details.icon;
-												const gradient = option.value === "default" ? defaultPaletteSwatches[href] : getPagePaletteStyles(option.value).iconGradient;
+												const gradient = option.value === "default" ? originalPaletteStyles.iconGradient : getPagePaletteStyles(option.value).iconGradient;
 												return <PopoverClose
 													key={option.value}
 													type="button"
