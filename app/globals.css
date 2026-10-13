@@ -101,11 +101,11 @@
 }
 
 .password-library-header {
-	border-color: color-mix(in oklab, var(--password-accent) 24%, #e2e8f0);
+	border-color: color-mix(in oklab, var(--password-accent) 30%, #e2e8f0);
 	background-color: white;
 	background-image:
-		radial-gradient(circle at 96% 4%, color-mix(in oklab, var(--password-accent) 26%, white) 0%, transparent 30%),
-		linear-gradient(115deg, color-mix(in oklab, var(--password-accent) 25%, white), color-mix(in oklab, var(--password-accent) 16%, white) 56%, color-mix(in oklab, var(--password-accent) 8%, white));
+		radial-gradient(circle at 96% 4%, color-mix(in oklab, var(--password-accent) 35%, white) 0%, transparent 30%),
+		linear-gradient(115deg, color-mix(in oklab, var(--password-accent) 34%, white), color-mix(in oklab, var(--password-accent) 22%, white) 56%, color-mix(in oklab, var(--password-accent) 14%, white));
 	box-shadow: 0 10px 28px rgb(15 23 42 / 6%), inset 0 1px 0 rgb(255 255 255 / 85%);
 }
 
@@ -270,14 +270,14 @@
 .password-library-header .feature-section-header-control,
 .password-library-header .feature-section-header-date {
 	border-color: color-mix(in oklab, var(--password-accent) 24%, #e2e8f0);
-	background-color: color-mix(in oklab, var(--password-accent) 4%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 6%, white);
 	color: color-mix(in oklab, var(--password-accent) 74%, #334155);
 	box-shadow: 0 1px 3px rgb(15 23 42 / 8%);
 }
 
 .password-library-header .feature-section-header-control:hover:not(:disabled) {
 	border-color: color-mix(in oklab, var(--password-accent) 42%, #cbd5e1);
-	background-color: color-mix(in oklab, var(--password-accent) 12%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 15%, white);
 	color: color-mix(in oklab, var(--password-accent) 84%, #1e293b);
 }
 
@@ -287,17 +287,17 @@
 
 .password-search-filter-panel {
 	border-color: color-mix(in oklab, var(--password-accent) 18%, #e2e8f0);
-	background-color: color-mix(in oklab, var(--password-accent) 4%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 6%, white);
 }
 
 .password-filter-mode-group {
 	border-color: color-mix(in oklab, var(--password-accent) 16%, #e2e8f0);
-	background-color: color-mix(in oklab, var(--password-accent) 5%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 7%, white);
 }
 
 .password-filter-mode-option--active {
 	border-color: color-mix(in oklab, var(--password-accent) 30%, white);
-	background-color: color-mix(in oklab, var(--password-accent) 21%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 26%, white);
 	color: color-mix(in oklab, var(--password-accent) 88%, #1e293b);
 	box-shadow: 0 1px 4px color-mix(in oklab, var(--password-accent) 12%, transparent), inset 0 1px 0 rgb(255 255 255 / 70%);
 }
@@ -492,16 +492,16 @@
 .password-tile-banner {
 	background-image: linear-gradient(
 		135deg,
-		color-mix(in oklab, var(--password-accent) 40%, white),
-		color-mix(in oklab, var(--password-accent) 24%, #f8fafc)
+		color-mix(in oklab, var(--password-accent) 52%, white),
+		color-mix(in oklab, var(--password-accent) 38%, #f8fafc)
 	);
 }
 
 .password-tile-body {
 	background-image: linear-gradient(
 		145deg,
-		color-mix(in oklab, var(--password-accent) 9%, white),
-		color-mix(in oklab, var(--password-accent) 3%, white) 62%,
+		color-mix(in oklab, var(--password-accent) 11%, white),
+		color-mix(in oklab, var(--password-accent) 5%, white) 62%,
 		white
 	);
 }
@@ -513,13 +513,13 @@
 
 .password-tile-footer {
 	border-color: color-mix(in oklab, var(--password-accent) 24%, #e2e8f0);
-	background-color: color-mix(in oklab, var(--password-accent) 8%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 10%, white);
 	box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%);
 }
 
 .password-tile-site-icon {
 	border-color: color-mix(in oklab, var(--password-accent) 24%, white);
-	background-color: color-mix(in oklab, var(--password-accent) 18%, white);
+	background-color: color-mix(in oklab, var(--password-accent) 22%, white);
 	color: color-mix(in oklab, var(--password-accent) 86%, #334155);
 }
 

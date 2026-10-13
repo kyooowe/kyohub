@@ -165,7 +165,7 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 				Add password
 			</Button>
 		</div>
-		<div data-page-palette-preserve className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+		<div data-page-palette-preserve className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 			<Card className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-blue-200 bg-[#f5f8ff] py-0 shadow-sm shadow-blue-950/5 ring-0 transition-shadow hover:shadow-md dark:border-blue-900/70 dark:bg-[#151b2b]">
 				<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
 					<div className="flex min-w-0 items-center gap-2.5">
