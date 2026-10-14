@@ -19,7 +19,8 @@ export function FeatureSectionHeader({ icon: Icon, title, description, children,
 }) {
 	const pathname = usePathname();
 	const { settings } = useAppSettings();
-	const page = navigationItems.find(({ href }) => pathname.startsWith(href))?.href as NavigationHref | undefined;
+	const activeHref = pathname === "/" ? (settings.navigationOrder[0] ?? "/passwords") : pathname;
+	const page = navigationItems.find(({ href }) => activeHref.startsWith(href))?.href as NavigationHref | undefined;
 	const palette = page ? settings.pagePalettes[page] : undefined;
 	const paletteStyles = getPagePaletteStyles(usePagePalette && palette && palette !== "default" ? palette : theme);
 	const colors = paletteStyles.featureHeader;

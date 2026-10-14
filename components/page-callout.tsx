@@ -6,18 +6,27 @@ import { usePathname } from "next/navigation";
 import { getPagePaletteStyles, type NamedPagePalette } from "@/components/settings/page-palettes";
 import { navigationItems, useAppSettings } from "@/components/settings/settings-context";
 
-export function PageCallout({ icon: Icon, title, description, fallbackPalette, tone = "info" }: {
+export function PageCallout({
+	icon: Icon,
+	title,
+	description,
+	fallbackPalette,
+	palette: paletteProp,
+	tone = "info",
+}: {
 	icon: LucideIcon;
 	title: string;
 	description: string;
 	fallbackPalette: NamedPagePalette;
+	palette?: NamedPagePalette;
 	tone?: "info" | "warning";
 }) {
 	const pathname = usePathname();
 	const { settings } = useAppSettings();
-	const page = navigationItems.find(({ href }) => pathname.startsWith(href))?.href;
+	const activeHref = pathname === "/" ? (settings.navigationOrder[0] ?? "/passwords") : pathname;
+	const page = navigationItems.find(({ href }) => activeHref.startsWith(href))?.href;
 	const configuredPalette = page ? settings.pagePalettes[page] : "default";
-	const paletteName = configuredPalette === "default" ? fallbackPalette : configuredPalette;
+	const paletteName = paletteProp ?? (configuredPalette === "default" ? fallbackPalette : configuredPalette);
 	const palette = getPagePaletteStyles(paletteName);
 	const warning = tone === "warning";
 

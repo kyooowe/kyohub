@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
+import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
@@ -358,13 +358,34 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 						</fieldset>
 					</SettingsSection>
 
+					<SettingsSection value="budget" icon={ChartNoAxesColumn} title="Budget Planner" description="Choose how you set and track your budget.">
+						<fieldset className="mx-2 grid gap-2 sm:mx-4 sm:grid-cols-2">
+							{([
+								{ mode: "cutoff" as const, title: "Set budget per cutoff", description: "Set individual budgets for each cutoff (5, 15, 20, 30)." },
+								{ mode: "monthly" as const, title: "Set budget monthly", description: "Set one total budget for the whole month." },
+							]).map(({ mode, title, description }) => {
+								const selected = (settings.budgetMode ?? "monthly") === mode;
+								const Icon = mode === "monthly" ? CalendarDays : ReceiptText;
+								return <label key={mode} className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-2 text-left transition-all focus-within:ring-2 focus-within:ring-violet-400 ${selected ? "border-violet-400 bg-violet-50 shadow-sm shadow-violet-200/60 ring-1 ring-violet-300 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700" : "border-slate-100 bg-white hover:border-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}>
+									<input type="radio" name="default-budget-mode" value={mode} checked={selected} onChange={() => updateSettings((current) => ({ ...current, budgetMode: mode }))} className="sr-only" />
+									<span className={`grid size-10 shrink-0 place-items-center rounded-lg ${selected ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}><Icon size={17} /></span>
+									<span className="min-w-0 flex-1">
+										<span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">{title}</span>
+										<span className="mt-0.5 block text-[10px] leading-3.5 text-slate-500 dark:text-slate-400">{description}</span>
+									</span>
+									<span className={`grid size-4 shrink-0 place-items-center rounded-full border ${selected ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 dark:border-slate-600"}`}>{selected && <Check size={11} strokeWidth={3} />}</span>
+								</label>;
+							})}
+						</fieldset>
+					</SettingsSection>
+
 					<SettingsSection value="family" icon={Bell} title="Family reminders" description="Manage daily reminders on this device.">
 						<div className="mx-2 sm:mx-4"><FamilyReminderSettings /></div>
 					</SettingsSection>
 					</Accordion>
 				</div>
 				<footer className="flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 bg-white/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/90 sm:px-6">
-					<p className="max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">Restore the default page colors, navigation layout, order, and password view.</p>
+					<p className="max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">Restore the default page colors, navigation layout, order, password view, and budget mode.</p>
 					{restoreNotice && <div role="status" aria-live="polite" className="relative isolate flex w-full basis-full items-center gap-3 overflow-hidden rounded-2xl border border-emerald-200/80 bg-linear-to-br from-emerald-50 via-white to-green-50/70 px-4 py-3 shadow-md shadow-slate-900/5 ring-1 ring-inset ring-white/70 dark:border-emerald-900/80 dark:from-emerald-950/70 dark:via-slate-900 dark:to-green-950/30 dark:shadow-black/20 dark:ring-white/5">
 						<span aria-hidden="true" className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-emerald-400" />
 						<span aria-hidden="true" className="pointer-events-none absolute -right-5 -top-10 size-28 rounded-full border border-white/70 bg-white/10 dark:border-white/5 dark:bg-white/[0.02]" />

@@ -3,7 +3,7 @@
 import { db } from "@/prisma/db";
 import { updateTag, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
-import { isBudgetCategory, type BillFrequency, type BudgetBill, type BudgetCategory, type MonthlyBudget } from "@/features/budget/types";
+import { cutoffDays, isBudgetCategory, type BillFrequency, type BudgetBill, type BudgetCategory, type CutoffDay, type MonthlyBudget } from "@/features/budget/types";
 
 const budgetTag = "budget-planner";
 
@@ -99,6 +99,42 @@ export async function saveMonthlyBudget(monthKey: unknown, amountCents: unknown)
 	updateTag(budgetTag);
 }
 
+export async function saveCutoffBudgets(monthKey: unknown, cutoffs: unknown): Promise<void> {
+	await requireAuth();
+	const month = validateMonthKey(monthKey);
+	if (!cutoffs || typeof cutoffs !== "object") throw new Error("Invalid cutoff budgets.");
+	const cutoffsRecord = cutoffs as Record<string, unknown>;
+
+	let totalCents = 0;
+	const validatedCutoffs: Record<CutoffDay, number> = { 5: 0, 15: 0, 20: 0, 30: 0 };
+
+	for (const day of cutoffDays) {
+		const rawValue = cutoffsRecord[day] ?? cutoffsRecord[String(day)];
+		const cents = typeof rawValue === "number" ? validateAmountCents(rawValue) : 0;
+		validatedCutoffs[day] = cents;
+		totalCents += cents;
+	}
+
+	for (const day of cutoffDays) {
+		const key = `${month}:${day}`;
+		const existing = await db.orm.public.MonthlyBudget.first({ monthKey: key });
+		if (existing) {
+			await db.orm.public.MonthlyBudget.where({ id: existing.id }).update({ amountCents: validatedCutoffs[day] });
+		} else {
+			await db.orm.public.MonthlyBudget.create({ monthKey: key, amountCents: validatedCutoffs[day] });
+		}
+	}
+
+	const existingMonth = await db.orm.public.MonthlyBudget.first({ monthKey: month });
+	if (existingMonth) {
+		await db.orm.public.MonthlyBudget.where({ id: existingMonth.id }).update({ amountCents: totalCents });
+	} else {
+		await db.orm.public.MonthlyBudget.create({ monthKey: month, amountCents: totalCents });
+	}
+
+	updateTag(budgetTag);
+}
+
 export async function createBudgetBill(value: unknown): Promise<void> {
 	await requireAuth();
 	if (!value || typeof value !== "object") throw new Error("Invalid bill.");
@@ -171,3 +207,29 @@ export async function setBudgetBillPaid(id: unknown, monthKey: unknown, paid: un
 	await db.orm.public.BudgetBill.where({ id }).update({ paidMonthKeys });
 	updateTag(budgetTag);
 }
+
+export async function moveBudgetBill(
+	id: unknown,
+	targetMonthKey: unknown,
+	targetDueDay: unknown,
+	frequency?: unknown,
+): Promise<void> {
+	await requireAuth();
+	if (typeof id !== "string" || !id || id.length > 128) throw new Error("Invalid bill ID.");
+	const month = validateMonthKey(targetMonthKey);
+	const dueDay = validateMonthlyDueDay(targetDueDay);
+
+	const existing = await db.orm.public.BudgetBill.first({ id });
+	if (!existing) throw new Error("Bill was not found.");
+
+	const targetFrequency = frequency === "recurring" ? "recurring" : "one-time";
+
+	await db.orm.public.BudgetBill.where({ id }).update({
+		monthKey: targetFrequency === "one-time" ? month : null,
+		dueDay,
+		frequency: targetFrequency,
+	});
+
+	updateTag(budgetTag);
+}
+

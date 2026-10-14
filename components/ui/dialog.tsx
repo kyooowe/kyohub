@@ -25,7 +25,8 @@ function DialogContent({
 }: DialogContentProps) {
   const pathname = usePathname();
   const { settings } = useAppSettings();
-  const page = navigationItems.find(({ href }) => pathname.startsWith(href))?.href;
+  const activeHref = pathname === "/" ? (settings.navigationOrder[0] ?? "/passwords") : pathname;
+  const page = navigationItems.find(({ href }) => activeHref.startsWith(href))?.href;
   const pagePalette = paletteOverride === undefined
     ? page ? settings.pagePalettes[page] : "default"
     : paletteOverride;

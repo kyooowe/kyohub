@@ -9,11 +9,14 @@ export const navigationItems = [
 
 export type NavigationHref = (typeof navigationItems)[number]["href"];
 
+export type BudgetMode = "monthly" | "cutoff";
+
 export type AppSettings = {
 	desktopNavigation: "sidebar" | "floating";
 	navigationOrder: NavigationHref[];
 	pagePalettes: Record<NavigationHref, PagePalette>;
 	passwordView: "grid" | "list";
+	budgetMode: BudgetMode;
 };
 
 export const defaultSettingsPagePalettes = {
@@ -28,6 +31,7 @@ export const defaultSettings: AppSettings = {
 	navigationOrder: navigationItems.map(({ href }) => href),
 	pagePalettes: { ...defaultSettingsPagePalettes },
 	passwordView: "grid",
+	budgetMode: "monthly",
 };
 
 export function normalizeAppSettings(value: unknown): AppSettings {
@@ -52,6 +56,7 @@ export function normalizeAppSettings(value: unknown): AppSettings {
 			"/budget": isPagePalette(savedPalettes["/budget"]) ? savedPalettes["/budget"] : defaultSettings.pagePalettes["/budget"],
 		},
 		passwordView: saved.passwordView === "list" ? "list" : "grid",
+		budgetMode: saved.budgetMode === "cutoff" ? "cutoff" : "monthly",
 	};
 }
 
@@ -76,6 +81,9 @@ export function parseAppSettings(value: unknown): AppSettings {
 	if (candidate.passwordView !== "grid" && candidate.passwordView !== "list") {
 		throw new Error("Invalid password view setting.");
 	}
+	if (candidate.budgetMode !== undefined && candidate.budgetMode !== "monthly" && candidate.budgetMode !== "cutoff") {
+		throw new Error("Invalid budget mode setting.");
+	}
 
 	const palettes = candidate.pagePalettes;
 	if (typeof palettes !== "object" || palettes === null || Array.isArray(palettes)) {
@@ -96,5 +104,6 @@ export function parseAppSettings(value: unknown): AppSettings {
 			"/budget": pagePalettes["/budget"],
 		} as AppSettings["pagePalettes"],
 		passwordView: candidate.passwordView,
+		budgetMode: candidate.budgetMode === "cutoff" ? "cutoff" : "monthly",
 	};
 }

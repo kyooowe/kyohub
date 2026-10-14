@@ -138,7 +138,8 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 
 	const strongCount = passwords.filter((entry) => getStrength(entry.password).score >= 4).length;
 	const passwordHeadingPalette = settings.pagePalettes["/passwords"];
-	const passwordPalette = getPagePaletteStyles(passwordHeadingPalette === "default" ? "violet" : passwordHeadingPalette);
+	const passwordPaletteName = passwordHeadingPalette === "default" ? "violet" : passwordHeadingPalette;
+	const passwordPalette = getPagePaletteStyles(passwordPaletteName);
 	const passwordHeadingColors = passwordPalette.pageHeading;
 	const passwordButtonGradient = passwordPalette.iconGradient;
 
@@ -284,8 +285,8 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 				</nav>}
 			</CardContent>
 		</Card>
-		<div className={pageCount > 1 ? "pt-2" : undefined}>
-			<PageCallout icon={ShieldCheck} title="Shared family workspace" description="Anyone who can access this app can read these passwords. They are not encrypted in the database." fallbackPalette="violet" tone="warning" />
+		<div className="pt-4 sm:pt-6">
+			<PageCallout icon={ShieldCheck} title="Shared family workspace" description="Anyone who can access this app can read these passwords. They are not encrypted in the database." fallbackPalette="violet" palette={passwordPaletteName} tone="warning" />
 		</div>
 		<PasswordDialog entry={dialogEntry} onOpenChange={(open) => { if (!open && !submitting) setDialogEntry(null); }} onSubmit={submitEntry} submitting={submitting} />
 		<PasswordDetailsDialog
