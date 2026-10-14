@@ -28,10 +28,6 @@ export function BudgetCutoffBreakdown({
 	const paletteStyles = getPagePaletteStyles(theme);
 	const headerStyle = { "--password-accent": paletteStyles.accent } as CSSProperties;
 
-	const totalCutoffBudgetCents = cutoffDays.reduce((sum, day) => sum + (cutoffBudgets[day] ?? 0), 0);
-	const totalCutoffBillsCents = cutoffDays.reduce((sum, day) => sum + (cutoffBills[day]?.totalCents ?? 0), 0);
-	const totalCutoffRemainingCents = totalCutoffBudgetCents - totalCutoffBillsCents;
-
 	return (
 		<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
 			{/* Accordion Header styled identically to Bills for October FeatureSectionHeader */}
@@ -87,10 +83,7 @@ export function BudgetCutoffBreakdown({
 						</div>
 					</div>
 
-					<div className="relative z-10 flex w-full items-center justify-between gap-2.5 sm:w-auto sm:justify-end">
-						<span className="password-library-badge inline-flex min-h-10 w-fit items-center rounded-full px-3.5 py-1.5 text-xs font-semibold">
-							{money.format(totalCutoffBudgetCents / 100)} total · {money.format(totalCutoffRemainingCents / 100)} remaining
-						</span>
+					<div className="relative z-10 flex w-full items-center justify-end gap-2.5 sm:w-auto">
 						<div
 							className="grid size-9 shrink-0 place-items-center rounded-full border border-slate-200/80 bg-white/70 text-slate-600 shadow-sm transition-transform duration-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
 							style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}

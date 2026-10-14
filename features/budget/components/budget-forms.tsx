@@ -1,11 +1,11 @@
 import type { FormEvent, Ref } from "react";
-import { CalendarDays, Loader2, Pencil, Plus, ReceiptText } from "lucide-react";
+import { CalendarDays, Loader2, Pencil, Plus, ReceiptText, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { Input } from "@/components/ui/input";
 import { useAppSettings } from "@/components/settings/settings-context";
-import { centsFromInput, cutoffDateRanges, cutoffDays, cutoffShortLabels, formatAmountInput, formatAmountInputChange, money, monthLabel } from "@/features/budget/lib/budget-utils";
+import { activeCutoffDayForDate, centsFromInput, cutoffDateRanges, cutoffDays, cutoffShortLabels, formatAmountInput, formatAmountInputChange, money, monthLabel } from "@/features/budget/lib/budget-utils";
 import { budgetCategories, budgetCategoryLabels, isBudgetCategory, type BillFrequency, type BudgetCategory, type CutoffDay } from "@/features/budget/types";
 
 function ActionCard({ icon: Icon, title, description, buttonLabel, onClick }: {
@@ -249,13 +249,27 @@ export function BudgetForms({
 						<div className="grid gap-3.5 sm:grid-cols-2 sm:gap-4">
 							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
 								Bill name
-								<Input required value={billTitle} onChange={(event) => onBillTitleChange(event.target.value)} placeholder="e.g. Rent" className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500" />
+								<Input required value={billTitle} onChange={(event) => onBillTitleChange(event.target.value)} placeholder={billCategory === "daily-expense" ? "e.g. Lunch with team, Coffee" : "e.g. Rent"} className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500" />
 							</label>
 							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
 								Category
-								<select required value={billCategory} onChange={(event) => {
-									if (isBudgetCategory(event.target.value)) onBillCategoryChange(event.target.value);
-								}} className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+								<select
+									required
+									disabled={editingBill && billCategory === "daily-expense"}
+									value={billCategory}
+									onChange={(event) => {
+										const val = event.target.value;
+										if (isBudgetCategory(val)) {
+											onBillCategoryChange(val);
+											if (val === "daily-expense") {
+												const activeCutoffDay = activeCutoffDayForDate(new Date());
+												onBillDueDayChange(String(activeCutoffDay));
+												onBillFrequencyChange("one-time");
+											}
+										}
+									}}
+									className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+								>
 									{budgetCategories.map((category) => <option key={category} value={category}>{budgetCategoryLabels[category]}</option>)}
 								</select>
 							</label>
@@ -270,23 +284,49 @@ export function BudgetForms({
 									});
 								}} onBlur={(event) => onBillAmountChange(formatAmountInput(event.target.value))} placeholder="e.g. 900.00" className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500" />
 							</label>
-							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
-								Due day
-								<select required value={billDueDay} onChange={(event) => onBillDueDayChange(event.target.value)} className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
-									<option value="">Choose a due day</option>
-									<option value="5">5th day of the month</option>
-									<option value="15">15th day of the month</option>
-									<option value="20">20th day of the month</option>
-									<option value="30">30th day of the month</option>
-								</select>
-							</label>
-							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:col-span-2 sm:text-sm">
-								Billing schedule
-								<select value={billFrequency} onChange={(event) => onBillFrequencyChange(event.target.value as BillFrequency)} className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
-									<option value="recurring">Recurring Monthly</option>
-									<option value="one-time">This month only</option>
-								</select>
-							</label>
+							{billCategory === "daily-expense" ? (
+								<div className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									<span>Cutoff date</span>
+									<div className="flex h-10 w-full items-center justify-between rounded-md border border-violet-200 bg-violet-50/70 px-3 text-xs font-semibold text-violet-800 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-200">
+										<span>{(billDueDay || activeCutoffDayForDate(new Date()))}th Cutoff ({cutoffDateRanges[(Number(billDueDay) || activeCutoffDayForDate(new Date())) as CutoffDay] ?? ""})</span>
+										<span className="rounded bg-violet-200/80 px-1.5 py-0.5 text-[10px] font-bold uppercase text-violet-900 dark:bg-violet-900 dark:text-violet-100">AUTOMATIC</span>
+									</div>
+								</div>
+							) : (
+								<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									Due day
+									<select required value={billDueDay} onChange={(event) => onBillDueDayChange(event.target.value)} className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+										<option value="">Choose a due day</option>
+										<option value="5">5th day of the month</option>
+										<option value="15">15th day of the month</option>
+										<option value="20">20th day of the month</option>
+										<option value="30">30th day of the month</option>
+									</select>
+								</label>
+							)}
+							{billCategory === "daily-expense" ? (
+								<div className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:col-span-2 sm:text-sm">
+									<span>Billing schedule</span>
+									<div className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+										<span>Current cutoff expense · Auto-marked as paid</span>
+										<span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">PAID</span>
+									</div>
+								</div>
+							) : (
+								<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:col-span-2 sm:text-sm">
+									Billing schedule
+									<select value={billFrequency} onChange={(event) => onBillFrequencyChange(event.target.value as BillFrequency)} className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+										<option value="recurring">Recurring Monthly</option>
+										<option value="one-time">This month only</option>
+									</select>
+								</label>
+							)}
+							{billCategory === "daily-expense" && (
+								<div className="sm:col-span-2 flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50/70 p-2.5 text-xs text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-200">
+									<ShoppingBag size={15} className="shrink-0 text-violet-600 dark:text-violet-400" />
+									<span>Auto-marked as paid and automatically deducts from your current <strong>{(billDueDay || activeCutoffDayForDate(new Date()))}th cutoff</strong> budget.</span>
+								</div>
+							)}
 						</div>
 					</div>
 					<div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/40 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:px-6 sm:py-3.5">
