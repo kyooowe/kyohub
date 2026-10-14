@@ -1,4 +1,4 @@
-export type Category = "Social media" | "Banking" | "Games" | "Work" | "Other";
+export type Category = "Social media" | "Banking" | "Games" | "Work" | "Utility" | "Other";
 
 export type PasswordEntry = {
 	id: string;
