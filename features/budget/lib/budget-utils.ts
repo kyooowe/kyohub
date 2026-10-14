@@ -1,4 +1,5 @@
-import type { BudgetBill } from "@/features/budget/types";
+import type { BudgetBill, CutoffDay, MonthlyBudget } from "@/features/budget/types";
+export { cutoffDays } from "@/features/budget/types";
 
 export const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
@@ -65,7 +66,24 @@ export function billsForMonth(bills: BudgetBill[], key: string) {
 }
 
 export function billOccurrencesForMonth(bills: BudgetBill[], key: string): BillOccurrence[] {
-	const selected = new Date(`${key}-01T00:00:00`);
+	const occurrences: BillOccurrence[] = [];
+	for (const bill of bills) {
+		if (bill.frequency === "one-time") {
+			if (bill.monthKey === key) {
+				occurrences.push({ bill, monthKey: key });
+			}
+		} else {
+			const firstMonth = monthKey(new Date(bill.createdAt));
+			if (!firstMonth || firstMonth <= key) {
+				occurrences.push({ bill, monthKey: key });
+			}
+		}
+	}
+	return occurrences;
+}
+
+export function overdueBillOccurrences(bills: BudgetBill[], today: Date): BillOccurrence[] {
+	const currentMonth = monthKey(today);
 	const occurrences: BillOccurrence[] = [];
 	for (const bill of bills) {
 		const firstMonth = bill.frequency === "recurring"
@@ -73,9 +91,10 @@ export function billOccurrencesForMonth(bills: BudgetBill[], key: string): BillO
 			: bill.monthKey;
 		if (!firstMonth) continue;
 		const cursor = new Date(`${firstMonth}-01T00:00:00`);
-		while (cursor <= selected) {
+		const nowMonth = new Date(`${currentMonth}-01T00:00:00`);
+		while (cursor <= nowMonth) {
 			const occurrenceMonth = monthKey(cursor);
-			if (occurrenceMonth === key || !bill.paidMonthKeys.includes(occurrenceMonth)) {
+			if (!bill.paidMonthKeys.includes(occurrenceMonth) && isBillOccurrenceOverdue(bill, occurrenceMonth, today)) {
 				occurrences.push({ bill, monthKey: occurrenceMonth });
 			}
 			if (bill.frequency === "one-time") break;
@@ -131,4 +150,43 @@ export function billWindowForDate(date: Date) {
 export function billWindowLabel(start: Date, end: Date) {
 	const format = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" });
 	return `${format.format(start)}–${format.format(end)}`;
+}
+
+export const cutoffLabels: Record<CutoffDay, string> = {
+	5: "5th cutoff (1st–5th)",
+	15: "15th cutoff (6th–15th)",
+	20: "20th cutoff (16th–20th)",
+	30: "30th cutoff (21st–30th)",
+};
+
+export const cutoffShortLabels: Record<CutoffDay, string> = {
+	5: "5th cutoff",
+	15: "15th cutoff",
+	20: "20th cutoff",
+	30: "30th cutoff",
+};
+
+export const cutoffDateRanges: Record<CutoffDay, string> = {
+	5: "1st – 5th",
+	15: "6th – 15th",
+	20: "16th – 20th",
+	30: "21st – 30th",
+};
+
+export function activeCutoffDayForDate(date: Date): CutoffDay {
+	const day = date.getDate();
+	return day <= 5 ? 5 : day <= 15 ? 15 : day <= 20 ? 20 : 30;
+}
+
+export function cutoffKey(month: string, day: CutoffDay): string {
+	return `${month}:${day}`;
+}
+
+export function getCutoffBudgetsForMonth(budgets: MonthlyBudget[], month: string): Record<CutoffDay, number> {
+	return {
+		5: budgets.find((b) => b.monthKey === `${month}:5`)?.amountCents ?? 0,
+		15: budgets.find((b) => b.monthKey === `${month}:15`)?.amountCents ?? 0,
+		20: budgets.find((b) => b.monthKey === `${month}:20`)?.amountCents ?? 0,
+		30: budgets.find((b) => b.monthKey === `${month}:30`)?.amountCents ?? 0,
+	};
 }

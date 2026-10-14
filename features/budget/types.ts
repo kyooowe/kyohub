@@ -1,3 +1,9 @@
+export const cutoffDays = [5, 15, 20, 30] as const;
+export type CutoffDay = (typeof cutoffDays)[number];
+export function isCutoffDay(value: unknown): value is CutoffDay {
+	return typeof value === "number" && cutoffDays.some((day) => day === value);
+}
+
 export type BillFrequency = "recurring" | "one-time";
 export const budgetCategories = ["utility", "housing", "loan", "foods"] as const;
 export type BudgetCategory = (typeof budgetCategories)[number];

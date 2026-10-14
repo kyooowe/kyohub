@@ -4,7 +4,7 @@ import { createContext, startTransition, useCallback, useContext, useEffect, use
 import { saveAppSettings } from "@/features/settings/actions/settings-actions";
 import { normalizeAppSettings, type AppSettings } from "@/components/settings/settings-model";
 
-export type { AppSettings, NavigationHref } from "@/components/settings/settings-model";
+export type { AppSettings, NavigationHref, BudgetMode } from "@/components/settings/settings-model";
 export type { PagePalette } from "@/components/settings/page-palettes";
 export { navigationItems } from "@/components/settings/settings-model";
 

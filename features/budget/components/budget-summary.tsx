@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { monthLabel, money, type BillOccurrence } from "@/features/budget/lib/budget-utils";
 import type { BudgetBill } from "@/features/budget/types";
+import type { BudgetMode } from "@/components/settings/settings-model";
 
 function overdueDueDate({ bill, monthKey }: BillOccurrence) {
 	const [year, month] = monthKey.split("-").map(Number);
@@ -14,7 +15,28 @@ function overdueDueDate({ bill, monthKey }: BillOccurrence) {
 	return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(year, month - 1, dueDay));
 }
 
-export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduledBillTotalCents, paidBillCount, unpaidBillCount, billWindowLabel, overdueBills, remainingCents, submitting, error, onCompleteOverdue }: {
+export type CutoffBillStat = {
+	totalCents: number;
+	paidCents: number;
+	billCount: number;
+	paidCount: number;
+};
+
+export function BudgetSummary({
+	selectedMonth,
+	budgetCents,
+	billCount,
+	scheduledBillTotalCents,
+	paidBillCount,
+	unpaidBillCount,
+	billWindowLabel,
+	overdueBills,
+	remainingCents,
+	submitting,
+	error,
+	onCompleteOverdue,
+	budgetMode = "monthly",
+}: {
 	selectedMonth: string;
 	budgetCents: number;
 	billCount: number;
@@ -27,6 +49,7 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 	submitting: boolean;
 	error: string;
 	onCompleteOverdue: (bill: BudgetBill, monthKey: string) => Promise<boolean>;
+	budgetMode?: BudgetMode;
 }) {
 	const [overdueDialogOpen, setOverdueDialogOpen] = useState(false);
 	const remainingPercent = budgetCents > 0
@@ -74,65 +97,65 @@ export function BudgetSummary({ selectedMonth, budgetCents, billCount, scheduled
 			</DialogContent>
 		</Dialog>
 		<div data-page-palette-preserve className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-		<Card data-budget-outline="sky" className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-sky-100 bg-[#eaf6ff] py-0 shadow-sm shadow-sky-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
-			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
-				<div className="flex min-w-0 items-center gap-2.5">
-					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-600 text-white"><Wallet size={19} /></span>
-					<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Monthly budget</p>
-				</div>
-				<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-sky-900 dark:bg-slate-800 dark:text-sky-200">{monthLabel(selectedMonth)}</span>
-				<div className="self-end">
-					<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{money.format(budgetCents / 100)}</p>
-					<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Monthly limit</p>
-				</div>
-				<div aria-hidden="true" className="flex h-7 items-end justify-end gap-1 self-end">
-					{["35%", "55%", "72%", "100%", "62%"].map((height) => (
-						<span key={height} className="w-1.5 rounded-full bg-sky-600/75" style={{ height }} />
-					))}
-				</div>
-			</CardContent>
-		</Card>
-		<Card data-budget-outline="rose" className="metric-summary-card metric-summary-card--rose relative gap-0 overflow-hidden rounded-3xl border border-rose-100 bg-[#fff0f3] py-0 shadow-sm shadow-rose-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
-			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
-				<div className="flex min-w-0 items-center gap-2.5">
-					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-600 text-white"><Receipt size={19} /></span>
-					<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Scheduled bills</p>
-				</div>
-				<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-rose-900 dark:bg-slate-800 dark:text-rose-200">{unpaidBillCount} unpaid</span>
-				<div className="self-end">
-					<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{money.format(scheduledBillTotalCents / 100)}</p>
-					<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{paidBillCount} paid · {unpaidBillCount} unpaid</p>
-					<p className="text-[10px] text-slate-400 dark:text-slate-500">{billWindowLabel}</p>
-				</div>
-				<div className="grid w-24 grid-rows-[1.75rem_1.75rem] justify-items-stretch gap-1.5 self-end">
-					<div className="flex h-7 items-center">
-						<div className="h-1.5 w-full overflow-hidden rounded-full bg-rose-200 dark:bg-slate-700"><div className="h-full rounded-full bg-rose-500" style={{ width: `${billCount ? paidBillCount / billCount * 100 : 0}%` }} /></div>
+			<Card data-budget-outline="sky" className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-sky-100 bg-[#eaf6ff] py-0 shadow-sm shadow-sky-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
+				<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
+					<div className="flex min-w-0 items-center gap-2.5">
+						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-600 text-white"><Wallet size={19} /></span>
+						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">{budgetMode === "cutoff" ? "Total Cut Off budget" : "Monthly budget"}</p>
 					</div>
-					<span className="inline-flex h-7 w-full items-center justify-center rounded-full bg-rose-500/10 text-[11px] font-medium text-rose-800 dark:text-rose-300">Paid</span>
-				</div>
-			</CardContent>
-		</Card>
-		<Card data-budget-outline="emerald" className="metric-summary-card metric-summary-card--emerald relative gap-0 overflow-hidden rounded-3xl border border-emerald-100 bg-[#eafbf3] py-0 shadow-sm shadow-emerald-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b] sm:order-2 xl:order-3">
-			<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
-				<div className="flex min-w-0 items-center gap-2.5">
-					<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white"><DollarSign size={19} /></span>
-					<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Remaining</p>
-				</div>
-				<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-emerald-900 dark:bg-slate-800 dark:text-emerald-200">Budget balance</span>
-				<div className="self-end">
-					<p className={`text-3xl font-bold leading-none tracking-tight ${remainingCents < 0 ? "text-rose-700 dark:text-rose-300" : "text-slate-900 dark:text-white"}`}>{money.format(remainingCents / 100)}</p>
-					<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Budget less scheduled bills</p>
-				</div>
-				<div
-					aria-label={remainingPercent === null ? "No budget set" : `${remainingPercent}% of budget remaining`}
-					className="grid size-14 shrink-0 place-items-center self-end justify-self-end rounded-full p-[5px] [--remaining-gauge-track:#bbf7d0] dark:[--remaining-gauge-track:#263445]"
-					role="img"
-					style={remainingGaugeStyle}
-				>
-					<div className="grid size-full place-items-center rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-800 dark:bg-[#151b2b] dark:text-emerald-200">{remainingPercent === null ? "--" : `${remainingPercent}%`}</div>
-				</div>
-			</CardContent>
-		</Card>
+					<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-sky-900 dark:bg-slate-800 dark:text-sky-200">{monthLabel(selectedMonth)}</span>
+					<div className="self-end">
+						<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{money.format(budgetCents / 100)}</p>
+						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{budgetMode === "cutoff" ? "Combined 4 cutoffs" : "Monthly limit"}</p>
+					</div>
+					<div aria-hidden="true" className="flex h-7 items-end justify-end gap-1 self-end">
+						{["35%", "55%", "72%", "100%", "62%"].map((height) => (
+							<span key={height} className="w-1.5 rounded-full bg-sky-600/75" style={{ height }} />
+						))}
+					</div>
+				</CardContent>
+			</Card>
+			<Card data-budget-outline="rose" className="metric-summary-card metric-summary-card--rose relative gap-0 overflow-hidden rounded-3xl border border-rose-100 bg-[#fff0f3] py-0 shadow-sm shadow-rose-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b]">
+				<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
+					<div className="flex min-w-0 items-center gap-2.5">
+						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-600 text-white"><Receipt size={19} /></span>
+						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Scheduled bills</p>
+					</div>
+					<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-rose-900 dark:bg-slate-800 dark:text-rose-200">{unpaidBillCount} unpaid</span>
+					<div className="self-end">
+						<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{money.format(scheduledBillTotalCents / 100)}</p>
+						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{paidBillCount} paid · {unpaidBillCount} unpaid</p>
+						<p className="text-[10px] text-slate-400 dark:text-slate-500">{billWindowLabel}</p>
+					</div>
+					<div className="grid w-24 grid-rows-[1.75rem_1.75rem] justify-items-stretch gap-1.5 self-end">
+						<div className="flex h-7 items-center">
+							<div className="h-1.5 w-full overflow-hidden rounded-full bg-rose-200 dark:bg-slate-700"><div className="h-full rounded-full bg-rose-500" style={{ width: `${billCount ? paidBillCount / billCount * 100 : 0}%` }} /></div>
+						</div>
+						<span className="inline-flex h-7 w-full items-center justify-center rounded-full bg-rose-500/10 text-[11px] font-medium text-rose-800 dark:text-rose-300">Paid</span>
+					</div>
+				</CardContent>
+			</Card>
+			<Card data-budget-outline="emerald" className="metric-summary-card metric-summary-card--emerald relative gap-0 overflow-hidden rounded-3xl border border-emerald-100 bg-[#eafbf3] py-0 shadow-sm shadow-emerald-950/5 ring-0 transition-shadow hover:shadow-md dark:border-[#273349] dark:bg-[#151b2b] sm:order-2 xl:order-3">
+				<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
+					<div className="flex min-w-0 items-center gap-2.5">
+						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white"><DollarSign size={19} /></span>
+						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Remaining</p>
+					</div>
+					<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-emerald-900 dark:bg-slate-800 dark:text-emerald-200">Budget balance</span>
+					<div className="self-end">
+						<p className={`text-3xl font-bold leading-none tracking-tight ${remainingCents < 0 ? "text-rose-700 dark:text-rose-300" : "text-slate-900 dark:text-white"}`}>{money.format(remainingCents / 100)}</p>
+						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Budget less scheduled bills</p>
+					</div>
+					<div
+						aria-label={remainingPercent === null ? "No budget set" : `${remainingPercent}% of budget remaining`}
+						className="grid size-14 shrink-0 place-items-center self-end justify-self-end rounded-full p-[5px] [--remaining-gauge-track:#bbf7d0] dark:[--remaining-gauge-track:#263445]"
+						role="img"
+						style={remainingGaugeStyle}
+					>
+						<div className="grid size-full place-items-center rounded-full bg-emerald-50 text-[10px] font-bold text-emerald-800 dark:bg-[#151b2b] dark:text-emerald-200">{remainingPercent === null ? "--" : `${remainingPercent}%`}</div>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	</div>;
 }

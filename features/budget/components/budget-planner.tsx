@@ -4,16 +4,21 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageCallout } from "@/components/page-callout";
-import { createBudgetBill, deleteBudgetBill, getBudgetData, saveMonthlyBudget, setBudgetBillPaid, updateBudgetBill } from "@/features/budget/actions/budget-actions";
+import { useAppSettings } from "@/components/settings/settings-context";
+import { createBudgetBill, deleteBudgetBill, getBudgetData, moveBudgetBill, saveCutoffBudgets, saveMonthlyBudget, setBudgetBillPaid, updateBudgetBill } from "@/features/budget/actions/budget-actions";
 import { BudgetBillList } from "@/features/budget/components/budget-bill-list";
 import { BudgetExpenseChart } from "@/features/budget/components/budget-expense-chart";
+import { BudgetCutoffBreakdown } from "@/features/budget/components/budget-cutoff-breakdown";
 import { BudgetForms } from "@/features/budget/components/budget-forms";
 import { BudgetHeader } from "@/features/budget/components/budget-header";
 import { BudgetSummary } from "@/features/budget/components/budget-summary";
-import { billOccurrencesForMonth, billOccurrencesInWindow, billWindowForDate, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, isBillOccurrenceOverdue, monthKey, type ExpensePoint } from "@/features/budget/lib/budget-utils";
-import type { BudgetBill, BillFrequency, BudgetCategory, MonthlyBudget } from "@/features/budget/types";
+import { activeCutoffDayForDate, billOccurrencesForMonth, billOccurrencesInWindow, billWindowForDate, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, getCutoffBudgetsForMonth, monthKey, monthLabel, overdueBillOccurrences, type ExpensePoint } from "@/features/budget/lib/budget-utils";
+import type { BudgetBill, BillFrequency, BudgetCategory, CutoffDay, MonthlyBudget } from "@/features/budget/types";
 
 export function BudgetPlanner({ initialData, initialError }: { initialData: { budgets: MonthlyBudget[]; bills: BudgetBill[] }; initialError: string }) {
+	const { settings } = useAppSettings();
+	const budgetMode = settings.budgetMode ?? "monthly";
+
 	const currentKey = monthKey(new Date());
 	const { start: billWindowStart, end: billWindowEnd } = billWindowForDate(new Date());
 	const [selectedMonth, setSelectedMonth] = useState(currentKey);
@@ -23,6 +28,15 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 		const selectedBudget = initialData.budgets.find((item) => item.monthKey === currentKey);
 		return selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "";
 	});
+
+	const initialCutoffs = getCutoffBudgetsForMonth(initialData.budgets, currentKey);
+	const [cutoffInputs, setCutoffInputs] = useState<Record<CutoffDay, string>>(() => ({
+		5: initialCutoffs[5] ? formatAmountInput((initialCutoffs[5] / 100).toFixed(2)) : "",
+		15: initialCutoffs[15] ? formatAmountInput((initialCutoffs[15] / 100).toFixed(2)) : "",
+		20: initialCutoffs[20] ? formatAmountInput((initialCutoffs[20] / 100).toFixed(2)) : "",
+		30: initialCutoffs[30] ? formatAmountInput((initialCutoffs[30] / 100).toFixed(2)) : "",
+	}));
+
 	const [billTitle, setBillTitle] = useState("");
 	const [billCategory, setBillCategory] = useState<BudgetCategory>("utility");
 	const [billAmount, setBillAmount] = useState("");
@@ -33,6 +47,8 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	const [billDialogOpen, setBillDialogOpen] = useState(false);
 	const billFormRef = useRef<HTMLFormElement>(null);
 	const [submitting, setSubmitting] = useState(false);
+	const [pendingPaymentKeys, setPendingPaymentKeys] = useState<string[]>([]);
+	const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 	const [error, setError] = useState(initialError);
 
 	const budget = budgets.find((item) => item.monthKey === selectedMonth);
@@ -43,15 +59,31 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	const billOccurrences = billOccurrencesInWindow(bills, billWindowStart, billWindowEnd);
 	const paidBillCount = billOccurrences.filter(({ bill, monthKey: occurrenceMonth }) => bill.paidMonthKeys.includes(occurrenceMonth)).length;
 	const unpaidBillCount = billOccurrences.length - paidBillCount;
-	const overdueMonthBills = monthBillOccurrences.filter(({ bill, monthKey: occurrenceMonth }) =>
-		!bill.paidMonthKeys.includes(occurrenceMonth) && isBillOccurrenceOverdue(bill, occurrenceMonth, today),
-	);
-	const overdueOccurrenceKeys = new Set(overdueMonthBills.map(({ bill, monthKey: occurrenceMonth }) => `${bill.id}-${occurrenceMonth}`));
-	const visibleMonthBillOccurrences = monthBillOccurrences.filter(({ bill, monthKey: occurrenceMonth }) =>
-		!overdueOccurrenceKeys.has(`${bill.id}-${occurrenceMonth}`),
-	);
+	const overdueBills = overdueBillOccurrences(bills, today);
 	const expenses = monthBills.reduce((total, bill) => total + bill.amountCents, 0);
 	const remaining = (budget?.amountCents ?? 0) - expenses;
+
+	const cutoffBudgets = getCutoffBudgetsForMonth(budgets, selectedMonth);
+
+	const cutoffBills: Record<CutoffDay, { totalCents: number; paidCents: number; billCount: number; paidCount: number }> = {
+		5: { totalCents: 0, paidCents: 0, billCount: 0, paidCount: 0 },
+		15: { totalCents: 0, paidCents: 0, billCount: 0, paidCount: 0 },
+		20: { totalCents: 0, paidCents: 0, billCount: 0, paidCount: 0 },
+		30: { totalCents: 0, paidCents: 0, billCount: 0, paidCount: 0 },
+	};
+	for (const { bill, monthKey: occurrenceMonth } of monthBillOccurrences) {
+		const day = bill.dueDay ?? 30;
+		const cutoff: CutoffDay = day <= 5 ? 5 : day <= 15 ? 15 : day <= 20 ? 20 : 30;
+		const isPaid = bill.paidMonthKeys.includes(occurrenceMonth);
+		cutoffBills[cutoff].totalCents += bill.amountCents;
+		cutoffBills[cutoff].billCount += 1;
+		if (isPaid) {
+			cutoffBills[cutoff].paidCents += bill.amountCents;
+			cutoffBills[cutoff].paidCount += 1;
+		}
+	}
+
+	const activeCutoff: CutoffDay | null = selectedMonth === currentKey ? activeCutoffDayForDate(new Date()) : null;
 
 	const chart = useMemo<ExpensePoint[]>(() => {
 		const selected = new Date(`${selectedMonth}-01T00:00:00`);
@@ -71,6 +103,13 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			setBills(data.bills);
 			const selectedBudget = data.budgets.find((item) => item.monthKey === selectedMonth);
 			setBudgetInput(selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "");
+			const currentCutoffs = getCutoffBudgetsForMonth(data.budgets, selectedMonth);
+			setCutoffInputs({
+				5: currentCutoffs[5] ? formatAmountInput((currentCutoffs[5] / 100).toFixed(2)) : "",
+				15: currentCutoffs[15] ? formatAmountInput((currentCutoffs[15] / 100).toFixed(2)) : "",
+				20: currentCutoffs[20] ? formatAmountInput((currentCutoffs[20] / 100).toFixed(2)) : "",
+				30: currentCutoffs[30] ? formatAmountInput((currentCutoffs[30] / 100).toFixed(2)) : "",
+			});
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not load budget data.");
 		}
@@ -80,6 +119,17 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 		setSelectedMonth(value);
 		const selectedBudget = budgets.find((item) => item.monthKey === value);
 		setBudgetInput(selectedBudget ? formatAmountInput((selectedBudget.amountCents / 100).toFixed(2)) : "");
+		const currentCutoffs = getCutoffBudgetsForMonth(budgets, value);
+		setCutoffInputs({
+			5: currentCutoffs[5] ? formatAmountInput((currentCutoffs[5] / 100).toFixed(2)) : "",
+			15: currentCutoffs[15] ? formatAmountInput((currentCutoffs[15] / 100).toFixed(2)) : "",
+			20: currentCutoffs[20] ? formatAmountInput((currentCutoffs[20] / 100).toFixed(2)) : "",
+			30: currentCutoffs[30] ? formatAmountInput((currentCutoffs[30] / 100).toFixed(2)) : "",
+		});
+	}
+
+	function handleCutoffInputChange(day: CutoffDay, value: string) {
+		setCutoffInputs((prev) => ({ ...prev, [day]: value }));
 	}
 
 	async function submitBudget(event: FormEvent<HTMLFormElement>) {
@@ -97,6 +147,27 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			setBudgetDialogOpen(false);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not save monthly budget.");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	async function submitCutoffBudget(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		const parsed: Record<CutoffDay, number> = {
+			5: centsFromInput(cutoffInputs[5]) ?? 0,
+			15: centsFromInput(cutoffInputs[15]) ?? 0,
+			20: centsFromInput(cutoffInputs[20]) ?? 0,
+			30: centsFromInput(cutoffInputs[30]) ?? 0,
+		};
+		setSubmitting(true);
+		try {
+			await saveCutoffBudgets(selectedMonth, parsed);
+			await load();
+			setError("");
+			setBudgetDialogOpen(false);
+		} catch (cause) {
+			setError(cause instanceof Error ? cause.message : "Could not save cutoff budgets.");
 		} finally {
 			setSubmitting(false);
 		}
@@ -156,10 +227,10 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			} else {
 				await createBudgetBill(billData);
 			}
+			setBillDialogOpen(false);
 			resetBillForm();
 			await load();
 			setError("");
-			setBillDialogOpen(false);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : `Could not ${editingBillId ? "update" : "add"} bill.`);
 		} finally {
@@ -168,7 +239,7 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	}
 
 	async function removeBill(id: string) {
-		setSubmitting(true);
+		setDeletingBillId(id);
 		try {
 			await deleteBudgetBill(id);
 			if (editingBillId === id) resetBillForm();
@@ -177,25 +248,53 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not delete bill.");
 		} finally {
-			setSubmitting(false);
+			setDeletingBillId(null);
 		}
 	}
 
 	async function updateBillPayment(bill: BudgetBill, paymentMonth: string, paid: boolean): Promise<boolean> {
-		if (submitting) return false;
-		setSubmitting(true);
+		const key = `${bill.id}-${paymentMonth}`;
+		if (pendingPaymentKeys.includes(key)) return false;
+
+		setPendingPaymentKeys((current) => [...current, key]);
+		const previousBills = bills;
+		setBills((current) =>
+			current.map((item) =>
+				item.id !== bill.id
+					? item
+					: {
+							...item,
+							paidMonthKeys: paid
+								? Array.from(new Set([...item.paidMonthKeys, paymentMonth]))
+								: item.paidMonthKeys.filter((month) => month !== paymentMonth),
+						},
+			),
+		);
+
 		try {
 			await setBudgetBillPaid(bill.id, paymentMonth, paid);
-			setBills((current) => current.map((item) => item.id !== bill.id ? item : {
-				...item,
-				paidMonthKeys: paid
-					? Array.from(new Set([...item.paidMonthKeys, paymentMonth]))
-					: item.paidMonthKeys.filter((month) => month !== paymentMonth),
-			}));
 			setError("");
 			return true;
 		} catch (cause) {
+			setBills(previousBills);
 			setError(cause instanceof Error ? cause.message : "Could not update bill payment status.");
+			return false;
+		} finally {
+			setPendingPaymentKeys((current) => current.filter((k) => k !== key));
+		}
+	}
+
+	async function moveBill(bill: BudgetBill, targetMonthKey: string, targetDueDay: CutoffDay, frequency: BillFrequency): Promise<boolean> {
+		if (submitting) return false;
+		setSubmitting(true);
+		try {
+			await moveBudgetBill(bill.id, targetMonthKey, targetDueDay, frequency);
+			await load();
+			toast.success(`Moved "${bill.title}" to ${monthLabel(targetMonthKey)} (day ${targetDueDay})`);
+			setError("");
+			return true;
+		} catch (cause) {
+			setError(cause instanceof Error ? cause.message : "Could not move bill.");
 			return false;
 		} finally {
 			setSubmitting(false);
@@ -213,16 +312,22 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			paidBillCount={paidBillCount}
 			unpaidBillCount={unpaidBillCount}
 			billWindowLabel={billWindowLabel(billWindowStart, billWindowEnd)}
-			overdueBills={overdueMonthBills}
+			overdueBills={overdueBills}
 			remainingCents={remaining}
 			submitting={submitting}
 			error={error}
 			onCompleteOverdue={(bill, paymentMonth) => updateBillPayment(bill, paymentMonth, true)}
+			budgetMode={budgetMode}
 		/>
 		<BudgetForms
+			budgetMode={budgetMode}
+			selectedMonth={selectedMonth}
 			budgetInput={budgetInput}
 			onBudgetInputChange={setBudgetInput}
 			onSubmitBudget={submitBudget}
+			cutoffInputs={cutoffInputs}
+			onCutoffInputChange={handleCutoffInputChange}
+			onSubmitCutoffBudget={submitCutoffBudget}
 			billTitle={billTitle}
 			onBillTitleChange={setBillTitle}
 			billCategory={billCategory}
@@ -248,18 +353,38 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			}}
 		/>
 		<div className="space-y-4">
+			{budgetMode === "cutoff" && (
+				<BudgetCutoffBreakdown
+					selectedMonth={selectedMonth}
+					cutoffBudgets={cutoffBudgets}
+					cutoffBills={cutoffBills}
+					activeCutoff={activeCutoff}
+				/>
+			)}
 			<BudgetBillList
 				selectedMonth={selectedMonth}
-				occurrences={visibleMonthBillOccurrences}
-				hiddenOverdueCount={overdueMonthBills.length}
+				occurrences={monthBillOccurrences}
+				hiddenOverdueCount={0}
 				today={today}
 				submitting={submitting}
+				pendingPaymentKeys={pendingPaymentKeys}
+				deletingBillId={deletingBillId}
 				onEdit={editBill}
+				onMoveBill={moveBill}
 				onPaymentChange={(bill, paymentMonth, paid) => void updateBillPayment(bill, paymentMonth, paid)}
 				onDelete={(id) => void removeBill(id)}
 			/>
 			<BudgetExpenseChart data={chart} bills={bills} />
 		</div>
-		<PageCallout icon={Wallet} title="Monthly budget overview" description="Plan your spending, keep bills on track, and see how much is left." fallbackPalette="rose" />
+		<PageCallout
+			icon={Wallet}
+			title={budgetMode === "cutoff" ? "Cutoff budget overview" : "Monthly budget overview"}
+			description={
+				budgetMode === "cutoff"
+					? "Plan your cutoff spending for the 5th, 15th, 20th, and 30th, keep bills on track, and balance each period."
+					: "Plan your spending, keep bills on track, and see how much is left."
+			}
+			fallbackPalette="rose"
+		/>
 	</>;
 }
