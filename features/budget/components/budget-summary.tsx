@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
-import { monthLabel, money, type BillOccurrence } from "@/features/budget/lib/budget-utils";
-import type { BudgetBill } from "@/features/budget/types";
+import { cutoffDateRanges, cutoffShortLabels, monthLabel, money, type BillOccurrence } from "@/features/budget/lib/budget-utils";
+import type { BudgetBill, CutoffDay } from "@/features/budget/types";
 import type { BudgetMode } from "@/components/settings/settings-model";
 
 function overdueDueDate({ bill, monthKey }: BillOccurrence) {
@@ -36,6 +36,7 @@ export function BudgetSummary({
 	error,
 	onCompleteOverdue,
 	budgetMode = "monthly",
+	currentCutoffDay,
 }: {
 	selectedMonth: string;
 	budgetCents: number;
@@ -50,6 +51,7 @@ export function BudgetSummary({
 	error: string;
 	onCompleteOverdue: (bill: BudgetBill, monthKey: string) => Promise<boolean>;
 	budgetMode?: BudgetMode;
+	currentCutoffDay?: CutoffDay;
 }) {
 	const [overdueDialogOpen, setOverdueDialogOpen] = useState(false);
 	const remainingPercent = budgetCents > 0
@@ -101,12 +103,12 @@ export function BudgetSummary({
 				<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_6rem] grid-rows-[2.5rem_1fr] gap-x-3 gap-y-2 p-3.5">
 					<div className="flex min-w-0 items-center gap-2.5">
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-600 text-white"><Wallet size={19} /></span>
-						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">{budgetMode === "cutoff" ? "Total Cut Off budget" : "Monthly budget"}</p>
+						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">{budgetMode === "cutoff" ? "Current Cut Off budget" : "Monthly budget"}</p>
 					</div>
-					<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-sky-900 dark:bg-slate-800 dark:text-sky-200">{monthLabel(selectedMonth)}</span>
+					<span className="inline-flex h-7 min-w-20 w-fit items-center justify-center self-center rounded-full bg-white/70 px-2.5 text-[10px] font-semibold text-sky-900 dark:bg-slate-800 dark:text-sky-200">{budgetMode === "cutoff" && currentCutoffDay ? cutoffShortLabels[currentCutoffDay] : monthLabel(selectedMonth)}</span>
 					<div className="self-end">
 						<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">{money.format(budgetCents / 100)}</p>
-						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{budgetMode === "cutoff" ? "Combined 4 cutoffs" : "Monthly limit"}</p>
+						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{budgetMode === "cutoff" ? (currentCutoffDay ? `${cutoffShortLabels[currentCutoffDay]} (${cutoffDateRanges[currentCutoffDay]})` : "Current cutoff limit") : "Monthly limit"}</p>
 					</div>
 					<div aria-hidden="true" className="flex h-7 items-end justify-end gap-1 self-end">
 						{["35%", "55%", "72%", "100%", "62%"].map((height) => (
@@ -141,10 +143,10 @@ export function BudgetSummary({
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-600 text-white"><DollarSign size={19} /></span>
 						<p className="truncate text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">Remaining</p>
 					</div>
-					<span className="inline-flex h-7 w-24 items-center justify-center self-center rounded-full bg-white/70 px-2 text-[10px] font-semibold text-emerald-900 dark:bg-slate-800 dark:text-emerald-200">Budget balance</span>
+					<span className="inline-flex h-7 min-w-20 w-fit items-center justify-center self-center rounded-full bg-white/70 px-2.5 text-[10px] font-semibold text-emerald-900 dark:bg-slate-800 dark:text-emerald-200">{budgetMode === "cutoff" ? "Cutoff balance" : "Budget balance"}</span>
 					<div className="self-end">
 						<p className={`text-3xl font-bold leading-none tracking-tight ${remainingCents < 0 ? "text-rose-700 dark:text-rose-300" : "text-slate-900 dark:text-white"}`}>{money.format(remainingCents / 100)}</p>
-						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Budget less scheduled bills</p>
+						<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{budgetMode === "cutoff" ? "Cutoff budget less bills" : "Budget less scheduled bills"}</p>
 					</div>
 					<div
 						aria-label={remainingPercent === null ? "No budget set" : `${remainingPercent}% of budget remaining`}

@@ -20,7 +20,6 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	const budgetMode = settings.budgetMode ?? "monthly";
 
 	const currentKey = monthKey(new Date());
-	const { start: billWindowStart, end: billWindowEnd } = billWindowForDate(new Date());
 	const [selectedMonth, setSelectedMonth] = useState(currentKey);
 	const [budgets, setBudgets] = useState<MonthlyBudget[]>(initialData.budgets);
 	const [bills, setBills] = useState<BudgetBill[]>(initialData.bills);
@@ -56,6 +55,21 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	const monthBillOccurrences = billOccurrencesForMonth(bills, selectedMonth);
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
+
+	const isCurrentMonth = selectedMonth === currentKey;
+	const selectedDate = useMemo(() => {
+		const [year, month] = selectedMonth.split("-").map(Number);
+		if (isCurrentMonth) return new Date();
+		const day = Math.min(new Date().getDate(), 28);
+		return new Date(year, month - 1, day);
+	}, [selectedMonth, isCurrentMonth]);
+
+	const currentCutoffDay: CutoffDay = activeCutoffDayForDate(selectedDate);
+	const { start: billWindowStart, end: billWindowEnd } = useMemo(
+		() => billWindowForDate(selectedDate),
+		[selectedDate],
+	);
+
 	const billOccurrences = billOccurrencesInWindow(bills, billWindowStart, billWindowEnd);
 	const paidBillCount = billOccurrences.filter(({ bill, monthKey: occurrenceMonth }) => bill.paidMonthKeys.includes(occurrenceMonth)).length;
 	const unpaidBillCount = billOccurrences.length - paidBillCount;
@@ -83,7 +97,13 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 		}
 	}
 
-	const activeCutoff: CutoffDay | null = selectedMonth === currentKey ? activeCutoffDayForDate(new Date()) : null;
+	const activeCutoff: CutoffDay | null = isCurrentMonth ? currentCutoffDay : null;
+	const currentCutoffBudget = cutoffBudgets[currentCutoffDay] ?? 0;
+	const currentCutoffBills = cutoffBills[currentCutoffDay]?.totalCents ?? 0;
+	const currentCutoffRemaining = currentCutoffBudget - currentCutoffBills;
+
+	const summaryBudgetCents = budgetMode === "cutoff" ? currentCutoffBudget : (budget?.amountCents ?? 0);
+	const summaryRemainingCents = budgetMode === "cutoff" ? currentCutoffRemaining : remaining;
 
 	const chart = useMemo<ExpensePoint[]>(() => {
 		const selected = new Date(`${selectedMonth}-01T00:00:00`);
@@ -202,8 +222,10 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 			return;
 		}
 		const title = billTitle.trim();
-		const duplicate = bills.some((bill) =>
-			bill.id !== editingBillId && bill.title.trim().toLowerCase() === title.toLowerCase(),
+		const isDaily = billCategory === "daily-expense";
+		const currentActiveCutoff = activeCutoffDayForDate(new Date());
+		const duplicate = !isDaily && bills.some((bill) =>
+			bill.id !== editingBillId && bill.category !== "daily-expense" && bill.title.trim().toLowerCase() === title.toLowerCase(),
 		);
 		if (duplicate) {
 			toast.error("A bill with this name already exists.");
@@ -216,11 +238,14 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 				title,
 				category: billCategory,
 				amountCents: amount,
-				frequency: billFrequency,
-				monthKey: billFrequency === "one-time"
+				frequency: isDaily ? "one-time" : billFrequency,
+				monthKey: (isDaily || billFrequency === "one-time")
 					? billBeingEdited?.frequency === "one-time" ? billBeingEdited.monthKey : selectedMonth
 					: null,
-				dueDay: Number(billDueDay),
+				dueDay: isDaily
+					? (billBeingEdited?.dueDay ?? currentActiveCutoff)
+					: Number(billDueDay),
+				paidMonthKeys: isDaily ? [selectedMonth] : undefined,
 			};
 			if (editingBillId) {
 				await updateBudgetBill(editingBillId, billData);
@@ -253,6 +278,10 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	}
 
 	async function updateBillPayment(bill: BudgetBill, paymentMonth: string, paid: boolean): Promise<boolean> {
+		if (bill.category === "daily-expense") {
+			toast.info("Daily expenses are automatically marked as paid.");
+			return false;
+		}
 		const key = `${bill.id}-${paymentMonth}`;
 		if (pendingPaymentKeys.includes(key)) return false;
 
@@ -306,18 +335,19 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 		<BudgetHeader selectedMonth={selectedMonth} onSelectMonth={selectMonth} />
 		<BudgetSummary
 			selectedMonth={selectedMonth}
-			budgetCents={budget?.amountCents ?? 0}
+			budgetCents={summaryBudgetCents}
 			billCount={billOccurrences.length}
 			scheduledBillTotalCents={billOccurrences.reduce((total, { bill }) => total + bill.amountCents, 0)}
 			paidBillCount={paidBillCount}
 			unpaidBillCount={unpaidBillCount}
 			billWindowLabel={billWindowLabel(billWindowStart, billWindowEnd)}
 			overdueBills={overdueBills}
-			remainingCents={remaining}
+			remainingCents={summaryRemainingCents}
 			submitting={submitting}
 			error={error}
 			onCompleteOverdue={(bill, paymentMonth) => updateBillPayment(bill, paymentMonth, true)}
 			budgetMode={budgetMode}
+			currentCutoffDay={currentCutoffDay}
 		/>
 		<BudgetForms
 			budgetMode={budgetMode}

@@ -30,9 +30,10 @@ function normalizedTitle(value: string): string {
 	return value.trim().toLowerCase();
 }
 
-async function ensureUniqueBillTitle(title: string, excludedId?: string): Promise<void> {
-	const existingBills = await db.orm.public.BudgetBill.select("id", "title").all();
-	if (existingBills.some((bill) => bill.id !== excludedId && normalizedTitle(bill.title) === normalizedTitle(title))) {
+async function ensureUniqueBillTitle(title: string, excludedId?: string, isDaily = false): Promise<void> {
+	if (isDaily) return;
+	const existingBills = await db.orm.public.BudgetBill.select("id", "title", "category").all();
+	if (existingBills.some((bill) => bill.id !== excludedId && bill.category !== "daily-expense" && normalizedTitle(bill.title) === normalizedTitle(title))) {
 		throw new Error("A bill with this name already exists.");
 	}
 }
@@ -139,12 +140,18 @@ export async function createBudgetBill(value: unknown): Promise<void> {
 	await requireAuth();
 	if (!value || typeof value !== "object") throw new Error("Invalid bill.");
 	const bill = value as Record<string, unknown>;
-	const frequency = validateFrequency(bill.frequency);
 	const category = validateCategory(bill.category);
-	const monthKey = frequency === "one-time" ? validateMonthKey(bill.monthKey) : null;
+	const isDaily = category === "daily-expense";
+	const frequency = isDaily ? "one-time" : validateFrequency(bill.frequency);
+	const monthKey = (isDaily || frequency === "one-time") ? validateMonthKey(bill.monthKey) : null;
 	const dueDay = validateMonthlyDueDay(bill.dueDay);
 	const title = validateTitle(bill.title);
-	await ensureUniqueBillTitle(title);
+	await ensureUniqueBillTitle(title, undefined, isDaily);
+	const paidMonthKeys = isDaily && monthKey
+		? [monthKey]
+		: Array.isArray(bill.paidMonthKeys)
+			? bill.paidMonthKeys.filter((k): k is string => typeof k === "string")
+			: [];
 	await db.orm.public.BudgetBill.create({
 		title,
 		category,
@@ -152,6 +159,7 @@ export async function createBudgetBill(value: unknown): Promise<void> {
 		frequency,
 		monthKey,
 		dueDay,
+		paidMonthKeys,
 	});
 	updateTag(budgetTag);
 }
@@ -160,14 +168,15 @@ export async function updateBudgetBill(id: unknown, value: unknown): Promise<voi
 	await requireAuth();
 	if (typeof id !== "string" || !id || id.length > 128 || !value || typeof value !== "object") throw new Error("Invalid bill.");
 	const bill = value as Record<string, unknown>;
-	const frequency = validateFrequency(bill.frequency);
 	const category = validateCategory(bill.category);
-	const monthKey = frequency === "one-time" ? validateMonthKey(bill.monthKey) : null;
+	const isDaily = category === "daily-expense";
+	const frequency = isDaily ? "one-time" : validateFrequency(bill.frequency);
+	const monthKey = (isDaily || frequency === "one-time") ? validateMonthKey(bill.monthKey) : null;
 	const dueDay = validateDueDay(bill.dueDay);
 	const existing = await db.orm.public.BudgetBill.first({ id });
 	if (!existing) throw new Error("Bill was not found.");
 	const title = validateTitle(bill.title);
-	await ensureUniqueBillTitle(title, id);
+	await ensureUniqueBillTitle(title, id, isDaily);
 	await db.orm.public.BudgetBill.where({ id }).update({
 		title,
 		category,
@@ -196,6 +205,9 @@ export async function setBudgetBillPaid(id: unknown, monthKey: unknown, paid: un
 
 	const existing = await db.orm.public.BudgetBill.first({ id });
 	if (!existing) throw new Error("Bill was not found.");
+	if (existing.category === "daily-expense" && !paid) {
+		throw new Error("Daily expenses are permanently marked as paid.");
+	}
 	const frequency = validateFrequency(existing.frequency);
 	if (frequency === "one-time" && existing.monthKey !== month) {
 		throw new Error("This bill is not scheduled for the selected month.");
