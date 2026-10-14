@@ -23,7 +23,7 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 	return <Dialog open={entry !== null} onOpenChange={onOpenChange}>
 		<DialogContent pagePalette={dialogPalette} data-page-palette-surface className="palette-dialog-panel max-w-md overflow-hidden rounded-[24px] border-slate-200 bg-white p-0 shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900">
 			{entry && <>
-				<PaletteDialogHeader eyebrow="SAVED LOGIN" title={entry.website} description={entry.category} icon={<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-10 rounded-xl" />} closeLabel="Close details" />
+				<PaletteDialogHeader eyebrow="SAVED LOGIN" title={entry.website} description={entry.category} icon={<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-11" />} closeLabel="Close details" />
 				<div className="space-y-5 px-5 py-5 sm:px-6">
 					<a href={url} target="_blank" rel="noreferrer" className="group flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 transition-colors hover:border-violet-200 hover:bg-violet-50/60 dark:border-slate-700 dark:bg-slate-950/60 dark:hover:border-violet-800 dark:hover:bg-violet-950/20">
 						<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white text-violet-600 shadow-sm dark:bg-slate-800 dark:text-violet-300">

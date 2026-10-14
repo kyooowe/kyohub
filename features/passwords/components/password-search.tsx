@@ -121,7 +121,7 @@ export function PasswordSearch({ query, onQueryChange, filter, onFilterChange, r
 									onChange={() => onFilterChange(category)}
 									className="sr-only"
 								/>
-								<PasswordAvatar category={category} className="size-3.5 shrink-0" />
+								<PasswordAvatar category={category} className="size-3.5 shrink-0" variant="icon-only" />
 								<span>{category}</span>
 							</label>;
 						})}

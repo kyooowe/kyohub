@@ -3,21 +3,17 @@
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import {
-	BriefcaseBusiness,
 	Check,
 	Copy,
 	ExternalLink,
-	Gamepad2,
 	Globe,
-	Landmark,
 	ShieldAlert,
 	ShieldCheck,
 	Star,
 	Trash2,
-	type LucideIcon,
 } from "lucide-react";
 import { PasswordAvatar } from "@/features/passwords/components/password-avatar";
-import { getStrength } from "@/features/passwords/lib/password-utils";
+import { categoryMeta, getStrength } from "@/features/passwords/lib/password-utils";
 import type { Category, PasswordEntry } from "@/features/passwords/types";
 
 export const passwordCategoryStyles: Record<Category, { bannerStyle: string }> = {
@@ -33,17 +29,12 @@ export const passwordCategoryStyles: Record<Category, { bannerStyle: string }> =
 	Work: {
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
+	Utility: {
+		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
+	},
 	Other: {
 		bannerStyle: "from-violet-700 via-purple-600 to-indigo-600",
 	},
-};
-
-const categoryIcons: Partial<Record<Category, LucideIcon>> = {
-	"Social media": Globe,
-	Banking: Landmark,
-	Games: Gamepad2,
-	Work: BriefcaseBusiness,
-	Other: Globe,
 };
 
 type PasswordTileProps = {
@@ -59,7 +50,8 @@ type PasswordTileProps = {
 
 export function PasswordTile({ entry, layout, onClick, onCopyPassword, onDelete, onToggleFavorite, favoritePending, paletteAccent }: PasswordTileProps) {
 	const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "copied" | "failed">("idle");
-	const CategoryIcon = categoryIcons[entry.category];
+	const meta = categoryMeta[entry.category] ?? categoryMeta.Other;
+	const CategoryIcon = meta.icon;
 	const isSecure = getStrength(entry.password).score >= 4;
 	const SecurityIcon = isSecure ? ShieldCheck : ShieldAlert;
 	const websiteUrl = entry.url ? (/^https?:\/\//i.test(entry.url) ? entry.url : `https://${entry.url}`) : null;
@@ -82,7 +74,7 @@ export function PasswordTile({ entry, layout, onClick, onCopyPassword, onDelete,
 					type="button"
 					onClick={onClick}
 					aria-label={`View ${entry.website} password details`}
-					className="relative z-10 grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+					className="relative z-10 grid size-11 shrink-0 place-items-center rounded-2xl transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
 				>
 					<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full" />
 				</button>
@@ -155,7 +147,7 @@ export function PasswordTile({ entry, layout, onClick, onCopyPassword, onDelete,
 					type="button"
 					onClick={onClick}
 					aria-label={`View ${entry.website} password details`}
-					className="relative z-10 grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border-[3px] border-white bg-white p-0 shadow-md shadow-slate-900/10 transition-transform duration-200 group-hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500 dark:border-slate-800 dark:bg-slate-900"
+					className="relative z-10 grid size-14 shrink-0 place-items-center rounded-2xl transition-transform duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-400"
 				>
 					<PasswordAvatar category={entry.category} website={entry.website} url={entry.url} className="size-full" />
 				</button>
@@ -208,8 +200,8 @@ export function PasswordTile({ entry, layout, onClick, onCopyPassword, onDelete,
 					<span className="mt-0.5 block truncate text-sm font-medium text-slate-500 dark:text-slate-400">{entry.username || "View account details"}</span>
 				</button>
 				<div className="relative z-10 mt-3 flex flex-wrap items-center gap-1.5">
-					<span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-						{CategoryIcon && <CategoryIcon size={12} />}
+					<span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${meta.badge}`}>
+						<CategoryIcon size={12} strokeWidth={2.2} />
 						{entry.category}
 					</span>
 					<span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold ${isSecure ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300" : "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"}`}>
