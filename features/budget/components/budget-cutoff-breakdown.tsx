@@ -43,7 +43,7 @@ export function BudgetCutoffBreakdown({
 				role="button"
 				tabIndex={0}
 				aria-expanded={isOpen}
-				className="password-library-header relative isolate flex min-h-[96px] cursor-pointer select-none items-center overflow-hidden rounded-3xl border px-4 py-4 text-slate-900 shadow-lg transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 sm:px-5 sm:py-4"
+				className="password-library-header relative isolate flex min-h-[80px] cursor-pointer select-none items-center overflow-hidden rounded-3xl border px-4 py-3.5 text-slate-900 shadow-lg transition-all hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 sm:min-h-[96px] sm:px-5 sm:py-4"
 			>
 				{/* Circle vector orbits */}
 				<span
@@ -55,16 +55,16 @@ export function BudgetCutoffBreakdown({
 					className="password-library-orbit pointer-events-none absolute right-20 -top-20 size-48 rounded-full opacity-60"
 				/>
 
-				<div className="relative z-10 flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex min-w-0 items-center gap-3.5">
+				<div className="relative z-10 flex w-full items-center justify-between gap-3">
+					<div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
 						<span
-							className={`grid size-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br ${paletteStyles.iconGradient} text-white shadow-md shadow-slate-900/10 ring-1 ring-inset ring-white/40`}
+							className={`grid size-11 shrink-0 place-items-center rounded-2xl bg-linear-to-br ${paletteStyles.iconGradient} text-white shadow-md shadow-slate-900/10 ring-1 ring-inset ring-white/40 sm:size-12`}
 						>
 							<CalendarClock size={20} />
 						</span>
 						<div className="min-w-0">
-							<div className="flex flex-wrap items-center gap-2">
-								<h2 className="text-base font-semibold tracking-normal text-slate-900 dark:text-white sm:text-lg">
+							<div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+								<h2 className="text-sm font-semibold tracking-normal text-slate-900 dark:text-white sm:text-lg">
 									Cutoff Breakdown
 								</h2>
 								<span
@@ -72,18 +72,18 @@ export function BudgetCutoffBreakdown({
 										backgroundColor: "color-mix(in oklab, var(--page-accent-base) 14%, transparent)",
 										color: "var(--page-accent-base)",
 									}}
-									className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
+									className="rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5"
 								>
 									4 periods (5, 15, 20, 30)
 								</span>
 							</div>
-							<p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+							<p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
 								Budgets and scheduled bills for {monthLabel(selectedMonth)}
 							</p>
 						</div>
 					</div>
 
-					<div className="relative z-10 flex w-full items-center justify-end gap-2.5 sm:w-auto">
+					<div className="relative z-10 flex shrink-0 items-center">
 						<div
 							className="grid size-9 shrink-0 place-items-center rounded-full border border-slate-200/80 bg-white/70 text-slate-600 shadow-sm transition-transform duration-200 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
 							style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
