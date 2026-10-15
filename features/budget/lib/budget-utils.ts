@@ -7,7 +7,7 @@ const amountInputFormat = new Intl.NumberFormat("en-PH", { minimumFractionDigits
 
 export type BillOccurrence = { bill: BudgetBill; monthKey: string };
 
-export type ExpensePoint = { key: string; budget: number; expenses: number };
+export type ExpensePoint = { key: string; budget: number; expenses: number; remaining?: number };
 
 export function monthKey(date: Date) {
 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -190,3 +190,17 @@ export function getCutoffBudgetsForMonth(budgets: MonthlyBudget[], month: string
 		30: budgets.find((b) => b.monthKey === `${month}:30`)?.amountCents ?? 0,
 	};
 }
+
+export function getPageNumbers(currentPage: number, totalPages: number): (number | "...")[] {
+	if (totalPages <= 5) {
+		return Array.from({ length: totalPages }, (_, i) => i + 1);
+	}
+	if (currentPage <= 3) {
+		return [1, 2, 3, 4, "...", totalPages];
+	}
+	if (currentPage >= totalPages - 2) {
+		return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+	}
+	return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+}
+

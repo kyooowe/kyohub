@@ -106,13 +106,15 @@ export function FamilyReminderSettings() {
 	}[state];
 
 	return (
-		<section data-page-palette-surface className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-			<div className="flex min-w-0 flex-1 items-start gap-2.5">
-				<span className="grid size-10 shrink-0 place-items-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"><Bell size={17} /></span>
-				<div>
-					<p className="text-xs font-semibold text-slate-800 dark:text-slate-100">Tomorrow’s family reminders</p>
-					<p className="mt-0.5 text-[10px] leading-4 text-slate-500 dark:text-slate-400">{statusMessage}</p>
-					{error && <p role="alert" className="mt-1 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
+		<section data-page-palette-surface className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+			<div className="flex min-w-0 flex-1 items-start gap-3">
+				<span className="grid size-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300">
+					<Bell size={18} />
+				</span>
+				<div className="min-w-0 flex-1">
+					<p className="text-xs font-semibold text-slate-800 dark:text-slate-100 sm:text-sm">Tomorrow’s family reminders</p>
+					<p className="mt-0.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 sm:text-xs">{statusMessage}</p>
+					{error && <p role="alert" className="mt-1 text-xs text-rose-700 dark:text-rose-300">{error}</p>}
 				</div>
 			</div>
 			{(state === "disabled" || state === "enabled") && (
@@ -123,8 +125,8 @@ export function FamilyReminderSettings() {
 					data-page-palette-action={state === "disabled" ? true : undefined}
 					data-page-palette-secondary={state === "enabled" ? true : undefined}
 					className={state === "enabled"
-						? "min-h-9 rounded-lg border-violet-200 bg-white px-3 text-xs text-violet-800 shadow-sm transition-colors hover:border-violet-300 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-200 dark:hover:border-violet-700 dark:hover:bg-violet-950"
-						: "min-h-9 rounded-lg border-0 bg-violet-600 px-3 text-xs text-white shadow-sm transition-colors hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500"}
+						? "min-h-9 w-full shrink-0 justify-center rounded-xl border-violet-200 bg-white px-3.5 text-xs text-violet-800 shadow-sm transition-colors hover:border-violet-300 hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-200 dark:hover:border-violet-700 dark:hover:bg-violet-950 sm:w-auto"
+						: "min-h-9 w-full shrink-0 justify-center rounded-xl border-0 bg-violet-600 px-3.5 text-xs text-white shadow-sm transition-colors hover:bg-violet-700 dark:bg-violet-600 dark:hover:bg-violet-500 sm:w-auto"}
 					onClick={() => void (state === "enabled" ? disable() : enable())}
 				>
 					{state === "enabled" ? <BellOff size={16} /> : <Bell size={16} />}

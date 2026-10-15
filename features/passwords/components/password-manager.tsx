@@ -14,6 +14,7 @@ import { PasswordList } from "@/features/passwords/components/password-list";
 import { PasswordSearch } from "@/features/passwords/components/password-search";
 import { createPasswordEntry, deletePasswordEntry, getPasswordEntries, setPasswordFavorite, updatePasswordEntry } from "@/features/passwords/actions/password-actions";
 import { getStrength } from "@/features/passwords/lib/password-utils";
+import { getPageNumbers } from "@/features/budget/lib/budget-utils";
 import type { PasswordEntry } from "@/features/passwords/types";
 import { useAppSettings } from "@/components/settings/settings-context";
 import { getPagePaletteStyles } from "@/components/settings/page-palettes";
@@ -61,6 +62,7 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 	const activePage = Math.min(currentPage, pageCount);
 	const firstVisibleIndex = (activePage - 1) * rowsPerPage;
 	const visibleEntries = filteredEntries.slice(firstVisibleIndex, firstVisibleIndex + rowsPerPage);
+	const pageNumbers = getPageNumbers(activePage, pageCount);
 
 	function changeQuery(value: string) {
 		setQuery(value);
@@ -272,17 +274,70 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 					paletteAccent={passwordPalette.accent}
 				/>
 				<PasswordList entries={visibleEntries} view={view} onSelect={setDetailsEntry} onCopyPassword={copyPassword} onDelete={setDeleteTarget} onToggleFavorite={toggleFavorite} favoritePending={favoritePending} paletteAccent={passwordPalette.accent} />
-				{filteredEntries.length > 0 && pageCount > 1 && <nav aria-label="Password list pagination" className="shared-pagination password-pagination flex justify-center pt-2" style={{ "--pagination-accent": passwordPalette.accent } as CSSProperties}>
-					<div className="shared-pagination-controls inline-flex items-center gap-1.5 rounded-2xl border p-1.5">
-						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Previous page" title="Previous page" disabled={activePage === 1} onClick={() => setCurrentPage(activePage - 1)}><ChevronLeft size={16} /></Button>
-						<p aria-live="polite" className="shared-pagination-page flex min-w-28 items-center justify-center gap-1.5 px-2 text-xs">
-							<span className="font-medium">Page</span>
-							<span className="shared-pagination-current grid size-7 place-items-center rounded-lg font-bold">{activePage}</span>
-							<span className="font-medium">of {pageCount}</span>
-						</p>
-						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Next page" title="Next page" disabled={activePage === pageCount} onClick={() => setCurrentPage(activePage + 1)}><ChevronRight size={16} /></Button>
-					</div>
-				</nav>}
+				{filteredEntries.length > 0 && pageCount > 1 && (
+					<nav aria-label="Password list pagination" className="shared-pagination password-pagination w-full pt-3" style={{ "--pagination-accent": passwordPalette.accent } as CSSProperties}>
+						<div className="shared-pagination-controls flex w-full items-center justify-between rounded-2xl border p-1.5 sm:px-3 sm:py-2">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Previous page"
+								title="Previous page"
+								disabled={activePage === 1}
+								onClick={() => setCurrentPage(activePage - 1)}
+							>
+								<ChevronLeft size={16} />
+								<span className="hidden sm:inline">Previous</span>
+							</Button>
+							<div className="flex items-center gap-1">
+								{pageNumbers.map((page, idx) => {
+									if (page === "...") {
+										return (
+											<span
+												key={`ellipsis-${idx}`}
+												className="grid size-8.5 place-items-center text-xs font-semibold text-slate-400 select-none dark:text-slate-500"
+											>
+												…
+											</span>
+										);
+									}
+
+									const isCurrent = page === activePage;
+									return (
+										<button
+											key={page}
+											type="button"
+											onClick={() => setCurrentPage(Number(page))}
+											aria-current={isCurrent ? "page" : undefined}
+											aria-label={`Page ${page}`}
+											className={`grid size-8.5 place-items-center rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+												isCurrent
+													? "shared-pagination-current text-white shadow-xs"
+													: "shared-pagination-button"
+											}`}
+										>
+											{page}
+										</button>
+									);
+								})}
+							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Next page"
+								title="Next page"
+								disabled={activePage === pageCount}
+								onClick={() => setCurrentPage(activePage + 1)}
+							>
+								<span className="hidden sm:inline">Next</span>
+								<ChevronRight size={16} />
+							</Button>
+						</div>
+					</nav>
+				)}
 			</CardContent>
 		</Card>
 		<div className="pt-4 sm:pt-6">
