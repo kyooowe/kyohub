@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FeatureSectionHeader } from "@/components/feature-section-header";
 import { BudgetBillMoveDialog } from "@/features/budget/components/budget-bill-move-dialog";
-import { activeCutoffDayForDate, monthLabel, money, isBillOccurrenceOverdue, type BillOccurrence } from "@/features/budget/lib/budget-utils";
+import { activeCutoffDayForDate, getPageNumbers, monthLabel, money, isBillOccurrenceOverdue, type BillOccurrence } from "@/features/budget/lib/budget-utils";
 import { budgetCategories, budgetCategoryLabels, type BillFrequency, type BudgetBill, type BudgetCategory, type CutoffDay } from "@/features/budget/types";
 
 const dueDayOptions = [5, 15, 20, 30] as const;
@@ -72,6 +72,7 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 	const visibleTotalCents = filteredOccurrences.reduce((total, { bill }) => total + bill.amountCents, 0);
 	const rangeStart = filteredOccurrences.length > 0 ? firstVisibleIndex + 1 : 0;
 	const rangeEnd = Math.min(firstVisibleIndex + rowsPerPage, filteredOccurrences.length);
+	const pageNumbers = getPageNumbers(activePage, pageCount);
 
 	return <Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
 		<FeatureSectionHeader theme="rose" icon={Receipt} title={`Bills for ${monthLabel(selectedMonth)}`} description={hiddenOverdueCount > 0 ? "Overdue bills are available in the alert above." : "Monthly bills included in the total."} appearance="soft" className="min-h-[96px]">
@@ -203,17 +204,70 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 									? `No ${budgetCategoryLabels[categoryFilter].toLowerCase()} bills scheduled for this month.`
 									: "No bills match these filters."}
 				</div>}
-				{filteredOccurrences.length > 0 && pageCount > 1 && <nav aria-label="Bills pagination" className="shared-pagination flex justify-center pt-3">
-					<div className="shared-pagination-controls inline-flex items-center gap-1.5 rounded-2xl border p-1.5">
-						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Previous page" title="Previous page" disabled={activePage === 1} onClick={() => setCurrentPage(activePage - 1)}><ChevronLeft size={16} /></Button>
-						<p aria-live="polite" className="shared-pagination-page flex min-w-28 items-center justify-center gap-1.5 px-2 text-xs">
-							<span className="font-medium">Page</span>
-							<span className="shared-pagination-current grid size-7 place-items-center rounded-lg font-bold">{activePage}</span>
-							<span className="font-medium">of {pageCount}</span>
-						</p>
-						<Button type="button" variant="ghost" size="icon" className="shared-pagination-button size-9 rounded-xl" aria-label="Next page" title="Next page" disabled={activePage === pageCount} onClick={() => setCurrentPage(activePage + 1)}><ChevronRight size={16} /></Button>
-					</div>
-				</nav>}
+				{filteredOccurrences.length > 0 && pageCount > 1 && (
+					<nav aria-label="Bills pagination" className="shared-pagination w-full pt-3">
+						<div className="shared-pagination-controls flex w-full items-center justify-between rounded-2xl border p-1.5 sm:px-3 sm:py-2">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Previous page"
+								title="Previous page"
+								disabled={activePage === 1}
+								onClick={() => setCurrentPage(activePage - 1)}
+							>
+								<ChevronLeft size={16} />
+								<span className="hidden sm:inline">Previous</span>
+							</Button>
+							<div className="flex items-center gap-1">
+								{pageNumbers.map((page, idx) => {
+									if (page === "...") {
+										return (
+											<span
+												key={`ellipsis-${idx}`}
+												className="grid size-8.5 place-items-center text-xs font-semibold text-slate-400 select-none dark:text-slate-500"
+											>
+												…
+											</span>
+										);
+									}
+
+									const isCurrent = page === activePage;
+									return (
+										<button
+											key={page}
+											type="button"
+											onClick={() => setCurrentPage(Number(page))}
+											aria-current={isCurrent ? "page" : undefined}
+											aria-label={`Page ${page}`}
+											className={`grid size-8.5 place-items-center rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+												isCurrent
+													? "shared-pagination-current text-white shadow-xs"
+													: "shared-pagination-button"
+											}`}
+										>
+											{page}
+										</button>
+									);
+								})}
+							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Next page"
+								title="Next page"
+								disabled={activePage === pageCount}
+								onClick={() => setCurrentPage(activePage + 1)}
+							>
+								<span className="hidden sm:inline">Next</span>
+								<ChevronRight size={16} />
+							</Button>
+						</div>
+					</nav>
+				)}
 			</section>
 		</CardContent>
 		<BudgetBillMoveDialog

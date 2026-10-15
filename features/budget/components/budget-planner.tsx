@@ -12,7 +12,7 @@ import { BudgetCutoffBreakdown } from "@/features/budget/components/budget-cutof
 import { BudgetForms } from "@/features/budget/components/budget-forms";
 import { BudgetHeader } from "@/features/budget/components/budget-header";
 import { BudgetSummary } from "@/features/budget/components/budget-summary";
-import { activeCutoffDayForDate, billOccurrencesForMonth, billOccurrencesInWindow, billWindowForDate, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, getCutoffBudgetsForMonth, monthKey, monthLabel, overdueBillOccurrences, type ExpensePoint } from "@/features/budget/lib/budget-utils";
+import { activeCutoffDayForDate, billOccurrencesForMonth, billOccurrencesInWindow, billWindowForDate, billsForMonth, billWindowLabel, centsFromInput, formatAmountInput, getCutoffBudgetsForMonth, monthKey, monthLabel, overdueBillOccurrences } from "@/features/budget/lib/budget-utils";
 import type { BudgetBill, BillFrequency, BudgetCategory, CutoffDay, MonthlyBudget } from "@/features/budget/types";
 
 export function BudgetPlanner({ initialData, initialError }: { initialData: { budgets: MonthlyBudget[]; bills: BudgetBill[] }; initialError: string }) {
@@ -105,16 +105,6 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 	const summaryBudgetCents = budgetMode === "cutoff" ? currentCutoffBudget : (budget?.amountCents ?? 0);
 	const summaryRemainingCents = budgetMode === "cutoff" ? currentCutoffRemaining : remaining;
 
-	const chart = useMemo<ExpensePoint[]>(() => {
-		const selected = new Date(`${selectedMonth}-01T00:00:00`);
-		return Array.from({ length: 9 }, (_, index) => {
-			const date = new Date(selected.getFullYear(), selected.getMonth() - 8 + index, 1);
-			const key = monthKey(date);
-			const monthBudget = budgets.find((item) => item.monthKey === key)?.amountCents ?? 0;
-			const monthExpenses = billsForMonth(bills, key).reduce((total, bill) => total + bill.amountCents, 0);
-			return { key, budget: monthBudget, expenses: monthExpenses };
-		});
-	}, [bills, budgets, selectedMonth]);
 
 	async function load() {
 		try {
@@ -404,7 +394,13 @@ export function BudgetPlanner({ initialData, initialError }: { initialData: { bu
 				onPaymentChange={(bill, paymentMonth, paid) => void updateBillPayment(bill, paymentMonth, paid)}
 				onDelete={(id) => void removeBill(id)}
 			/>
-			<BudgetExpenseChart data={chart} bills={bills} />
+			<BudgetExpenseChart
+				bills={bills}
+				budgets={budgets}
+				selectedMonth={selectedMonth}
+				budgetMode={budgetMode}
+				currentCutoffDay={currentCutoffDay}
+			/>
 		</div>
 		<PageCallout
 			icon={Wallet}
