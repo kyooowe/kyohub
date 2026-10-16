@@ -77,53 +77,17 @@ Keep your family's shared logins organized and easy to find.
 
 ## Get started
 
-### Requirements
+Deploying your own private family hub is completely free and takes under 15 minutes! We built an interactive, beginner-friendly deployment guide directly into KyoHub with step-by-step checklists, an interactive `.env` builder, and copy-paste commands:
 
-- PostgreSQL 15 or newer
-- npm
+👉 **[How to Deploy KyoHub on Your Own](https://kyohub-one.vercel.app/deploy)**
 
-### Local setup
+### 🚀 What the tutorial covers:
 
-1. Create a PostgreSQL database and copy `.env.example` to `.env`.
-2. Set `DATABASE_URL` to your database connection string and configure the authentication values below.
-3. Install dependencies and create the database tables:
+1. **Database Setup:** Create a free PostgreSQL cloud database with Prisma in a few clicks.
+2. **Project Setup:** Download Node.js & VS Code, clone KyoHub, and sync your `.env` credentials.
+3. **Vercel Deployment:** Deploy your private hub live to the cloud with your own 24/7 accessible URL.
 
-```bash
-npm install
-npx prisma db init
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to use Kyohub locally. `npx prisma db init` creates the tables in the database configured by `DATABASE_URL`.
-
-### Environment settings
-
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string. |
-| `AUTH_PINS` | Comma-separated six-digit PINs allowed to sign in. |
-| `AUTH_USERS` | Comma-separated `PIN:Name` pairs; each allowed PIN needs a profile name. |
-| `AUTH_SECRET` | Long random secret used to sign session cookies. |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | Public Web Push key used by the browser; set this and the server's `VAPID_PUBLIC_KEY` to the same value. |
-| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Server-side Web Push credentials and contact subject for sending reminders. |
-| `CRON_SECRET` | Secret used to authorize the scheduled reminder endpoint. |
-
-The VAPID settings and `CRON_SECRET` are only needed for push reminders. To generate a random `AUTH_SECRET`, run `openssl rand -hex 32`.
-
-## Push reminders
-
-Users can enable or disable reminders for each browser or device from the baby calendar. The app sends a daily notification about the next day's vaccinations and important dates at 9 PM Philippine time. Push requires a supported browser, notification permission, and the VAPID settings above. The scheduled endpoint is `/api/cron/baby-reminders`.
-
-## Production
-
-Build the app and run the production server with:
-
-```bash
-npm run build
-npm run start
-```
-
-Provide the same environment settings to your hosting environment. A cron scheduler must send the value of `CRON_SECRET` in the `Authorization` header when it calls the reminder endpoint.
+> 💡 **Beginner Friendly:** No coding or technical experience required! The tutorial includes everyday analogies, a beginner glossary popup, and troubleshooting guides for common deployment questions.
 
 ---
 
