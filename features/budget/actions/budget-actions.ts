@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/prisma/db";
-import { updateTag, unstable_cache } from "next/cache";
+import { updateTag, revalidatePath, unstable_cache } from "next/cache";
 import { requireAuth } from "@/features/auth/lib/session";
 import { cutoffDays, isBudgetCategory, type BillFrequency, type BudgetBill, type BudgetCategory, type CutoffDay, type MonthlyBudget } from "@/features/budget/types";
 
@@ -33,7 +33,7 @@ function normalizedTitle(value: string): string {
 async function ensureUniqueBillTitle(title: string, excludedId?: string, isDaily = false): Promise<void> {
 	if (isDaily) return;
 	const existingBills = await db.orm.public.BudgetBill.select("id", "title", "category").all();
-	if (existingBills.some((bill) => bill.id !== excludedId && bill.category !== "daily-expense" && normalizedTitle(bill.title) === normalizedTitle(title))) {
+	if (existingBills.some((bill) => bill.id !== excludedId && bill.category !== "daily-expense" && bill.category !== "grocery" && normalizedTitle(bill.title) === normalizedTitle(title))) {
 		throw new Error("A bill with this name already exists.");
 	}
 }
@@ -98,6 +98,7 @@ export async function saveMonthlyBudget(monthKey: unknown, amountCents: unknown)
 		await db.orm.public.MonthlyBudget.create({ monthKey: month, amountCents: amount });
 	}
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function saveCutoffBudgets(monthKey: unknown, cutoffs: unknown): Promise<void> {
@@ -134,6 +135,7 @@ export async function saveCutoffBudgets(monthKey: unknown, cutoffs: unknown): Pr
 	}
 
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function createBudgetBill(value: unknown): Promise<void> {
@@ -162,6 +164,7 @@ export async function createBudgetBill(value: unknown): Promise<void> {
 		paidMonthKeys,
 	});
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function updateBudgetBill(id: unknown, value: unknown): Promise<void> {
@@ -186,6 +189,7 @@ export async function updateBudgetBill(id: unknown, value: unknown): Promise<voi
 		dueDay,
 	});
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function deleteBudgetBill(id: unknown): Promise<void> {
@@ -194,7 +198,26 @@ export async function deleteBudgetBill(id: unknown): Promise<void> {
 	const existing = await db.orm.public.BudgetBill.first({ id });
 	if (!existing) throw new Error("Bill was not found.");
 	await db.orm.public.BudgetBill.where({ id }).delete();
+
+	if (id.startsWith("grocery-")) {
+		const dateKey = id.replace("grocery-", "");
+		const row = await db.orm.public.AppSetting.first({ id: "grocery_budget_sync" });
+		if (row) {
+			try {
+				const syncData = JSON.parse(row.value);
+				if (syncData.autoAddDates?.[dateKey]) {
+					syncData.autoAddDates[dateKey] = false;
+					await db.orm.public.AppSetting.where({ id: "grocery_budget_sync" }).update({ value: JSON.stringify(syncData) });
+					updateTag("grocery-items");
+				}
+			} catch {
+				// ignore parse error
+			}
+		}
+	}
+
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function setBudgetBillPaid(id: unknown, monthKey: unknown, paid: unknown): Promise<void> {
@@ -217,7 +240,30 @@ export async function setBudgetBillPaid(id: unknown, monthKey: unknown, paid: un
 		? Array.from(new Set([...existing.paidMonthKeys, month]))
 		: existing.paidMonthKeys.filter((paidMonth) => paidMonth !== month);
 	await db.orm.public.BudgetBill.where({ id }).update({ paidMonthKeys });
+
+	if (id.startsWith("grocery-")) {
+		const dateKey = id.replace("grocery-", "");
+		const [rawItems, row] = await Promise.all([
+			db.orm.public.GroceryItem.select("id").where({ dateKey }).all(),
+			db.orm.public.AppSetting.first({ id: "grocery_budget_sync" }),
+		]);
+		if (row) {
+			try {
+				const syncData = JSON.parse(row.value);
+				syncData.itemMeta = syncData.itemMeta || {};
+				for (const item of rawItems) {
+					syncData.itemMeta[item.id] = { ...(syncData.itemMeta[item.id] || {}), paid };
+				}
+				await db.orm.public.AppSetting.where({ id: "grocery_budget_sync" }).update({ value: JSON.stringify(syncData) });
+				updateTag("grocery-items");
+			} catch {
+				// ignore parse error
+			}
+		}
+	}
+
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 
 export async function moveBudgetBill(
@@ -243,5 +289,6 @@ export async function moveBudgetBill(
 	});
 
 	updateTag(budgetTag);
+	revalidatePath("/budget");
 }
 

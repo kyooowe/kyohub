@@ -270,7 +270,7 @@ export function BudgetForms({
 									}}
 									className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
 								>
-									{budgetCategories.map((category) => <option key={category} value={category}>{budgetCategoryLabels[category]}</option>)}
+									{budgetCategories.filter((category) => category !== "grocery").map((category) => <option key={category} value={category}>{budgetCategoryLabels[category]}</option>)}
 								</select>
 							</label>
 							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">

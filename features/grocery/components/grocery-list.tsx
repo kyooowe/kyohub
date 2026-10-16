@@ -3,10 +3,36 @@ import { Button } from "@/components/ui/button";
 import { GroceryItem } from "@/features/grocery/components/grocery-item";
 import type { GroceryItem as GroceryItemType } from "@/features/grocery/types";
 
-export function GroceryList({ items, onUpdate, onEdit, onAdd, submitting = false, completionBlockedIds = new Set<string>() }: { items: GroceryItemType[]; onUpdate: (id: string, update: (item: GroceryItemType) => GroceryItemType | null) => void; onEdit: (item: GroceryItemType) => void; onAdd: () => void; submitting?: boolean; completionBlockedIds?: Set<string> }) {
+export function GroceryList({
+	items,
+	onUpdate,
+	onEdit,
+	onAdd,
+	submitting = false,
+	completionBlockedIds = new Set<string>(),
+	isAutoAddChecked = false,
+}: {
+	items: GroceryItemType[];
+	onUpdate: (id: string, update: (item: GroceryItemType) => GroceryItemType | null) => void;
+	onEdit: (item: GroceryItemType) => void;
+	onAdd: () => void;
+	submitting?: boolean;
+	completionBlockedIds?: Set<string>;
+	isAutoAddChecked?: boolean;
+}) {
 	return <>
 		<div className="min-h-32 space-y-1.5">
-			{items.map((item) => <GroceryItem key={item.id} item={item} onUpdate={onUpdate} onEdit={onEdit} submitting={submitting} completionBlocked={completionBlockedIds.has(item.id)} />)}
+			{items.map((item) => (
+				<GroceryItem
+					key={item.id}
+					item={item}
+					onUpdate={onUpdate}
+					onEdit={onEdit}
+					submitting={submitting}
+					completionBlocked={completionBlockedIds.has(item.id)}
+					isAutoAddChecked={isAutoAddChecked}
+				/>
+			))}
 			{items.length === 0 && <div className="planner-empty-state relative isolate flex min-h-44 flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border px-4 py-5 text-center">
 				<svg aria-hidden="true" viewBox="0 0 100 100" className="planner-empty-bubbles pointer-events-none absolute right-4 top-1/2 z-0 size-28 -translate-y-1/2 sm:right-8 sm:size-32">
 					<circle cx="22" cy="24" r="15" fill="currentColor" fillOpacity=".12" stroke="white" strokeOpacity=".7" strokeWidth="1.5" />

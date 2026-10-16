@@ -5,7 +5,7 @@ export function isCutoffDay(value: unknown): value is CutoffDay {
 }
 
 export type BillFrequency = "recurring" | "one-time";
-export const budgetCategories = ["utility", "housing", "loan", "foods", "daily-expense"] as const;
+export const budgetCategories = ["utility", "housing", "loan", "foods", "daily-expense", "grocery"] as const;
 export type BudgetCategory = (typeof budgetCategories)[number];
 export const budgetCategoryLabels: Record<BudgetCategory, string> = {
 	utility: "Utility",
@@ -13,6 +13,7 @@ export const budgetCategoryLabels: Record<BudgetCategory, string> = {
 	loan: "Loan",
 	foods: "Foods",
 	"daily-expense": "Daily Expense",
+	grocery: "Grocery",
 };
 export function isBudgetCategory(value: unknown): value is BudgetCategory {
 	return typeof value === "string" && budgetCategories.some((category) => category === value);

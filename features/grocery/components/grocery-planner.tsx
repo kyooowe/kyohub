@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties, type FormEvent } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, ShoppingCart } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { CalendarDays, Check, ChevronLeft, ChevronRight, ExternalLink, Loader2, Plus, ShoppingCart } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageCallout } from "@/components/page-callout";
@@ -11,9 +12,11 @@ import { getPagePaletteStyles } from "@/components/settings/page-palettes";
 import { GroceryDialog } from "@/features/grocery/components/grocery-dialog";
 import { GroceryList } from "@/features/grocery/components/grocery-list";
 import { GrocerySummary } from "@/features/grocery/components/grocery-summary";
-import { createGroceryItem, deleteGroceryItem, getGroceryItems, updateGroceryItem, type GroceryRecord } from "@/features/grocery/actions/grocery-actions";
+import { createGroceryItem, deleteGroceryItem, getGroceryItems, setGroceryAutoAddToBudget, updateGroceryItem, type GroceryRecord } from "@/features/grocery/actions/grocery-actions";
 import { dateLabel, getDateKey } from "@/features/grocery/lib/grocery-utils";
+import { centsFromInput } from "@/features/budget/lib/budget-utils";
 import type { GroceryItem } from "@/features/grocery/types";
+import { toast } from "sonner";
 
 function groupByDate(items: GroceryRecord[]) {
 	return items.reduce<Record<string, GroceryItem[]>>((grouped, { dateKey, ...item }) => {
@@ -22,9 +25,11 @@ function groupByDate(items: GroceryRecord[]) {
 	}, {});
 }
 
-export function GroceryPlanner({ initialItems, initialError }: { initialItems: GroceryRecord[]; initialError: string }) {
+export function GroceryPlanner({ initialItems, initialSyncDates = {}, initialError }: { initialItems: GroceryRecord[]; initialSyncDates?: Record<string, boolean>; initialError: string }) {
 	const { settings } = useAppSettings();
 	const [groceries, setGroceries] = useState<Record<string, GroceryItem[]>>(() => groupByDate(initialItems));
+	const [autoAddDates, setAutoAddDates] = useState<Record<string, boolean>>(() => initialSyncDates);
+	const [togglingAutoAdd, setTogglingAutoAdd] = useState(false);
 	const [selectedDate, setSelectedDate] = useState(() => new Date());
 	const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 	const [dialogEntry, setDialogEntry] = useState<GroceryItem | "new" | null>(null);
@@ -33,6 +38,49 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 	const [completionBlockedIds, setCompletionBlockedIds] = useState<Set<string>>(() => new Set());
 	const pagePaletteName = settings.pagePalettes["/grocery"];
 	const pagePalette = getPagePaletteStyles(pagePaletteName === "default" ? "blue" : pagePaletteName);
+
+	const refreshGroceries = useCallback(async () => {
+		try {
+			const items = await getGroceryItems();
+			setGroceries(groupByDate(items));
+		} catch {
+			// ignore
+		}
+	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		Promise.resolve().then(async () => {
+			if (cancelled) return;
+			try {
+				const items = await getGroceryItems();
+				if (!cancelled) {
+					setGroceries(groupByDate(items));
+				}
+			} catch {
+				// ignore
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
+	if (initialItems !== prevInitialItems) {
+		setPrevInitialItems(initialItems);
+		setGroceries(groupByDate(initialItems));
+	}
+
+	useEffect(() => {
+		function onFocus() {
+			void refreshGroceries();
+		}
+		window.addEventListener("focus", onFocus);
+		return () => {
+			window.removeEventListener("focus", onFocus);
+		};
+	}, [refreshGroceries]);
 
 	const selectedKey = getDateKey(selectedDate);
 	const dayItems = groceries[selectedKey] ?? [];
@@ -46,20 +94,54 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 		});
 	}, [month]);
 
+	async function handleToggleAutoAdd() {
+		if (togglingAutoAdd) return;
+		const nextVal = !autoAddDates[selectedKey];
+		setTogglingAutoAdd(true);
+		setAutoAddDates((prev) => ({ ...prev, [selectedKey]: nextVal }));
+		if (!nextVal) {
+			setGroceries((prev) => {
+				const current = prev[selectedKey];
+				if (!current) return prev;
+				return {
+					...prev,
+					[selectedKey]: current.map((i) => ({ ...i, paid: false })),
+				};
+			});
+		}
+		try {
+			await setGroceryAutoAddToBudget(selectedKey, nextVal);
+			const dateStr = dateLabel(selectedDate, { month: "short", day: "numeric" });
+			if (nextVal) {
+				toast.success(`"Grocery on ${dateStr}" added to Budget Planner`);
+			} else {
+				toast.info(`"Grocery on ${dateStr}" removed from Budget Planner`);
+			}
+		} catch (error) {
+			setAutoAddDates((prev) => ({ ...prev, [selectedKey]: !nextVal }));
+			toast.error(error instanceof Error ? error.message : "Failed to update budget sync.");
+		} finally {
+			setTogglingAutoAdd(false);
+		}
+	}
+
 	async function submitGrocery(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (submitting) return;
 		setSubmitting(true);
-		const name = String(new FormData(event.currentTarget).get("item")).trim();
+		const formData = new FormData(event.currentTarget);
+		const name = String(formData.get("item") ?? "").trim();
+		const priceRaw = String(formData.get("price") ?? "").trim();
+		const priceCents = centsFromInput(priceRaw) ?? 0;
 		if (!name) return;
 		const editing = dialogEntry && dialogEntry !== "new" ? dialogEntry : null;
 		try {
 			if (editing) {
-				await updateGroceryItem(editing.id, { name });
+				await updateGroceryItem(editing.id, { name, priceCents });
 			} else {
 				const cryptoApi = globalThis.crypto;
 				const id = typeof cryptoApi?.randomUUID === "function" ? cryptoApi.randomUUID() : `${Date.now()}-${Math.random()}`;
-				await createGroceryItem({ id, dateKey: selectedKey, name, done: false });
+				await createGroceryItem({ id, dateKey: selectedKey, name, done: false, priceCents });
 			}
 			setGroceries(groupByDate(await getGroceryItems()));
 			setStorageError("");
@@ -73,9 +155,9 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 	}
 
 	async function updateItem(id: string, update: (item: GroceryItem) => GroceryItem | null) {
-		if (submitting || completionBlockedIds.has(id)) return;
 		const item = dayItems.find((entry) => entry.id === id);
-		if (!item) return;
+		const isAutoAddChecked = Boolean(autoAddDates[selectedKey]);
+		if (!item || submitting || completionBlockedIds.has(id) || (isAutoAddChecked && item.paid)) return;
 		const updated = update(item);
 		const changingCompletion = Boolean(updated && updated.done !== item.done);
 		if (changingCompletion) setCompletionBlockedIds((ids) => new Set(ids).add(id));
@@ -155,7 +237,123 @@ export function GroceryPlanner({ initialItems, initialError }: { initialItems: G
 					</FeatureSectionHeader>
 					<CardContent data-page-palette={pagePaletteName === "default" ? "blue" : pagePaletteName} style={{ "--page-accent-base": pagePalette.accent } as CSSProperties} data-page-palette-surface data-page-palette-card className="planner-day-panel rounded-3xl border border-blue-100 bg-white p-4 shadow-lg shadow-slate-300/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/40 sm:p-5">
 						<GrocerySummary items={dayItems} doneCount={doneCount} />
-						<GroceryList items={dayItems} onUpdate={updateItem} onEdit={setDialogEntry} onAdd={() => setDialogEntry("new")} submitting={submitting} completionBlockedIds={completionBlockedIds} />
+						{(() => {
+							const isAutoAddChecked = Boolean(autoAddDates[selectedKey]);
+							const dayNum = selectedDate.getDate();
+							const cutoffDay = dayNum <= 5 ? 5 : dayNum <= 15 ? 15 : dayNum <= 20 ? 20 : 30;
+							return (
+								<div className={`mb-2 rounded-2xl border p-3.5 transition-all duration-200 shadow-xs ${
+									isAutoAddChecked
+										? "border-blue-200/90 bg-linear-to-br from-blue-50/90 via-indigo-50/50 to-blue-50/80 dark:border-blue-800/60 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-blue-950/30"
+										: "border-slate-200/80 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-950/40"
+								}`}>
+									<div className="flex items-center justify-between gap-3">
+										<button
+											type="button"
+											onClick={handleToggleAutoAdd}
+											disabled={togglingAutoAdd}
+											className="min-w-0 flex-1 text-left cursor-pointer select-none"
+										>
+											<p className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-slate-100">
+												<span>Auto add Items in Budget Planner?</span>
+											</p>
+											<p className="mt-0.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+												If checked, this grocery list will display in Budget Planner under the {cutoffDay}th cutoff as &ldquo;Grocery on {dateLabel(selectedDate, { month: "short", day: "numeric" })}&rdquo;.
+											</p>
+										</button>
+
+										<button
+											id="auto-add-budget-toggle"
+											type="button"
+											role="checkbox"
+											aria-checked={isAutoAddChecked}
+											aria-label="Auto add Items in Budget Planner?"
+											disabled={togglingAutoAdd}
+											onClick={handleToggleAutoAdd}
+											className={`grid size-6 shrink-0 place-items-center rounded-md border-2 transition-all duration-150 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
+												isAutoAddChecked
+													? "border-blue-600 bg-blue-600 text-white shadow-xs hover:bg-blue-700 active:scale-95"
+													: "border-slate-300 bg-white hover:border-blue-400 hover:bg-blue-50/30 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-slate-400"
+											}`}
+										>
+											{togglingAutoAdd ? (
+												<Loader2 size={13} className="animate-spin text-blue-600 dark:text-blue-400" />
+											) : (
+												isAutoAddChecked && <Check size={14} strokeWidth={3} className="text-white" />
+											)}
+										</button>
+									</div>
+
+									{isAutoAddChecked && (
+										<div className="mt-3 flex flex-col gap-2.5 border-t border-blue-100/80 pt-2.5 sm:flex-row sm:items-center sm:justify-between dark:border-blue-900/40">
+											<span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
+												<span className="size-2 rounded-full bg-emerald-500 ring-2 ring-emerald-200 dark:ring-emerald-950" />
+												Synced to {cutoffDay}th Cutoff
+											</span>
+
+											<Link
+												href={`/budget?openGrocery=${selectedKey}`}
+												className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs shadow-blue-600/25 transition-all hover:bg-blue-700 active:scale-98 w-full sm:w-auto dark:bg-blue-500 dark:hover:bg-blue-600"
+											>
+												<span>Open in Budget Planner</span>
+												<ExternalLink size={12} strokeWidth={2.5} />
+											</Link>
+										</div>
+									)}
+								</div>
+							);
+						})()}
+						{(() => {
+							const isAutoAddChecked = Boolean(autoAddDates[selectedKey]);
+							const paidItems = dayItems.filter((item) => item.paid);
+							const hasPaid = paidItems.length > 0;
+							const allPaid = dayItems.length > 0 && paidItems.length === dayItems.length;
+
+							if (!isAutoAddChecked || !hasPaid) return null;
+
+							return (
+								<div
+									role="note"
+									className="page-callout relative isolate mb-2.5 flex items-center gap-3 overflow-hidden rounded-2xl border border-emerald-200/90 bg-white/80 px-3.5 py-2.5 shadow-xs backdrop-blur-xs dark:border-emerald-900/60 dark:bg-slate-900/80"
+								>
+									<span
+										aria-hidden="true"
+										className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-emerald-500 to-teal-400 text-white shadow-xs"
+									>
+										<Check size={16} strokeWidth={2.5} />
+									</span>
+									<div className="relative min-w-0 flex-1">
+										<p className="text-xs font-semibold leading-tight text-slate-900 dark:text-slate-100">
+											{allPaid
+												? "All items are mark as paid in budget planner"
+												: `${paidItems.length} ${paidItems.length === 1 ? "item is" : "items are"} mark as paid in budget planner`}
+										</p>
+										<p className="mt-0.5 text-[11px] leading-tight text-slate-500 dark:text-slate-400">
+											{allPaid
+												? "Items are locked as completed while settled in Budget Planner."
+												: "Paid items are locked as completed while settled in Budget Planner."}
+										</p>
+									</div>
+									<span
+										aria-hidden="true"
+										className="pointer-events-none absolute inset-y-2 left-0 w-1 rounded-r-full bg-emerald-500"
+									/>
+									<span
+										aria-hidden="true"
+										className="pointer-events-none absolute -right-4 -top-8 size-24 rounded-full border border-white/70 bg-white/10 dark:border-white/5 dark:bg-white/[0.02]"
+									/>
+								</div>
+							);
+						})()}
+						<GroceryList
+							items={dayItems}
+							onUpdate={updateItem}
+							onEdit={setDialogEntry}
+							onAdd={() => setDialogEntry("new")}
+							submitting={submitting}
+							completionBlockedIds={completionBlockedIds}
+							isAutoAddChecked={Boolean(autoAddDates[selectedKey])}
+						/>
 					</CardContent>
 				</Card>
 			</div>

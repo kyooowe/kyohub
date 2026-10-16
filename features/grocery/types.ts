@@ -1,1 +1,8 @@
-export type GroceryItem = { id: string; name: string; done: boolean };
+export type GroceryItem = {
+	id: string;
+	name: string;
+	done: boolean;
+	priceCents?: number;
+	paid?: boolean;
+};
+
