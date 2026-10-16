@@ -21,6 +21,7 @@ const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: strin
 };
 
 const paletteOptionDetails: Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }> = {
+	kyohub: { icon: Sprout, description: "Official KyoHub teal and midnight navy tones.", tone: "KyoHub teal", iconColor: "text-[#17756D]" },
 	violet: { icon: Heart, description: "Gentle, cool tones for a calm workspace.", tone: "Soft purple", iconColor: "text-[#654878]" },
 	blue: { icon: CloudSun, description: "Bright, calm blues for a clear view.", tone: "A softer blue", iconColor: "text-[#426f8a]" },
 	teal: { icon: Sprout, description: "Natural, peaceful greens.", tone: "Muted botanical", iconColor: "text-[#466044]" },

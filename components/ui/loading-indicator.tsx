@@ -17,7 +17,7 @@ export function LoadingIndicator({ label = "Loading your items" }: { label?: str
 		<div role="status" aria-live="polite" className="fixed inset-0 z-[100] grid place-items-center bg-white px-6 dark:bg-slate-950">
 			<div className="flex animate-in flex-col items-center text-center duration-300 fade-in">
 				<div className="flex items-center gap-2.5">
-					<span className="grid size-9 grid-cols-2 gap-1 rounded-xl bg-linear-to-br from-fuchsia-400 to-violet-500 p-1.5 shadow-md shadow-violet-500/20">
+					<span className="grid size-9 grid-cols-2 gap-1 rounded-xl bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-md shadow-emerald-500/20">
 						<i className="rounded-sm bg-white" />
 						<i className="rounded-sm bg-white/65" />
 						<i className="rounded-sm bg-white/65" />

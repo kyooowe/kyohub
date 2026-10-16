@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { DeleteIcon, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { login } from "@/features/auth/actions/auth-actions";
@@ -85,7 +86,7 @@ export function PinGate() {
                     {/* Brand */}
                     <div className="mb-12 flex flex-col items-center">
                         <div className="flex items-center gap-2.5">
-                            <div className="grid size-10 grid-cols-2 gap-1 rounded-[11px] bg-linear-to-br from-fuchsia-400 to-violet-500 p-1.5 shadow-sm shadow-violet-500/25">
+                            <div className="grid size-10 grid-cols-2 gap-1 rounded-[11px] bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-sm shadow-emerald-500/25">
                                 <span className="rounded-[3px] bg-white" />
                                 <span className="rounded-[3px] bg-white/60" />
                                 <span className="rounded-[3px] bg-white/60" />
@@ -201,6 +202,17 @@ export function PinGate() {
                         >
                             <DeleteIcon className="size-[21px]" strokeWidth={1.8} />
                         </Button>
+                    </div>
+
+                    {/* Tutorial link for new deployers */}
+                    <div className="mt-8 text-center">
+                        <Link
+                            href="/deploy"
+                            className="inline-flex items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-teal-600 dark:text-slate-500 dark:hover:text-teal-400"
+                        >
+                            <span>Self-hosting KyoHub? View deployment guide</span>
+                            <span aria-hidden="true">→</span>
+                        </Link>
                     </div>
                 </div>
             </div>
