@@ -162,13 +162,13 @@ function DashboardShell({
           onClick={(event) => handleNavigationClick(event, "/")}
           className="mb-5 flex items-center gap-3 px-2 text-xl font-bold tracking-tight text-white md:mb-12"
         >
-          <span className="grid size-8 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-lg shadow-fuchsia-500/20">
+          <span className="grid size-8 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-lg shadow-emerald-500/20">
             <i className="rounded-sm bg-white" />
             <i className="rounded-sm bg-white/65" />
             <i className="rounded-sm bg-white/65" />
             <i className="rounded-sm bg-white" />
           </span>
-          Kyohub<span className="-ml-3 text-fuchsia-300">.</span>
+          Kyohub<span className="-ml-3 text-emerald-400">.</span>
         </Link>
         <p className="mb-2 hidden px-3 text-[10px] font-semibold tracking-[0.18em] text-violet-200/50 md:block">
           YOUR SPACE
@@ -222,13 +222,13 @@ function DashboardShell({
               onClick={(event) => handleNavigationClick(event, "/")}
               className="flex shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:hidden dark:text-white"
             >
-              <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-md shadow-fuchsia-500/20">
+              <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-md shadow-emerald-500/20">
                 <i className="rounded-sm bg-white" />
                 <i className="rounded-sm bg-white/65" />
                 <i className="rounded-sm bg-white/65" />
                 <i className="rounded-sm bg-white" />
               </span>
-              Kyohub<span className="-ml-2 text-fuchsia-500">.</span>
+              Kyohub<span className="-ml-2 text-emerald-500">.</span>
             </Link>
             {settings.desktopNavigation === "floating" && (
               <Link
@@ -237,13 +237,13 @@ function DashboardShell({
                 onClick={(event) => handleNavigationClick(event, "/")}
                 className="hidden shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:flex dark:text-white"
               >
-                <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-fuchsia-400 to-violet-400 p-1.5 shadow-md shadow-fuchsia-500/20">
+                <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-md shadow-emerald-500/20">
                   <i className="rounded-sm bg-white" />
                   <i className="rounded-sm bg-white/65" />
                   <i className="rounded-sm bg-white/65" />
                   <i className="rounded-sm bg-white" />
                 </span>
-                Kyohub<span className="-ml-2 text-fuchsia-500">.</span>
+                Kyohub<span className="-ml-2 text-emerald-500">.</span>
               </Link>
             )}
             {settings.desktopNavigation === "floating" && (

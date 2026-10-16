@@ -1,5 +1,21 @@
 
 const pagePaletteStyles = {
+  kyohub: {
+    label: "KyoHub",
+    swatch: "bg-[#26A69A]",
+    accent: "#17756D",
+    iconGradient: "from-[#26A69A] via-[#17756D] to-[#0c2340]",
+    pageHeading:
+      "from-[#0c2340] via-[#17756D] to-[#26A69A] dark:from-[#E0F2F1] dark:via-[#80CBC4] dark:to-[#4DB6AC]",
+    featureHeader: {
+      gradient: "from-[#0c2340] via-[#17756D] to-[#26A69A]",
+      shadow: "shadow-[#26A69A]/25",
+      darkShadow: "dark:shadow-[#0c2340]/40",
+      description: "text-white/95",
+      glow: "bg-[#E0F2F1]/20",
+    },
+  },
+
   violet: {
     label: "Lavender",
     swatch: "bg-[#C9B8D9]",
@@ -358,6 +374,7 @@ export type NamedPagePalette = keyof typeof pagePaletteStyles;
 export type PagePalette = "default" | NamedPagePalette;
 
 export const pagePaletteOptions: { value: NamedPagePalette; label: string; swatch: string }[] = [
+  { value: "kyohub", label: pagePaletteStyles.kyohub.label, swatch: pagePaletteStyles.kyohub.swatch },
   { value: "violet", label: pagePaletteStyles.violet.label, swatch: pagePaletteStyles.violet.swatch },
   { value: "blue", label: pagePaletteStyles.blue.label, swatch: pagePaletteStyles.blue.swatch },
   { value: "teal", label: pagePaletteStyles.teal.label, swatch: pagePaletteStyles.teal.swatch },
