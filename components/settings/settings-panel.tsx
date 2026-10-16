@@ -20,7 +20,7 @@ const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: strin
 	"/budget": { icon: ChartNoAxesColumn, color: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300" },
 };
 
-const paletteOptionDetails: Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }> = {
+const paletteOptionDetails: Partial<Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }>> = {
 	kyohub: { icon: Sprout, description: "Official KyoHub teal and midnight navy tones.", tone: "KyoHub teal", iconColor: "text-[#17756D]" },
 	violet: { icon: Heart, description: "Gentle, cool tones for a calm workspace.", tone: "Soft purple", iconColor: "text-[#654878]" },
 	blue: { icon: CloudSun, description: "Bright, calm blues for a clear view.", tone: "A softer blue", iconColor: "text-[#426f8a]" },
@@ -300,8 +300,8 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 										<div className="space-y-1">
 											{paletteChoices.map((option) => {
 												const details = option.value === "default"
-													? { icon: Icon, description: "Keep this page’s original accent colors.", tone: "Original colors", iconColor: paletteOptionDetails[originalPalette].iconColor }
-													: paletteOptionDetails[option.value];
+													? { icon: Icon, description: "Keep this page’s original accent colors.", tone: "Original colors", iconColor: paletteOptionDetails[originalPalette]?.iconColor ?? "text-slate-700" }
+													: (paletteOptionDetails[option.value] ?? { icon: Sun, description: `${option.label} theme tones.`, tone: option.label, iconColor: "text-slate-700" });
 												const OptionIcon = details.icon;
 												const gradient = option.value === "default" ? originalPaletteStyles.iconGradient : getPagePaletteStyles(option.value).iconGradient;
 												return <PopoverClose

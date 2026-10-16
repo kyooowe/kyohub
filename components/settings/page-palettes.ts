@@ -1,4 +1,3 @@
-
 const pagePaletteStyles = {
   kyohub: {
     label: "KyoHub",
@@ -17,7 +16,7 @@ const pagePaletteStyles = {
   },
 
   violet: {
-    label: "Lavender",
+    label: "Pastel Purple",
     swatch: "bg-[#C9B8D9]",
     accent: "#8D73A8",
     iconGradient: "from-[#8D73A8] to-[#B59ACB]",
@@ -33,7 +32,7 @@ const pagePaletteStyles = {
   },
 
   blue: {
-    label: "Sky",
+    label: "Pastel Blue",
     swatch: "bg-[#BFD9E8]",
     accent: "#5686A2",
     iconGradient: "from-[#669BB9] to-[#8DBBD2]",
@@ -49,7 +48,7 @@ const pagePaletteStyles = {
   },
 
   teal: {
-    label: "Sage",
+    label: "Muted Green",
     swatch: "bg-[#AFC2A6]",
     accent: "#466044",
     iconGradient: "from-[#6F8965] to-[#91A987]",
@@ -65,7 +64,7 @@ const pagePaletteStyles = {
   },
 
   rose: {
-    label: "Terracotta",
+    label: "Earthy Terracotta",
     swatch: "bg-[#E3B6A5]",
     accent: "#B66F57",
     iconGradient: "from-[#C47F67] to-[#D99B82]",
@@ -81,7 +80,7 @@ const pagePaletteStyles = {
   },
 
   yellow: {
-    label: "Butter",
+    label: "Pastel Yellow",
     swatch: "bg-[#F0DFA0]",
     accent: "#9B7B2E",
     iconGradient: "from-[#B99A43] to-[#D4B95E]",
@@ -97,7 +96,7 @@ const pagePaletteStyles = {
   },
 
   orange: {
-    label: "Peach",
+    label: "Pastel Peach",
     swatch: "bg-[#F0C9A9]",
     accent: "#C07E53",
     iconGradient: "from-[#D99B72] to-[#E8B18A]",
@@ -113,7 +112,7 @@ const pagePaletteStyles = {
   },
 
   gray: {
-    label: "Stone",
+    label: "Neutral Gray",
     swatch: "bg-[#D2CEC5]",
     accent: "#817D73",
     iconGradient: "from-[#969187] to-[#B5B0A5]",
@@ -128,7 +127,7 @@ const pagePaletteStyles = {
     },
   },
   mint: {
-    label: "Mint",
+    label: "Pastel Mint",
     swatch: "bg-[#A8D9BB]",
     accent: "#529B72",
     iconGradient: "from-[#529B72] to-[#82C99A]",
@@ -143,7 +142,7 @@ const pagePaletteStyles = {
     },
   },
   coral: {
-    label: "Coral",
+    label: "Warm Coral",
     swatch: "bg-[#FFAA99]",
     accent: "#E56B5D",
     iconGradient: "from-[#E56B5D] to-[#FF9B87]",
@@ -158,7 +157,7 @@ const pagePaletteStyles = {
     },
   },
   berry: {
-    label: "Berry",
+    label: "Pastel Pink",
     swatch: "bg-[#E8ADC7]",
     accent: "#C05C87",
     iconGradient: "from-[#C05C87] to-[#E18CAF]",
@@ -173,7 +172,7 @@ const pagePaletteStyles = {
     },
   },
   ocean: {
-    label: "Ocean",
+    label: "Cool Teal",
     swatch: "bg-[#94D0CA]",
     accent: "#398F89",
     iconGradient: "from-[#398F89] to-[#65B8B0]",
@@ -188,7 +187,7 @@ const pagePaletteStyles = {
     },
   },
   honeyGold: {
-    label: "Honey Gold",
+    label: "Golden Warmth",
     swatch: "bg-[#E8C77E]",
     accent: "#A87924",
     iconGradient: "from-[#A87924] to-[#D8AD50]",
@@ -203,7 +202,7 @@ const pagePaletteStyles = {
     },
   },
   berryRose: {
-    label: "Berry Rose",
+    label: "Dusty Rose",
     swatch: "bg-[#DDA8B8]",
     accent: "#984761",
     iconGradient: "from-[#984761] to-[#C77891]",
@@ -218,7 +217,7 @@ const pagePaletteStyles = {
     },
   },
   mistyBlue: {
-    label: "Misty Blue",
+    label: "Muted Blue",
     swatch: "bg-[#B5CDE5]",
     accent: "#416C9B",
     iconGradient: "from-[#416C9B] to-[#7FA6CE]",
@@ -233,7 +232,7 @@ const pagePaletteStyles = {
     },
   },
   warmSand: {
-    label: "Warm Sand",
+    label: "Earth Tone",
     swatch: "bg-[#DCC6A5]",
     accent: "#8A6744",
     iconGradient: "from-[#8A6744] to-[#BE9B70]",
@@ -248,7 +247,7 @@ const pagePaletteStyles = {
     },
   },
   dustyLavender: {
-    label: "Dusty Lavender",
+    label: "Muted Purple",
     swatch: "bg-[#C5B8DE]",
     accent: "#76619F",
     iconGradient: "from-[#76619F] to-[#A99ACB]",
@@ -263,7 +262,7 @@ const pagePaletteStyles = {
     },
   },
   oliveCream: {
-    label: "Olive Cream",
+    label: "Olive Earth Tone",
     swatch: "bg-[#C9D0A1]",
     accent: "#69743B",
     iconGradient: "from-[#69743B] to-[#A2AD67]",
@@ -278,7 +277,7 @@ const pagePaletteStyles = {
     },
   },
   buttercream: {
-    label: "Buttercream Pastel",
+    label: "Butter Pastel",
     swatch: "bg-[#F4DFA6]",
     accent: "#B58A35",
     iconGradient: "from-[#B58A35] to-[#E2BD69]",
@@ -293,7 +292,7 @@ const pagePaletteStyles = {
     },
   },
   powderLilac: {
-    label: "Powder Lilac Pastel",
+    label: "Lilac Pastel",
     swatch: "bg-[#D8CCF0]",
     accent: "#8066B0",
     iconGradient: "from-[#8066B0] to-[#B2A0D8]",
@@ -308,7 +307,7 @@ const pagePaletteStyles = {
     },
   },
   mintCloud: {
-    label: "Mint Cloud Pastel",
+    label: "Mint Pastel",
     swatch: "bg-[#C6E8D8]",
     accent: "#43876B",
     iconGradient: "from-[#43876B] to-[#83C4A6]",
@@ -323,7 +322,7 @@ const pagePaletteStyles = {
     },
   },
   pinkCloud: {
-    label: "Pink Cloud Pastel",
+    label: "Pink Pastel",
     swatch: "bg-[#F4C9D6]",
     accent: "#B85275",
     iconGradient: "from-[#B85275] to-[#E59BB4]",
@@ -353,7 +352,7 @@ const pagePaletteStyles = {
     },
   },
   apricotCream: {
-    label: "Apricot Cream Pastel",
+    label: "Apricot Pastel",
     swatch: "bg-[#F6D0B5]",
     accent: "#BC754A",
     iconGradient: "from-[#BC754A] to-[#E8AB7F]",
@@ -367,41 +366,567 @@ const pagePaletteStyles = {
       glow: "bg-[#FFF5EC]/25",
     },
   },
+  warmCoral: {
+    label: "Warm Coral",
+    swatch: "bg-[#F2B3A6]",
+    accent: "#B85D4D",
+    iconGradient: "from-[#B85D4D] to-[#D98472]",
+    pageHeading:
+      "from-[#7C342D] via-[#A94F42] to-[#D98472] dark:from-[#FBE8E2] dark:via-[#F2B3A6] dark:to-[#D98472]",
+    featureHeader: {
+      gradient: "from-[#7C342D] via-[#B85D4D] to-[#D98472]",
+      shadow: "shadow-[#D98472]/25",
+      darkShadow: "dark:shadow-[#7C342D]/35",
+      description: "text-white",
+      glow: "bg-[#FBE8E2]/20",
+    },
+  },
+  warmAmber: {
+    label: "Warm Amber",
+    swatch: "bg-[#F0CF8B]",
+    accent: "#A87924",
+    iconGradient: "from-[#A87924] to-[#D8AD50]",
+    pageHeading:
+      "from-[#71501C] via-[#A87924] to-[#D8AD50] dark:from-[#FFF3D3] dark:via-[#F0CF8B] dark:to-[#D8AD50]",
+    featureHeader: {
+      gradient: "from-[#71501C] via-[#A87924] to-[#D8AD50]",
+      shadow: "shadow-[#D8AD50]/25",
+      darkShadow: "dark:shadow-[#71501C]/35",
+      description: "text-white",
+      glow: "bg-[#FFF3D3]/20",
+    },
+  },
+  warmTerracotta: {
+    label: "Warm Terracotta",
+    swatch: "bg-[#E2B19A]",
+    accent: "#A95F46",
+    iconGradient: "from-[#A95F46] to-[#CF896A]",
+    pageHeading:
+      "from-[#743D2D] via-[#A95F46] to-[#CF896A] dark:from-[#F8E4D9] dark:via-[#E2B19A] dark:to-[#CF896A]",
+    featureHeader: {
+      gradient: "from-[#743D2D] via-[#A95F46] to-[#CF896A]",
+      shadow: "shadow-[#CF896A]/25",
+      darkShadow: "dark:shadow-[#743D2D]/35",
+      description: "text-white",
+      glow: "bg-[#F8E4D9]/20",
+    },
+  },
+  coolIceBlue: {
+    label: "Cool Ice Blue",
+    swatch: "bg-[#C7E3F2]",
+    accent: "#4D87A8",
+    iconGradient: "from-[#4D87A8] to-[#78B1CF]",
+    pageHeading:
+      "from-[#28516B] via-[#4D87A8] to-[#78B1CF] dark:from-[#EDF8FE] dark:via-[#C7E3F2] dark:to-[#78B1CF]",
+    featureHeader: {
+      gradient: "from-[#28516B] via-[#4D87A8] to-[#78B1CF]",
+      shadow: "shadow-[#78B1CF]/25",
+      darkShadow: "dark:shadow-[#28516B]/35",
+      description: "text-white",
+      glow: "bg-[#EDF8FE]/20",
+    },
+  },
+  coolSeafoam: {
+    label: "Cool Seafoam",
+    swatch: "bg-[#B9E0D8]",
+    accent: "#39877D",
+    iconGradient: "from-[#39877D] to-[#70B9AD]",
+    pageHeading:
+      "from-[#20554F] via-[#39877D] to-[#70B9AD] dark:from-[#E7F7F3] dark:via-[#B9E0D8] dark:to-[#70B9AD]",
+    featureHeader: {
+      gradient: "from-[#20554F] via-[#39877D] to-[#70B9AD]",
+      shadow: "shadow-[#70B9AD]/25",
+      darkShadow: "dark:shadow-[#20554F]/35",
+      description: "text-white",
+      glow: "bg-[#E7F7F3]/20",
+    },
+  },
+  coolPeriwinkle: {
+    label: "Cool Periwinkle",
+    swatch: "bg-[#C8D0F0]",
+    accent: "#6979B8",
+    iconGradient: "from-[#6979B8] to-[#929FE0]",
+    pageHeading:
+      "from-[#384577] via-[#6979B8] to-[#929FE0] dark:from-[#F0F2FF] dark:via-[#C8D0F0] dark:to-[#929FE0]",
+    featureHeader: {
+      gradient: "from-[#384577] via-[#6979B8] to-[#929FE0]",
+      shadow: "shadow-[#929FE0]/25",
+      darkShadow: "dark:shadow-[#384577]/35",
+      description: "text-white",
+      glow: "bg-[#F0F2FF]/20",
+    },
+  },
+  neutralStone: {
+    label: "Neutral Stone",
+    swatch: "bg-[#D7D2C8]",
+    accent: "#77736A",
+    iconGradient: "from-[#77736A] to-[#A6A095]",
+    pageHeading:
+      "from-[#4D4A43] via-[#77736A] to-[#A6A095] dark:from-[#F2F0EA] dark:via-[#D7D2C8] dark:to-[#A6A095]",
+    featureHeader: {
+      gradient: "from-[#4D4A43] via-[#77736A] to-[#A6A095]",
+      shadow: "shadow-[#A6A095]/25",
+      darkShadow: "dark:shadow-[#4D4A43]/35",
+      description: "text-white",
+      glow: "bg-[#F2F0EA]/20",
+    },
+  },
+  neutralSlate: {
+    label: "Neutral Slate",
+    swatch: "bg-[#C9D0D8]",
+    accent: "#5F7184",
+    iconGradient: "from-[#5F7184] to-[#8EA0B3]",
+    pageHeading:
+      "from-[#344454] via-[#5F7184] to-[#8EA0B3] dark:from-[#EEF2F6] dark:via-[#C9D0D8] dark:to-[#8EA0B3]",
+    featureHeader: {
+      gradient: "from-[#344454] via-[#5F7184] to-[#8EA0B3]",
+      shadow: "shadow-[#8EA0B3]/25",
+      darkShadow: "dark:shadow-[#344454]/35",
+      description: "text-white",
+      glow: "bg-[#EEF2F6]/20",
+    },
+  },
+  neutralTaupe: {
+    label: "Neutral Taupe",
+    swatch: "bg-[#D8C8B8]",
+    accent: "#8B7461",
+    iconGradient: "from-[#8B7461] to-[#B29A84]",
+    pageHeading:
+      "from-[#584535] via-[#8B7461] to-[#B29A84] dark:from-[#F5EEE7] dark:via-[#D8C8B8] dark:to-[#B29A84]",
+    featureHeader: {
+      gradient: "from-[#584535] via-[#8B7461] to-[#B29A84]",
+      shadow: "shadow-[#B29A84]/25",
+      darkShadow: "dark:shadow-[#584535]/35",
+      description: "text-white",
+      glow: "bg-[#F5EEE7]/20",
+    },
+  },
+  pastelPink: {
+    label: "Pastel Pink",
+    swatch: "bg-[#F5C9D7]",
+    accent: "#B95D7C",
+    iconGradient: "from-[#B95D7C] to-[#E49BB4]",
+    pageHeading:
+      "from-[#743047] via-[#B95D7C] to-[#E49BB4] dark:from-[#FFF0F5] dark:via-[#F5C9D7] dark:to-[#E49BB4]",
+    featureHeader: {
+      gradient: "from-[#743047] via-[#B95D7C] to-[#E49BB4]",
+      shadow: "shadow-[#E49BB4]/25",
+      darkShadow: "dark:shadow-[#743047]/35",
+      description: "text-white",
+      glow: "bg-[#FFF0F5]/20",
+    },
+  },
+  pastelMint: {
+    label: "Pastel Mint",
+    swatch: "bg-[#C6E8D8]",
+    accent: "#4D9275",
+    iconGradient: "from-[#4D9275] to-[#83C4A6]",
+    pageHeading:
+      "from-[#285743] via-[#4D9275] to-[#83C4A6] dark:from-[#EFFBF4] dark:via-[#C6E8D8] dark:to-[#83C4A6]",
+    featureHeader: {
+      gradient: "from-[#285743] via-[#4D9275] to-[#83C4A6]",
+      shadow: "shadow-[#83C4A6]/25",
+      darkShadow: "dark:shadow-[#285743]/35",
+      description: "text-white",
+      glow: "bg-[#EFFBF4]/20",
+    },
+  },
+  pastelLilac: {
+    label: "Pastel Lilac",
+    swatch: "bg-[#DCCFF0]",
+    accent: "#8870B4",
+    iconGradient: "from-[#8870B4] to-[#B3A0D8]",
+    pageHeading:
+      "from-[#49365F] via-[#8870B4] to-[#B3A0D8] dark:from-[#F6F1FF] dark:via-[#DCCFF0] dark:to-[#B3A0D8]",
+    featureHeader: {
+      gradient: "from-[#49365F] via-[#8870B4] to-[#B3A0D8]",
+      shadow: "shadow-[#B3A0D8]/25",
+      darkShadow: "dark:shadow-[#49365F]/35",
+      description: "text-white",
+      glow: "bg-[#F6F1FF]/20",
+    },
+  },
+  earthyOlive: {
+    label: "Earthy Olive",
+    swatch: "bg-[#CDD2A5]",
+    accent: "#6D783F",
+    iconGradient: "from-[#6D783F] to-[#A3AE68]",
+    pageHeading:
+      "from-[#414A27] via-[#6D783F] to-[#A3AE68] dark:from-[#F4F5E4] dark:via-[#CDD2A5] dark:to-[#A3AE68]",
+    featureHeader: {
+      gradient: "from-[#414A27] via-[#6D783F] to-[#A3AE68]",
+      shadow: "shadow-[#A3AE68]/25",
+      darkShadow: "dark:shadow-[#414A27]/35",
+      description: "text-white",
+      glow: "bg-[#F4F5E4]/20",
+    },
+  },
+  earthyClay: {
+    label: "Earthy Clay",
+    swatch: "bg-[#DDB6A0]",
+    accent: "#A66B50",
+    iconGradient: "from-[#A66B50] to-[#C68A6C]",
+    pageHeading:
+      "from-[#693D2C] via-[#A66B50] to-[#C68A6C] dark:from-[#F6E7DE] dark:via-[#DDB6A0] dark:to-[#C68A6C]",
+    featureHeader: {
+      gradient: "from-[#693D2C] via-[#A66B50] to-[#C68A6C]",
+      shadow: "shadow-[#C68A6C]/25",
+      darkShadow: "dark:shadow-[#693D2C]/35",
+      description: "text-white",
+      glow: "bg-[#F6E7DE]/20",
+    },
+  },
+  earthySand: {
+    label: "Earthy Sand",
+    swatch: "bg-[#E0CBA9]",
+    accent: "#8D704C",
+    iconGradient: "from-[#8D704C] to-[#B99A70]",
+    pageHeading:
+      "from-[#59412D] via-[#8D704C] to-[#B99A70] dark:from-[#FFF5E7] dark:via-[#E0CBA9] dark:to-[#B99A70]",
+    featureHeader: {
+      gradient: "from-[#59412D] via-[#8D704C] to-[#B99A70]",
+      shadow: "shadow-[#B99A70]/25",
+      darkShadow: "dark:shadow-[#59412D]/35",
+      description: "text-white",
+      glow: "bg-[#FFF5E7]/20",
+    },
+  },
+  vibrantCobalt: {
+    label: "Vibrant Cobalt",
+    swatch: "bg-[#AFC9F5]",
+    accent: "#315FC0",
+    iconGradient: "from-[#315FC0] to-[#6E95E8]",
+    pageHeading:
+      "from-[#193777] via-[#315FC0] to-[#6E95E8] dark:from-[#EAF1FF] dark:via-[#AFC9F5] dark:to-[#6E95E8]",
+    featureHeader: {
+      gradient: "from-[#193777] via-[#315FC0] to-[#6E95E8]",
+      shadow: "shadow-[#6E95E8]/25",
+      darkShadow: "dark:shadow-[#193777]/35",
+      description: "text-white",
+      glow: "bg-[#EAF1FF]/20",
+    },
+  },
+  vibrantMagenta: {
+    label: "Vibrant Magenta",
+    swatch: "bg-[#F0B3D7]",
+    accent: "#B52D83",
+    iconGradient: "from-[#B52D83] to-[#DE69B0]",
+    pageHeading:
+      "from-[#671749] via-[#B52D83] to-[#DE69B0] dark:from-[#FDEAF5] dark:via-[#F0B3D7] dark:to-[#DE69B0]",
+    featureHeader: {
+      gradient: "from-[#671749] via-[#B52D83] to-[#DE69B0]",
+      shadow: "shadow-[#DE69B0]/25",
+      darkShadow: "dark:shadow-[#671749]/35",
+      description: "text-white",
+      glow: "bg-[#FDEAF5]/20",
+    },
+  },
+  vibrantTangerine: {
+    label: "Vibrant Tangerine",
+    swatch: "bg-[#F6C09A]",
+    accent: "#C7652D",
+    iconGradient: "from-[#C7652D] to-[#E9945A]",
+    pageHeading:
+      "from-[#733416] via-[#C7652D] to-[#E9945A] dark:from-[#FFF0E3] dark:via-[#F6C09A] dark:to-[#E9945A]",
+    featureHeader: {
+      gradient: "from-[#733416] via-[#C7652D] to-[#E9945A]",
+      shadow: "shadow-[#E9945A]/25",
+      darkShadow: "dark:shadow-[#733416]/35",
+      description: "text-white",
+      glow: "bg-[#FFF0E3]/20",
+    },
+  },
+  dopaminePop: {
+    label: "Dopamine Pop",
+    swatch: "bg-[#FFB3D9]",
+    accent: "#D92D91",
+    iconGradient: "from-[#D92D91] to-[#FF66B3]",
+    pageHeading:
+      "from-[#7A1554] via-[#D92D91] to-[#FF66B3] dark:from-[#FFF0F8] dark:via-[#FFB3D9] dark:to-[#FF66B3]",
+    featureHeader: {
+      gradient: "from-[#7A1554] via-[#D92D91] to-[#FF66B3]",
+      shadow: "shadow-[#FF66B3]/25",
+      darkShadow: "dark:shadow-[#4A1035]/35",
+      description: "text-white",
+      glow: "bg-[#FFF0F8]/20",
+    },
+  },
+  dopamineCandy: {
+    label: "Dopamine Candy",
+    swatch: "bg-[#FFE08A]",
+    accent: "#E67E22",
+    iconGradient: "from-[#E67E22] to-[#FFB347]",
+    pageHeading:
+      "from-[#804015] via-[#E67E22] to-[#FFB347] dark:from-[#FFF4D6] dark:via-[#FFE08A] dark:to-[#FFB347]",
+    featureHeader: {
+      gradient: "from-[#804015] via-[#E67E22] to-[#FFB347]",
+      shadow: "shadow-[#FFB347]/25",
+      darkShadow: "dark:shadow-[#4A260D]/35",
+      description: "text-white",
+      glow: "bg-[#FFF4D6]/20",
+    },
+  },
+  dopamineElectric: {
+    label: "Dopamine Electric",
+    swatch: "bg-[#B8F3FF]",
+    accent: "#007FA8",
+    iconGradient: "from-[#007FA8] to-[#35C9E8]",
+    pageHeading:
+      "from-[#064B70] via-[#007FA8] to-[#35C9E8] dark:from-[#E5FAFF] dark:via-[#B8F3FF] dark:to-[#35C9E8]",
+    featureHeader: {
+      gradient: "from-[#064B70] via-[#007FA8] to-[#35C9E8]",
+      shadow: "shadow-[#35C9E8]/25",
+      darkShadow: "dark:shadow-[#032D45]/35",
+      description: "text-white",
+      glow: "bg-[#E5FAFF]/20",
+    },
+  },
+  metallicSilver: {
+    label: "Metallic Silver",
+    swatch: "bg-[#D5D9E0]",
+    accent: "#717985",
+    iconGradient: "from-[#717985] to-[#B8C0CC]",
+    pageHeading:
+      "from-[#353B45] via-[#717985] to-[#B8C0CC] dark:from-[#F3F5F8] dark:via-[#D5D9E0] dark:to-[#B8C0CC]",
+    featureHeader: {
+      gradient: "from-[#353B45] via-[#717985] to-[#B8C0CC]",
+      shadow: "shadow-[#B8C0CC]/25",
+      darkShadow: "dark:shadow-[#222831]/35",
+      description: "text-white",
+      glow: "bg-[#F3F5F8]/20",
+    },
+  },
+  metallicGold: {
+    label: "Metallic Gold",
+    swatch: "bg-[#E8CB83]",
+    accent: "#A87924",
+    iconGradient: "from-[#A87924] to-[#D8AD50]",
+    pageHeading:
+      "from-[#65430E] via-[#A87924] to-[#D8AD50] dark:from-[#FFF5D9] dark:via-[#E8CB83] dark:to-[#D8AD50]",
+    featureHeader: {
+      gradient: "from-[#65430E] via-[#A87924] to-[#D8AD50]",
+      shadow: "shadow-[#D8AD50]/25",
+      darkShadow: "dark:shadow-[#493512]/35",
+      description: "text-white",
+      glow: "bg-[#FFF5D9]/20",
+    },
+  },
+  metallicRoseGold: {
+    label: "Metallic Rose Gold",
+    swatch: "bg-[#E5B6AC]",
+    accent: "#A85D57",
+    iconGradient: "from-[#A85D57] to-[#D99A91]",
+    pageHeading:
+      "from-[#713A3B] via-[#A85D57] to-[#D99A91] dark:from-[#FFF0ED] dark:via-[#E5B6AC] dark:to-[#D99A91]",
+    featureHeader: {
+      gradient: "from-[#713A3B] via-[#A85D57] to-[#D99A91]",
+      shadow: "shadow-[#D99A91]/25",
+      darkShadow: "dark:shadow-[#4C2427]/35",
+      description: "text-white",
+      glow: "bg-[#FFF0ED]/20",
+    },
+  },
+  moodyMidnight: {
+    label: "Dark Moody Midnight",
+    swatch: "bg-[#65718E]",
+    accent: "#283653",
+    iconGradient: "from-[#283653] to-[#65718E]",
+    pageHeading:
+      "from-[#111827] via-[#283653] to-[#65718E] dark:from-[#E7ECF7] dark:via-[#65718E] dark:to-[#65718E]",
+    featureHeader: {
+      gradient: "from-[#111827] via-[#283653] to-[#65718E]",
+      shadow: "shadow-[#65718E]/25",
+      darkShadow: "dark:shadow-[#0B1020]/35",
+      description: "text-white",
+      glow: "bg-[#E7ECF7]/20",
+    },
+  },
+  moodyForest: {
+    label: "Dark Moody Forest",
+    swatch: "bg-[#71866C]",
+    accent: "#304A36",
+    iconGradient: "from-[#304A36] to-[#71866C]",
+    pageHeading:
+      "from-[#14251B] via-[#304A36] to-[#71866C] dark:from-[#E6EFE3] dark:via-[#71866C] dark:to-[#71866C]",
+    featureHeader: {
+      gradient: "from-[#14251B] via-[#304A36] to-[#71866C]",
+      shadow: "shadow-[#71866C]/25",
+      darkShadow: "dark:shadow-[#0B1A10]/35",
+      description: "text-white",
+      glow: "bg-[#E6EFE3]/20",
+    },
+  },
+  moodyAubergine: {
+    label: "Dark Moody Aubergine",
+    swatch: "bg-[#92708F]",
+    accent: "#543653",
+    iconGradient: "from-[#543653] to-[#92708F]",
+    pageHeading:
+      "from-[#28182C] via-[#543653] to-[#92708F] dark:from-[#F0E5F0] dark:via-[#92708F] dark:to-[#92708F]",
+    featureHeader: {
+      gradient: "from-[#28182C] via-[#543653] to-[#92708F]",
+      shadow: "shadow-[#92708F]/25",
+      darkShadow: "dark:shadow-[#1A0F1D]/35",
+      description: "text-white",
+      glow: "bg-[#F0E5F0]/20",
+    },
+  },
+  palePorcelain: {
+    label: "Pale Porcelain",
+    swatch: "bg-[#E6E8E5]",
+    accent: "#929B96",
+    iconGradient: "from-[#929B96] to-[#C9D0CC]",
+    pageHeading:
+      "from-[#59615C] via-[#929B96] to-[#C9D0CC] dark:from-[#FAFBF9] dark:via-[#E6E8E5] dark:to-[#C9D0CC]",
+    featureHeader: {
+      gradient: "from-[#59615C] via-[#929B96] to-[#C9D0CC]",
+      shadow: "shadow-[#C9D0CC]/25",
+      darkShadow: "dark:shadow-[#3B413D]/35",
+      description: "text-white",
+      glow: "bg-[#FAFBF9]/20",
+    },
+  },
+  paleBlush: {
+    label: "Pale Blush",
+    swatch: "bg-[#F4DDE3]",
+    accent: "#C58D9B",
+    iconGradient: "from-[#C58D9B] to-[#E5BFC9]",
+    pageHeading:
+      "from-[#875663] via-[#C58D9B] to-[#E5BFC9] dark:from-[#FFF5F7] dark:via-[#F4DDE3] dark:to-[#E5BFC9]",
+    featureHeader: {
+      gradient: "from-[#875663] via-[#C58D9B] to-[#E5BFC9]",
+      shadow: "shadow-[#E5BFC9]/25",
+      darkShadow: "dark:shadow-[#5C3440]/35",
+      description: "text-white",
+      glow: "bg-[#FFF5F7]/20",
+    },
+  },
+  paleSage: {
+    label: "Pale Sage",
+    swatch: "bg-[#DCE7D5]",
+    accent: "#91A783",
+    iconGradient: "from-[#91A783] to-[#B8C9AC]",
+    pageHeading:
+      "from-[#526A49] via-[#91A783] to-[#B8C9AC] dark:from-[#F4F8F0] dark:via-[#DCE7D5] dark:to-[#B8C9AC]",
+    featureHeader: {
+      gradient: "from-[#526A49] via-[#91A783] to-[#B8C9AC]",
+      shadow: "shadow-[#B8C9AC]/25",
+      darkShadow: "dark:shadow-[#34442D]/35",
+      description: "text-white",
+      glow: "bg-[#F4F8F0]/20",
+    },
+  },
+  brightCitrus: {
+    label: "Bright Citrus",
+    swatch: "bg-[#E8F66A]",
+    accent: "#8AA500",
+    iconGradient: "from-[#8AA500] to-[#C8E52E]",
+    pageHeading:
+      "from-[#526600] via-[#8AA500] to-[#C8E52E] dark:from-[#F8FFD9] dark:via-[#E8F66A] dark:to-[#C8E52E]",
+    featureHeader: {
+      gradient: "from-[#526600] via-[#8AA500] to-[#C8E52E]",
+      shadow: "shadow-[#C8E52E]/25",
+      darkShadow: "dark:shadow-[#354200]/35",
+      description: "text-white",
+      glow: "bg-[#F8FFD9]/20",
+    },
+  },
+  brightAqua: {
+    label: "Bright Aqua",
+    swatch: "bg-[#7CEBDD]",
+    accent: "#008F91",
+    iconGradient: "from-[#008F91] to-[#37CDBD]",
+    pageHeading:
+      "from-[#00585D] via-[#008F91] to-[#37CDBD] dark:from-[#DFFFFA] dark:via-[#7CEBDD] dark:to-[#37CDBD]",
+    featureHeader: {
+      gradient: "from-[#00585D] via-[#008F91] to-[#37CDBD]",
+      shadow: "shadow-[#37CDBD]/25",
+      darkShadow: "dark:shadow-[#00383B]/35",
+      description: "text-white",
+      glow: "bg-[#DFFFFA]/20",
+    },
+  },
+  brightFuchsia: {
+    label: "Bright Fuchsia",
+    swatch: "bg-[#F49AE1]",
+    accent: "#C21891",
+    iconGradient: "from-[#C21891] to-[#E852BE]",
+    pageHeading:
+      "from-[#78105B] via-[#C21891] to-[#E852BE] dark:from-[#FFF0FB] dark:via-[#F49AE1] dark:to-[#E852BE]",
+    featureHeader: {
+      gradient: "from-[#78105B] via-[#C21891] to-[#E852BE]",
+      shadow: "shadow-[#E852BE]/25",
+      darkShadow: "dark:shadow-[#4A0A38]/35",
+      description: "text-white",
+      glow: "bg-[#FFF0FB]/20",
+    },
+  },
+  richEmerald: {
+    label: "Rich Emerald",
+    swatch: "bg-[#75B89A]",
+    accent: "#176B4D",
+    iconGradient: "from-[#176B4D] to-[#3F9973]",
+    pageHeading:
+      "from-[#0B3E2C] via-[#176B4D] to-[#3F9973] dark:from-[#DDF3E8] dark:via-[#75B89A] dark:to-[#3F9973]",
+    featureHeader: {
+      gradient: "from-[#0B3E2C] via-[#176B4D] to-[#3F9973]",
+      shadow: "shadow-[#3F9973]/25",
+      darkShadow: "dark:shadow-[#082D20]/35",
+      description: "text-white",
+      glow: "bg-[#DDF3E8]/20",
+    },
+  },
+  richBurgundy: {
+    label: "Rich Burgundy",
+    swatch: "bg-[#C47A8C]",
+    accent: "#76263E",
+    iconGradient: "from-[#76263E] to-[#A94761]",
+    pageHeading:
+      "from-[#421322] via-[#76263E] to-[#A94761] dark:from-[#F7E2E8] dark:via-[#C47A8C] dark:to-[#A94761]",
+    featureHeader: {
+      gradient: "from-[#421322] via-[#76263E] to-[#A94761]",
+      shadow: "shadow-[#A94761]/25",
+      darkShadow: "dark:shadow-[#2B0C15]/35",
+      description: "text-white",
+      glow: "bg-[#F7E2E8]/20",
+    },
+  },
+  richSapphire: {
+    label: "Rich Sapphire",
+    swatch: "bg-[#779FE3]",
+    accent: "#234EAA",
+    iconGradient: "from-[#234EAA] to-[#4F7DD0]",
+    pageHeading:
+      "from-[#132C66] via-[#234EAA] to-[#4F7DD0] dark:from-[#E2EBFF] dark:via-[#779FE3] dark:to-[#4F7DD0]",
+    featureHeader: {
+      gradient: "from-[#132C66] via-[#234EAA] to-[#4F7DD0]",
+      shadow: "shadow-[#4F7DD0]/25",
+      darkShadow: "dark:shadow-[#0D1D48]/35",
+      description: "text-white",
+      glow: "bg-[#E2EBFF]/20",
+    },
+  },
 } as const;
-
 
 export type NamedPagePalette = keyof typeof pagePaletteStyles;
 export type PagePalette = "default" | NamedPagePalette;
 
-export const pagePaletteOptions: { value: NamedPagePalette; label: string; swatch: string }[] = [
-  { value: "kyohub", label: pagePaletteStyles.kyohub.label, swatch: pagePaletteStyles.kyohub.swatch },
-  { value: "violet", label: pagePaletteStyles.violet.label, swatch: pagePaletteStyles.violet.swatch },
-  { value: "blue", label: pagePaletteStyles.blue.label, swatch: pagePaletteStyles.blue.swatch },
-  { value: "teal", label: pagePaletteStyles.teal.label, swatch: pagePaletteStyles.teal.swatch },
-  { value: "rose", label: pagePaletteStyles.rose.label, swatch: pagePaletteStyles.rose.swatch },
-  { value: "yellow", label: pagePaletteStyles.yellow.label, swatch: pagePaletteStyles.yellow.swatch },
-  { value: "orange", label: pagePaletteStyles.orange.label, swatch: pagePaletteStyles.orange.swatch },
-  { value: "gray", label: pagePaletteStyles.gray.label, swatch: pagePaletteStyles.gray.swatch },
-  { value: "mint", label: pagePaletteStyles.mint.label, swatch: pagePaletteStyles.mint.swatch },
-  { value: "coral", label: pagePaletteStyles.coral.label, swatch: pagePaletteStyles.coral.swatch },
-  { value: "berry", label: pagePaletteStyles.berry.label, swatch: pagePaletteStyles.berry.swatch },
-  { value: "ocean", label: pagePaletteStyles.ocean.label, swatch: pagePaletteStyles.ocean.swatch },
-  { value: "honeyGold", label: pagePaletteStyles.honeyGold.label, swatch: pagePaletteStyles.honeyGold.swatch },
-  { value: "berryRose", label: pagePaletteStyles.berryRose.label, swatch: pagePaletteStyles.berryRose.swatch },
-  { value: "mistyBlue", label: pagePaletteStyles.mistyBlue.label, swatch: pagePaletteStyles.mistyBlue.swatch },
-  { value: "warmSand", label: pagePaletteStyles.warmSand.label, swatch: pagePaletteStyles.warmSand.swatch },
-  { value: "dustyLavender", label: pagePaletteStyles.dustyLavender.label, swatch: pagePaletteStyles.dustyLavender.swatch },
-  { value: "oliveCream", label: pagePaletteStyles.oliveCream.label, swatch: pagePaletteStyles.oliveCream.swatch },
-  { value: "buttercream", label: pagePaletteStyles.buttercream.label, swatch: pagePaletteStyles.buttercream.swatch },
-  { value: "powderLilac", label: pagePaletteStyles.powderLilac.label, swatch: pagePaletteStyles.powderLilac.swatch },
-  { value: "mintCloud", label: pagePaletteStyles.mintCloud.label, swatch: pagePaletteStyles.mintCloud.swatch },
-  { value: "pinkCloud", label: pagePaletteStyles.pinkCloud.label, swatch: pagePaletteStyles.pinkCloud.swatch },
-  { value: "babyBlue", label: pagePaletteStyles.babyBlue.label, swatch: pagePaletteStyles.babyBlue.swatch },
-  { value: "apricotCream", label: pagePaletteStyles.apricotCream.label, swatch: pagePaletteStyles.apricotCream.swatch },
-];
+export const pagePaletteOptions: {
+  value: NamedPagePalette;
+  label: string;
+  swatch: string;
+}[] = (Object.keys(pagePaletteStyles) as NamedPagePalette[]).map((value) => ({
+  value,
+  label: pagePaletteStyles[value].label,
+  swatch: pagePaletteStyles[value].swatch,
+}));
 
 export function isPagePalette(value: unknown): value is PagePalette {
-  return value === "default" || (typeof value === "string" && Object.prototype.hasOwnProperty.call(pagePaletteStyles, value));
+  return (
+    value === "default" ||
+    (typeof value === "string" &&
+      Object.prototype.hasOwnProperty.call(pagePaletteStyles, value))
+  );
 }
 
 export function getPagePaletteStyles(palette: NamedPagePalette) {
