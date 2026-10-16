@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { BarChart3, CalendarDays, Grid2X2, SlidersHorizontal } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FeatureSectionHeader } from "@/components/feature-section-header";
@@ -45,17 +45,18 @@ export function BudgetExpenseChart({
 	const [viewMode, setViewMode] = useState<"cutoff" | "all">(
 		budgetMode === "cutoff" ? "cutoff" : "all",
 	);
-	const [selectedCutoff, setSelectedCutoff] = useState<CutoffDay>(currentCutoffDay);
-
-	// Sync when settings change
-	useEffect(() => {
+	const [prevBudgetMode, setPrevBudgetMode] = useState(budgetMode);
+	if (prevBudgetMode !== budgetMode) {
+		setPrevBudgetMode(budgetMode);
 		setViewMode(budgetMode === "cutoff" ? "cutoff" : "all");
-	}, [budgetMode]);
+	}
 
-	// Sync active cutoff when selected month or today changes
-	useEffect(() => {
+	const [selectedCutoff, setSelectedCutoff] = useState<CutoffDay>(currentCutoffDay);
+	const [prevCurrentCutoffDay, setPrevCurrentCutoffDay] = useState(currentCutoffDay);
+	if (prevCurrentCutoffDay !== currentCutoffDay) {
+		setPrevCurrentCutoffDay(currentCutoffDay);
 		setSelectedCutoff(currentCutoffDay);
-	}, [currentCutoffDay]);
+	}
 
 	const cutoffLabel = cutoffShortLabels[selectedCutoff] ?? `${selectedCutoff}th cutoff`;
 	const cutoffRange = cutoffDateRanges[selectedCutoff];
@@ -128,12 +129,12 @@ export function BudgetExpenseChart({
 				appearance="soft"
 				className="min-h-[104px]"
 			>
-				<div className={`budget-chart-header-controls flex max-w-full flex-wrap items-center gap-2 rounded-2xl border p-2 ${viewMode === "cutoff" ? "w-full" : "w-fit"} sm:w-auto`}>
-					<fieldset className="budget-chart-mode-group flex shrink-0 items-center gap-1 rounded-xl border p-1">
+				<div className="budget-chart-header-controls flex w-full flex-col gap-2 rounded-2xl border p-2 shadow-xs sm:w-[290px]">
+					<fieldset className="budget-chart-mode-group grid grid-cols-2 items-center gap-1 rounded-xl border p-1 w-full">
 						<legend className="sr-only">Date filter mode</legend>
 						{budgetMode === "cutoff" ? (
 							<>
-								<label className={`budget-chart-mode-option inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 ${viewMode === "cutoff" ? "is-active" : ""}`}>
+								<label className={`budget-chart-mode-option inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${viewMode === "cutoff" ? "is-active" : ""}`}>
 									<input
 										type="radio"
 										name="budget-date-filter-mode"
@@ -141,10 +142,10 @@ export function BudgetExpenseChart({
 										onChange={() => setViewMode("cutoff")}
 										className="sr-only"
 									/>
-									<SlidersHorizontal size={14} />
+									<SlidersHorizontal size={13} />
 									Cutoff
 								</label>
-								<label className={`budget-chart-mode-option inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 ${viewMode === "all" ? "is-active" : ""}`}>
+								<label className={`budget-chart-mode-option inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${viewMode === "all" ? "is-active" : ""}`}>
 									<input
 										type="radio"
 										name="budget-date-filter-mode"
@@ -152,13 +153,13 @@ export function BudgetExpenseChart({
 										onChange={() => setViewMode("all")}
 										className="sr-only"
 									/>
-									<Grid2X2 size={14} />
+									<Grid2X2 size={13} />
 									Monthly
 								</label>
 							</>
 						) : (
 							<>
-								<label className={`budget-chart-mode-option inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 ${viewMode === "all" ? "is-active" : ""}`}>
+								<label className={`budget-chart-mode-option inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${viewMode === "all" ? "is-active" : ""}`}>
 									<input
 										type="radio"
 										name="budget-date-filter-mode"
@@ -166,10 +167,10 @@ export function BudgetExpenseChart({
 										onChange={() => setViewMode("all")}
 										className="sr-only"
 									/>
-									<Grid2X2 size={14} />
+									<Grid2X2 size={13} />
 									All
 								</label>
-								<label className={`budget-chart-mode-option inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors sm:gap-2 sm:px-3 ${viewMode === "cutoff" ? "is-active" : ""}`}>
+								<label className={`budget-chart-mode-option inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors ${viewMode === "cutoff" ? "is-active" : ""}`}>
 									<input
 										type="radio"
 										name="budget-date-filter-mode"
@@ -177,7 +178,7 @@ export function BudgetExpenseChart({
 										onChange={() => setViewMode("cutoff")}
 										className="sr-only"
 									/>
-									<SlidersHorizontal size={14} />
+									<SlidersHorizontal size={13} />
 									Cutoff
 								</label>
 							</>
@@ -186,28 +187,30 @@ export function BudgetExpenseChart({
 
 					{viewMode === "cutoff" && (
 						<>
-							<span aria-hidden="true" className="budget-chart-control-divider hidden h-7 w-px shrink-0 sm:block" />
-							<fieldset className="flex flex-wrap items-center gap-1.5">
+							<span aria-hidden="true" className="budget-chart-control-divider block h-px w-full" />
+							<fieldset className="flex items-center justify-between gap-1.5 px-0.5">
 								<legend className="sr-only">Cutoff period to compare</legend>
-								<span aria-hidden="true" className="budget-chart-due-label flex items-center gap-1 text-[11px] font-medium">
-									<CalendarDays size={13} />Cutoff
+								<span aria-hidden="true" className="budget-chart-due-label flex items-center gap-1 text-[11px] font-medium shrink-0">
+									<CalendarDays size={12} />Cutoff
 								</span>
-								{dueDayOptions.map((option) => (
-									<label
-										key={option.value}
-										className={`budget-chart-due-option inline-flex h-8 cursor-pointer items-center rounded-full border px-2.5 text-xs font-semibold transition-colors ${selectedCutoff === option.value ? "is-active" : ""}`}
-									>
-										<input
-											type="radio"
-											name="budget-expense-due-day"
-											value={option.value}
-											checked={selectedCutoff === option.value}
-											onChange={() => setSelectedCutoff(option.value)}
-											className="peer sr-only"
-										/>
-										{option.label}
-									</label>
-								))}
+								<div className="flex items-center gap-1">
+									{dueDayOptions.map((option) => (
+										<label
+											key={option.value}
+											className={`budget-chart-due-option inline-flex h-7.5 cursor-pointer items-center justify-center rounded-full border px-2.5 text-[11px] font-semibold transition-colors ${selectedCutoff === option.value ? "is-active" : ""}`}
+										>
+											<input
+												type="radio"
+												name="budget-expense-due-day"
+												value={option.value}
+												checked={selectedCutoff === option.value}
+												onChange={() => setSelectedCutoff(option.value)}
+												className="peer sr-only"
+											/>
+											{option.label}
+										</label>
+									))}
+								</div>
 							</fieldset>
 						</>
 					)}

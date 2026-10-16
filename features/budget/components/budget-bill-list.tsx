@@ -1,4 +1,4 @@
-import { Banknote, CalendarDays, CalendarSync, Check, ChevronDown, ChevronLeft, ChevronRight, Circle, House, ListFilter, Loader2, Pencil, Receipt, ShoppingBag, Trash2, Utensils, Zap, type LucideIcon } from "lucide-react";
+import { Banknote, CalendarDays, CalendarSync, Check, ChevronDown, ChevronLeft, ChevronRight, Circle, House, ListFilter, Loader2, Pencil, Receipt, ShoppingBag, ShoppingCart, Trash2, Utensils, Zap, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,9 +36,14 @@ const categoryStyles: Record<BudgetCategory, { icon: LucideIcon; iconBox: string
 		iconBox: "from-violet-100 to-purple-50 text-violet-700 shadow-violet-200/50 dark:from-violet-950/70 dark:to-purple-950/50 dark:text-violet-200 dark:shadow-black/20",
 		badge: "bg-violet-500/10 text-violet-700 dark:bg-violet-400/10 dark:text-violet-200",
 	},
+	grocery: {
+		icon: ShoppingCart,
+		iconBox: "from-blue-100 to-indigo-50 text-blue-700 shadow-blue-200/50 dark:from-blue-950/70 dark:to-indigo-950/50 dark:text-blue-200 dark:shadow-black/20",
+		badge: "bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-200",
+	},
 };
 
-export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount = 0, today, submitting, pendingPaymentKeys = [], deletingBillId = null, onEdit, onMoveBill, onPaymentChange, onDelete }: {
+export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount = 0, today, submitting, pendingPaymentKeys = [], deletingBillId = null, onEdit, onMoveBill, onPaymentChange, onDelete, onOpenGroceryModal, requestedDueDay }: {
 	selectedMonth: string;
 	occurrences: BillOccurrence[];
 	hiddenOverdueCount?: number;
@@ -50,12 +55,22 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 	onMoveBill: (bill: BudgetBill, targetMonthKey: string, targetDueDay: CutoffDay, frequency: BillFrequency) => Promise<boolean>;
 	onPaymentChange: (bill: BudgetBill, month: string, paid: boolean) => void;
 	onDelete: (id: string) => void;
+	onOpenGroceryModal?: (bill: BudgetBill) => void;
+	requestedDueDay?: number | null;
 }) {
 	const [movingOccurrence, setMovingOccurrence] = useState<BillOccurrence | null>(null);
-	const [dueDayFilter, setDueDayFilter] = useState<number | null>(() => activeCutoffDayForDate(today));
+	const [prevRequestedDueDay, setPrevRequestedDueDay] = useState(requestedDueDay);
+	const [dueDayFilter, setDueDayFilter] = useState<number | null>(() => requestedDueDay !== undefined && requestedDueDay !== null ? requestedDueDay : activeCutoffDayForDate(today));
 	const [categoryFilter, setCategoryFilter] = useState<BudgetCategory | null>(null);
 	const [rowsPerPage, setRowsPerPage] = useState<number>(rowsPerPageOptions[0]);
 	const [currentPage, setCurrentPage] = useState(1);
+
+	if (requestedDueDay !== prevRequestedDueDay) {
+		setPrevRequestedDueDay(requestedDueDay);
+		if (requestedDueDay !== undefined && requestedDueDay !== null) {
+			setDueDayFilter(requestedDueDay);
+		}
+	}
 	const sortedOccurrences = [...occurrences].sort((first, second) => {
 		const firstIsOverdue = !first.bill.paidMonthKeys.includes(first.monthKey) && isBillOccurrenceOverdue(first.bill, first.monthKey, today);
 		const secondIsOverdue = !second.bill.paidMonthKeys.includes(second.monthKey) && isBillOccurrenceOverdue(second.bill, second.monthKey, today);
@@ -148,12 +163,13 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 				const CategoryIcon = categoryStyles[bill.category].icon;
 				const categoryStyle = categoryStyles[bill.category];
 				const isDailyExpense = bill.category === "daily-expense";
+				const isGrocery = bill.category === "grocery";
 				const statusLabel = isDailyExpense ? "Auto-paid" : isOverdue ? "Overdue · unpaid" : isPaid ? "Paid" : "Unpaid";
 				const occurrenceKey = `${bill.id}-${occurrenceMonth}`;
 				const isPaymentPending = pendingPaymentKeys.includes(occurrenceKey);
 				const isDeleting = deletingBillId === bill.id;
 				const isItemBusy = isPaymentPending || isDeleting;
-				return <article key={occurrenceKey} data-page-palette-preserve className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_360px] md:gap-x-4">
+				return <article key={occurrenceKey} data-page-palette-preserve onClick={() => { if (isGrocery) onOpenGroceryModal?.(bill); }} className={`budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_360px] md:gap-x-4 ${isGrocery ? "cursor-pointer hover:border-blue-300 hover:shadow-md dark:hover:border-blue-700" : ""}`}>
 					<span className={`grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br shadow-md sm:size-12 ${categoryStyle.iconBox}`}>
 						<CategoryIcon size={20} className="sm:size-[22px]" />
 					</span>
@@ -163,7 +179,7 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 							<span className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:py-1 ${categoryStyle.badge}`}>{budgetCategoryLabels[bill.category]}</span>
 						</div>
 						<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
-							<span className="inline-flex items-center gap-1"><CalendarDays size={12} />{isDailyExpense ? "Daily expense" : bill.frequency === "recurring" ? "Recurring monthly" : "This month only"}{occurrenceLabel}</span>
+							<span className="inline-flex items-center gap-1"><CalendarDays size={12} />{isDailyExpense ? "Daily expense" : isGrocery ? "Grocery list" : bill.frequency === "recurring" ? "Recurring monthly" : "This month only"}{occurrenceLabel}</span>
 							{bill.dueDay !== null && <><span aria-hidden="true">·</span><span className="inline-flex items-center gap-1"><CalendarDays size={12} />{isDailyExpense ? `Cutoff day ${bill.dueDay}` : `Due day ${bill.dueDay}`}</span></>}
 							<span aria-hidden="true" className={`size-1.5 rounded-full ${isOverdue ? "bg-rose-500" : isPaid ? "bg-emerald-500" : "bg-slate-400"}`} />
 							<span>{statusLabel}</span>
@@ -178,18 +194,18 @@ export function BudgetBillList({ selectedMonth, occurrences, hiddenOverdueCount 
 							</span>
 						</div>
 						<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
-							<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--edit size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={`Edit ${bill.title}`} title="Edit bill" onClick={() => onEdit(bill)}><Pencil size={14} className="sm:size-[15px]" /></Button>
-							{isDailyExpense ? (
-								<Button type="button" disabled variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--move size-7.5 sm:size-8 cursor-not-allowed rounded-xl text-slate-300 opacity-30 transition-colors dark:text-slate-600" aria-label="Daily expense cutoff is automatic" title="Daily expense cutoff is automatic"><CalendarSync size={14} className="sm:size-[15px]" /></Button>
+							<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--edit size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={isGrocery ? `View ${bill.title}` : `Edit ${bill.title}`} title={isGrocery ? "View grocery list" : "Edit bill"} onClick={(e) => { e.stopPropagation(); if (isGrocery) onOpenGroceryModal?.(bill); else onEdit(bill); }}><Pencil size={14} className="sm:size-[15px]" /></Button>
+							{isDailyExpense || isGrocery ? (
+								<Button type="button" disabled variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--move size-7.5 sm:size-8 cursor-not-allowed rounded-xl text-slate-300 opacity-30 transition-colors dark:text-slate-600" aria-label={isGrocery ? "Grocery date is fixed to shopping day" : "Daily expense cutoff is automatic"} title={isGrocery ? "Grocery date is fixed to shopping day" : "Daily expense cutoff is automatic"}><CalendarSync size={14} className="sm:size-[15px]" /></Button>
 							) : (
-								<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--move size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={`Move ${bill.title}`} title="Move bill schedule" onClick={() => setMovingOccurrence({ bill, monthKey: occurrenceMonth })}><CalendarSync size={14} className="sm:size-[15px]" /></Button>
+								<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--move size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={`Move ${bill.title}`} title="Move bill schedule" onClick={(e) => { e.stopPropagation(); setMovingOccurrence({ bill, monthKey: occurrenceMonth }); }}><CalendarSync size={14} className="sm:size-[15px]" /></Button>
 							)}
 							{isDailyExpense ? (
 								<Button type="button" disabled variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--payment size-7.5 sm:size-8 cursor-default rounded-xl text-emerald-600 opacity-90 transition-colors dark:text-emerald-400" aria-label={`${bill.title} is auto-marked as paid`} title="Daily expenses are automatically marked as paid"><Check size={15} className="text-emerald-600 sm:size-4 dark:text-emerald-400" /></Button>
 							) : (
-								<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--payment size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={isPaid ? `Mark ${bill.title} unpaid for ${monthLabel(occurrenceMonth)}` : `Mark ${bill.title} paid for ${monthLabel(occurrenceMonth)}`} title={isPaid ? "Mark unpaid" : "Mark paid"} onClick={() => onPaymentChange(bill, occurrenceMonth, !isPaid)}>{isPaymentPending ? <Loader2 size={15} className="animate-spin text-slate-500 sm:size-4" /> : isPaid ? <Check size={15} className="text-emerald-600 sm:size-4" /> : <Circle size={15} className="text-slate-400 sm:size-4" />}</Button>
+								<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--payment size-7.5 sm:size-8 rounded-xl text-slate-500 transition-colors dark:text-slate-400" aria-label={isPaid ? `Mark ${bill.title} unpaid for ${monthLabel(occurrenceMonth)}` : `Mark ${bill.title} paid for ${monthLabel(occurrenceMonth)}`} title={isPaid ? "Mark unpaid" : "Mark paid"} onClick={(e) => { e.stopPropagation(); onPaymentChange(bill, occurrenceMonth, !isPaid); }}>{isPaymentPending ? <Loader2 size={15} className="animate-spin text-slate-500 sm:size-4" /> : isPaid ? <Check size={15} className="text-emerald-600 sm:size-4" /> : <Circle size={15} className="text-slate-400 sm:size-4" />}</Button>
 							)}
-							<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--delete size-7.5 sm:size-8 rounded-xl text-slate-400 transition-colors dark:text-slate-400" aria-label={`Delete ${bill.title}`} title="Delete bill" onClick={() => onDelete(bill.id)}>{isDeleting ? <Loader2 size={14} className="animate-spin text-rose-500 sm:size-[15px]" /> : <Trash2 size={14} className="sm:size-[15px]" />}</Button>
+							<Button type="button" disabled={isItemBusy} variant="ghost" size="icon-sm" className="budget-bill-action budget-bill-action--delete size-7.5 sm:size-8 rounded-xl text-slate-400 transition-colors dark:text-slate-400" aria-label={`Delete ${bill.title}`} title="Delete bill" onClick={(e) => { e.stopPropagation(); onDelete(bill.id); }}>{isDeleting ? <Loader2 size={14} className="animate-spin text-rose-500 sm:size-[15px]" /> : <Trash2 size={14} className="sm:size-[15px]" />}</Button>
 						</div>
 					</div>
 				</article>;

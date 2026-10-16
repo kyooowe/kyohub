@@ -6,7 +6,7 @@ import type { BudgetBill, MonthlyBudget } from "@/features/budget/types";
 
 export const instant = false;
 
-async function BudgetContent() {
+async function BudgetContent({ openGrocery }: { openGrocery?: string }) {
 	await connection();
 	let initialData: { budgets: MonthlyBudget[]; bills: BudgetBill[] } = { budgets: [], bills: [] };
 	let initialError = "";
@@ -18,11 +18,17 @@ async function BudgetContent() {
 	return (
 		<>
 			<DashboardNavigationReady href="/budget" />
-			<BudgetPlanner initialData={initialData} initialError={initialError} />
+			<BudgetPlanner initialData={initialData} initialError={initialError} initialOpenGroceryDateKey={openGrocery} />
 		</>
 	);
 }
 
-export default function BudgetPage() {
-	return <BudgetContent />;
+export default async function BudgetPage({
+	searchParams,
+}: {
+	searchParams?: Promise<{ openGrocery?: string; [key: string]: string | string[] | undefined }>;
+}) {
+	const resolvedSearchParams = searchParams ? await searchParams : undefined;
+	const openGrocery = typeof resolvedSearchParams?.openGrocery === "string" ? resolvedSearchParams.openGrocery : undefined;
+	return <BudgetContent openGrocery={openGrocery} />;
 }
