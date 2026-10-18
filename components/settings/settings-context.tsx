@@ -6,7 +6,7 @@ import { normalizeAppSettings, type AppSettings } from "@/components/settings/se
 
 export type { AppSettings, NavigationHref, BudgetMode } from "@/components/settings/settings-model";
 export type { PagePalette } from "@/components/settings/page-palettes";
-export { navigationItems } from "@/components/settings/settings-model";
+export { navigationItems, defaultPagePalettes, getActivePagePalette } from "@/components/settings/settings-model";
 
 const storageKey = "kyohub-settings";
 

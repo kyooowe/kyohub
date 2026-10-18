@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { usePathname } from "next/navigation";
 import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -9,7 +10,7 @@ import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTri
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { setDarkMode, useDarkModePreference } from "@/components/theme-toggle";
 import { FamilyReminderSettings } from "@/features/family-calendar/components/family-reminder-settings";
-import { defaultSettings, defaultSettingsPagePalettes } from "@/components/settings/settings-model";
+import { defaultSettings, defaultSettingsPagePalettes, getActivePagePalette } from "@/components/settings/settings-model";
 import { navigationItems, useAppSettings, type NavigationHref } from "@/components/settings/settings-context";
 import { getPagePaletteStyles, pagePaletteOptions, type NamedPagePalette } from "@/components/settings/page-palettes";
 
@@ -47,40 +48,74 @@ const paletteOptionDetails: Partial<Record<NamedPagePalette, { icon: LucideIcon;
 	apricotCream: { icon: Sunrise, description: "Soft peachy tones with a creamy finish.", tone: "Apricot cream pastel", iconColor: "text-[#77452c]" },
 };
 
-function SectionHeading({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description: string }) {
-	return <div className="flex items-center gap-3">
-		<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"><Icon size={16} /></span>
-		<div className="min-w-0">
-			<h3 className="text-sm font-semibold text-violet-950 dark:text-violet-200">{title}</h3>
-			<p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
+function SectionHeading({
+	icon: Icon,
+	title,
+	description,
+	accentColor,
+}: {
+	icon: LucideIcon;
+	title: string;
+	description: string;
+	accentColor: string;
+}) {
+	return (
+		<div className="flex items-center gap-3">
+			<span
+				className="grid size-8 shrink-0 place-items-center rounded-xl transition-colors"
+				style={{
+					backgroundColor: `color-mix(in oklab, ${accentColor} 16%, transparent)`,
+					color: accentColor,
+				}}
+			>
+				<Icon size={16} />
+			</span>
+			<div className="min-w-0">
+				<h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+				<p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
+			</div>
 		</div>
-	</div>;
+	);
 }
 
-function SettingsSection({ value, icon, title, description, children }: {
+function SettingsSection({
+	value,
+	icon,
+	title,
+	description,
+	accentColor,
+	children,
+}: {
 	value: string;
 	icon: LucideIcon;
 	title: string;
 	description: string;
+	accentColor: string;
 	children: React.ReactNode;
 }) {
-	return <AccordionItem value={value} className="border-b-0">
-		<AccordionHeader>
-			<AccordionTrigger className="px-2">
-				<SectionHeading icon={icon} title={title} description={description} />
-				<ChevronDown size={17} className="shrink-0 text-slate-400 transition-transform duration-200 group-data-panel-open:rotate-180 dark:text-slate-500" />
-			</AccordionTrigger>
-		</AccordionHeader>
-		<AccordionPanel><div className="space-y-3">{children}</div></AccordionPanel>
-	</AccordionItem>;
+	return (
+		<AccordionItem value={value} className="border-b-0">
+			<AccordionHeader>
+				<AccordionTrigger className="px-2">
+					<SectionHeading icon={icon} title={title} description={description} accentColor={accentColor} />
+					<ChevronDown size={17} className="shrink-0 text-slate-400 transition-transform duration-200 group-data-panel-open:rotate-180 dark:text-slate-500" />
+				</AccordionTrigger>
+			</AccordionHeader>
+			<AccordionPanel><div className="space-y-3">{children}</div></AccordionPanel>
+		</AccordionItem>
+	);
 }
 
 export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar" | "header" | "floating"; compact?: boolean }) {
+	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
 	const [confirmRestore, setConfirmRestore] = useState(false);
 	const [restoreNotice, setRestoreNotice] = useState(false);
 	const [draggingHref, setDraggingHref] = useState<NavigationHref | null>(null);
 	const { settings, updateSettings, saveError } = useAppSettings();
+	const activePalette = getActivePagePalette(pathname, settings);
+	const paletteStyles = getPagePaletteStyles(activePalette);
+	const paletteAccent = paletteStyles.accent;
 	const isDarkMode = useDarkModePreference();
 	const navigationListRef = useRef<HTMLDivElement>(null);
 	const navigationItemRefs = useRef<Partial<Record<NavigationHref, HTMLDivElement>>>({});
@@ -186,12 +221,13 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 			variant="ghost"
 			size={trigger === "sidebar" ? "default" : compact ? "icon-sm" : "icon"}
 			className={trigger === "sidebar"
-				? "hidden min-h-11 w-full justify-start gap-3 rounded-md bg-transparent px-3 text-violet-100/65 transition-colors hover:bg-white/5 hover:text-white md:flex"
+				? "hidden min-h-11 w-full justify-start gap-3 rounded-md bg-transparent px-3 text-slate-200/80 transition-colors hover:bg-white/5 hover:text-white md:flex"
 				: trigger === "header"
-					? "text-violet-700 md:hidden dark:text-violet-200"
+					? "md:hidden"
 					: compact
 					? "floating-navigation-action relative z-10 grid size-9 shrink-0 place-items-center justify-self-center rounded-full transition-colors"
 					: "floating-navigation-action relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition-colors"}
+			style={trigger === "header" ? { color: paletteAccent } : undefined}
 			aria-label={trigger === "sidebar" ? undefined : "Open settings"}
 			onClick={() => setOpen(true)}
 		>
@@ -208,35 +244,102 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 				}
 			}
 		}}>
-			<DialogContent pagePalette={null} className="palette-dialog-panel flex max-h-[min(90dvh,52rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border-violet-200 bg-[#f8f6ff] p-0 dark:border-slate-700 dark:bg-slate-950">
+			<DialogContent
+				pagePalette={activePalette}
+				data-page-palette-surface
+				className="palette-dialog-panel flex max-h-[min(90dvh,52rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border bg-white p-0 dark:border-slate-800 dark:bg-slate-950"
+				style={{
+					borderColor: `color-mix(in oklab, ${paletteAccent} 35%, transparent)`,
+					"--page-accent-base": paletteAccent,
+					"--action-accent": paletteAccent,
+				} as CSSProperties}
+			>
 				<div className="shrink-0">
 					<PaletteDialogHeader eyebrow="KYOHUB PREFERENCES" title="Settings" description="Personalize how Kyohub looks and works." icon={<Settings2 size={18} />} closeLabel="Close settings" />
 				</div>
-				<div className="settings-dialog-scroll min-h-0 flex-1 space-y-6 overflow-y-auto bg-[#f7f7ff] p-5 sm:p-6 dark:bg-slate-950">
+				<div
+					className="settings-dialog-scroll min-h-0 flex-1 space-y-6 overflow-y-auto p-5 sm:p-6 dark:bg-slate-950"
+					style={{
+						backgroundColor: `color-mix(in oklab, ${paletteAccent} 3.5%, white)`,
+					}}
+				>
 					{saveError && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{saveError}</p>}
 
 					<Accordion multiple className="space-y-2">
-					<SettingsSection value="appearance" icon={Sun} title="Appearance" description="Choose how Kyohub looks and feels.">
+					<SettingsSection value="appearance" icon={Sun} title="Appearance" description="Choose how Kyohub looks and feels." accentColor={paletteAccent}>
 						<div className="mx-2 grid gap-2 sm:mx-4 sm:grid-cols-2">
-							<button type="button" aria-pressed={isDarkMode} onClick={() => setDarkMode(true)} className={`flex min-w-0 items-center gap-2 rounded-xl border p-2 text-left transition-all ${isDarkMode ? "border-violet-400 bg-violet-50 shadow-sm shadow-violet-200/60 ring-1 ring-violet-300 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700" : "border-slate-100 bg-white hover:border-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}>
+							<button
+								type="button"
+								aria-pressed={isDarkMode}
+								onClick={() => setDarkMode(true)}
+								className={`flex min-w-0 items-center gap-2 rounded-xl border p-2 text-left transition-all ${isDarkMode ? "shadow-sm ring-1" : "border-slate-100 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}
+								style={isDarkMode ? {
+									borderColor: `color-mix(in oklab, ${paletteAccent} 55%, transparent)`,
+									backgroundColor: `color-mix(in oklab, ${paletteAccent} 10%, transparent)`,
+									boxShadow: `0 1px 3px color-mix(in oklab, ${paletteAccent} 25%, transparent)`,
+									outlineColor: paletteAccent,
+								} : undefined}
+							>
 								<span className="grid size-10 shrink-0 place-items-center rounded-lg bg-linear-to-br from-slate-950 to-indigo-950 text-amber-200 shadow-inner shadow-black/30"><Moon size={17} /></span>
 								<span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">Dark mode</span><span className="mt-0.5 block text-[10px] leading-3.5 text-slate-500 dark:text-slate-400">Reduce eye strain at night.</span></span>
-								<span className={`grid size-4 shrink-0 place-items-center rounded-full border ${isDarkMode ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 dark:border-slate-600"}`}>{isDarkMode && <Check size={11} strokeWidth={3} />}</span>
+								<span
+									className={`grid size-4 shrink-0 place-items-center rounded-full border ${isDarkMode ? "text-white" : "border-slate-300 dark:border-slate-600"}`}
+									style={isDarkMode ? { backgroundColor: paletteAccent, borderColor: paletteAccent } : undefined}
+								>{isDarkMode && <Check size={11} strokeWidth={3} />}</span>
 							</button>
-							<button type="button" aria-pressed={!isDarkMode} onClick={() => setDarkMode(false)} className={`flex min-w-0 items-center gap-2 rounded-xl border p-2 text-left transition-all ${!isDarkMode ? "border-violet-400 bg-violet-50 shadow-sm shadow-violet-200/60 ring-1 ring-violet-300 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700" : "border-slate-100 bg-white hover:border-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}>
+							<button
+								type="button"
+								aria-pressed={!isDarkMode}
+								onClick={() => setDarkMode(false)}
+								className={`flex min-w-0 items-center gap-2 rounded-xl border p-2 text-left transition-all ${!isDarkMode ? "shadow-sm ring-1" : "border-slate-100 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}
+								style={!isDarkMode ? {
+									borderColor: `color-mix(in oklab, ${paletteAccent} 55%, transparent)`,
+									backgroundColor: `color-mix(in oklab, ${paletteAccent} 10%, transparent)`,
+									boxShadow: `0 1px 3px color-mix(in oklab, ${paletteAccent} 25%, transparent)`,
+									outlineColor: paletteAccent,
+								} : undefined}
+							>
 								<span className="grid size-10 shrink-0 place-items-center rounded-lg bg-linear-to-br from-sky-50 to-blue-100 text-blue-700 shadow-inner shadow-blue-200/60 dark:from-slate-800 dark:to-slate-700 dark:text-sky-300"><Sun size={17} /></span>
 								<span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">Light mode</span><span className="mt-0.5 block text-[10px] leading-3.5 text-slate-500 dark:text-slate-400">Keep things bright and clean.</span></span>
-								<span className={`grid size-4 shrink-0 place-items-center rounded-full border ${!isDarkMode ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 dark:border-slate-600"}`}>{!isDarkMode && <Check size={11} strokeWidth={3} />}</span>
+								<span
+									className={`grid size-4 shrink-0 place-items-center rounded-full border ${!isDarkMode ? "text-white" : "border-slate-300 dark:border-slate-600"}`}
+									style={!isDarkMode ? { backgroundColor: paletteAccent, borderColor: paletteAccent } : undefined}
+								>{!isDarkMode && <Check size={11} strokeWidth={3} />}</span>
 							</button>
 						</div>
-						<button type="button" role="switch" aria-checked={settings.desktopNavigation === "floating"} onClick={() => updateSettings((current) => ({ ...current, desktopNavigation: current.desktopNavigation === "floating" ? "sidebar" : "floating" }))} className="mx-2 hidden w-[calc(100%-1rem)] items-center gap-2 rounded-xl border border-violet-100 bg-violet-50/70 p-2 text-left transition-colors hover:bg-violet-100/70 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 md:flex sm:mx-4 sm:w-[calc(100%-2rem)]">
-							<span className="grid size-8 shrink-0 place-items-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300"><LaptopMinimal size={15} /></span>
+						<button
+							type="button"
+							role="switch"
+							aria-checked={settings.desktopNavigation === "floating"}
+							onClick={() => updateSettings((current) => ({ ...current, desktopNavigation: current.desktopNavigation === "floating" ? "sidebar" : "floating" }))}
+							className="mx-2 hidden w-[calc(100%-1rem)] items-center gap-2 rounded-xl border p-2 text-left transition-colors md:flex sm:mx-4 sm:w-[calc(100%-2rem)]"
+							style={{
+								borderColor: `color-mix(in oklab, ${paletteAccent} 24%, transparent)`,
+								backgroundColor: `color-mix(in oklab, ${paletteAccent} 7%, transparent)`,
+							}}
+						>
+							<span
+								className="grid size-8 shrink-0 place-items-center rounded-lg"
+								style={{
+									backgroundColor: `color-mix(in oklab, ${paletteAccent} 16%, transparent)`,
+									color: paletteAccent,
+								}}
+							>
+								<LaptopMinimal size={15} />
+							</span>
 							<span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">Floating navigation on desktop</span><span className="block text-[10px] text-slate-500 dark:text-slate-400">Mobile navigation always stays floating.</span></span>
-							<span className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${settings.desktopNavigation === "floating" ? "bg-violet-600" : "bg-slate-300 dark:bg-slate-700"}`}><span className={`absolute top-0.5 size-4 rounded-full bg-white shadow-sm transition-transform ${settings.desktopNavigation === "floating" ? "translate-x-4" : "translate-x-0.5"}`} /></span>
+							<span
+								className="relative h-5 w-9 shrink-0 rounded-full transition-colors"
+								style={{
+									backgroundColor: settings.desktopNavigation === "floating" ? paletteAccent : undefined,
+								}}
+							>
+								<span className={`absolute top-0.5 size-4 rounded-full bg-white shadow-sm transition-transform ${settings.desktopNavigation === "floating" ? "translate-x-4" : "translate-x-0.5"}`} />
+							</span>
 						</button>
 					</SettingsSection>
 
-					<SettingsSection value="navigation" icon={List} title="Navigation order" description="Hold and drag an item to reorder. Focus an item and use the arrow keys to move it.">
+					<SettingsSection value="navigation" icon={List} title="Navigation order" description="Hold and drag an item to reorder. Focus an item and use the arrow keys to move it." accentColor={paletteAccent}>
 						<div ref={navigationListRef} role="list" className="relative mx-2 space-y-2 sm:mx-4">
 							{settings.navigationOrder.map((href) => {
 								const item = navigationItems.find((entry) => entry.href === href);
@@ -262,9 +365,13 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 									onPointerUp={(event) => finishNavigationDrag(event.pointerId)}
 									onPointerCancel={(event) => finishNavigationDrag(event.pointerId)}
 									onKeyDown={(event) => handleNavigationKeyDown(event, href)}
-									className={`flex touch-none cursor-grab items-center justify-between gap-3 rounded-xl border px-3 py-2 outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out focus-visible:ring-2 focus-visible:ring-violet-400 active:cursor-grabbing ${draggingHref === href
-										? "scale-[1.01] border-violet-300 bg-violet-50 shadow-md shadow-violet-950/10 dark:border-violet-600 dark:bg-violet-950/40 dark:shadow-black/20"
-										: "border-slate-100 bg-white hover:border-violet-200 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}
+									className={`flex touch-none cursor-grab items-center justify-between gap-3 rounded-xl border px-3 py-2 outline-none transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out active:cursor-grabbing ${draggingHref === href
+										? "scale-[1.01] shadow-md dark:shadow-black/20"
+										: "border-slate-100 bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-900"}`}
+									style={draggingHref === href ? {
+										borderColor: `color-mix(in oklab, ${paletteAccent} 55%, transparent)`,
+										backgroundColor: `color-mix(in oklab, ${paletteAccent} 10%, transparent)`,
+									} : undefined}
 								>
 									<span className="flex min-w-0 items-center gap-2.5"><span className={`grid size-8 shrink-0 place-items-center rounded-lg ${color}`}><Icon size={16} /></span><span className="truncate text-xs font-semibold text-slate-800 dark:text-slate-100">{item.label}</span></span>
 									<ChevronRight aria-hidden="true" size={16} className="shrink-0 rotate-90 text-slate-300 dark:text-slate-600" />
@@ -273,7 +380,7 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 						</div>
 					</SettingsSection>
 
-					<SettingsSection value="colors" icon={Palette} title="Page colors" description="Choose the accent color for each page’s section headers.">
+					<SettingsSection value="colors" icon={Palette} title="Page colors" description="Choose the accent color for each page’s section headers." accentColor={paletteAccent}>
 						<div className="mx-2 grid gap-3 sm:mx-4 sm:grid-cols-2">
 							{navigationItems.map(({ href, label }) => {
 								const { icon: Icon } = navigationVisuals[href];
@@ -290,10 +397,20 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 										type="button"
 										aria-label={`Choose ${label} page color`}
 										title={`Choose ${label} page color`}
-										className="flex min-h-12 w-full items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left text-xs font-semibold text-slate-800 shadow-sm shadow-slate-950/[0.03] transition-all hover:border-violet-200 hover:shadow-md focus-visible:border-violet-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700 dark:focus-visible:border-violet-600 dark:focus-visible:ring-violet-900">
+										className="flex min-h-12 w-full items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3 py-2 text-left text-xs font-semibold text-slate-800 shadow-sm shadow-slate-950/[0.03] transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-slate-700"
+										style={{ outlineColor: paletteAccent }}
+									>
 										<span className={`grid size-8 shrink-0 place-items-center rounded-full bg-linear-to-br ${swatch} text-white shadow-sm`}><Icon size={15} /></span>
 										<span className="min-w-0 flex-1 truncate">{label}</span>
-										<span className={`grid size-5 shrink-0 place-items-center rounded-full ${palette !== "default" ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-200" : "text-slate-400 dark:text-slate-500"}`}>{palette !== "default" ? <Check size={12} /> : <ChevronRight size={16} />}</span>
+										<span
+											className={`grid size-5 shrink-0 place-items-center rounded-full ${palette !== "default" ? "" : "text-slate-400 dark:text-slate-500"}`}
+											style={palette !== "default" ? {
+												backgroundColor: `color-mix(in oklab, ${paletteAccent} 18%, transparent)`,
+												color: paletteAccent,
+											} : undefined}
+										>
+											{palette !== "default" ? <Check size={12} /> : <ChevronRight size={16} />}
+										</span>
 									</PopoverTrigger>
 									<PopoverContent align="start" className="max-h-[min(var(--available-height),50dvh,28rem)] max-w-[var(--available-width)] w-72 overscroll-contain overflow-y-auto p-2">
 										<p className="px-2 pb-2 pt-1 text-xs font-semibold text-slate-700 dark:text-slate-200">Choose a color</p>
@@ -310,7 +427,11 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 													aria-label={`${option.label} palette${option.value === "default" ? ` for ${label}` : ""}`}
 													aria-pressed={palette === option.value}
 													title={`${option.label} palette`}
-													className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 ${palette === option.value ? "border-violet-300 bg-violet-50/80 shadow-sm dark:border-violet-700 dark:bg-violet-950/40" : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/80"}`}
+													className={`flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 ${palette === option.value ? "shadow-sm" : "border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/80"}`}
+													style={palette === option.value ? {
+														borderColor: `color-mix(in oklab, ${paletteAccent} 50%, transparent)`,
+														backgroundColor: `color-mix(in oklab, ${paletteAccent} 12%, transparent)`,
+													} : undefined}
 													onClick={() => updateSettings((current) => ({
 														...current,
 														pagePalettes: { ...current.pagePalettes, [href]: option.value },
@@ -322,7 +443,13 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 													<span className="min-w-0 flex-1">
 														<span className="flex items-center justify-between gap-2">
 															<span className="truncate text-xs font-semibold text-slate-800 dark:text-slate-100">{option.label}</span>
-															<span className={`grid size-5 shrink-0 place-items-center rounded-full ${palette === option.value ? "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-200" : "text-transparent"}`}>
+															<span
+																className={`grid size-5 shrink-0 place-items-center rounded-full ${palette === option.value ? "" : "text-transparent"}`}
+																style={palette === option.value ? {
+																	backgroundColor: `color-mix(in oklab, ${paletteAccent} 20%, transparent)`,
+																	color: paletteAccent,
+																} : undefined}
+															>
 																{palette === option.value && <Check size={12} strokeWidth={2.5} />}
 															</span>
 														</span>
@@ -341,25 +468,44 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 						</div>
 					</SettingsSection>
 
-					<SettingsSection value="passwords" icon={KeyRound} title="Password manager" description="Choose your default password layout.">
+					<SettingsSection value="passwords" icon={KeyRound} title="Password manager" description="Choose your default password layout." accentColor={paletteAccent}>
 						<fieldset className="mx-2 grid gap-2 sm:mx-4 sm:grid-cols-2">
 							{(["grid", "list"] as const).map((view) => {
 								const selected = settings.passwordView === view;
 								const Icon = view === "grid" ? LayoutGrid : List;
-								return <label key={view} className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-2 text-left transition-all focus-within:ring-2 focus-within:ring-violet-400 ${selected ? "border-violet-400 bg-violet-50 shadow-sm shadow-violet-200/60 ring-1 ring-violet-300 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700" : "border-slate-100 bg-white hover:border-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}>
+								return <label
+									key={view}
+									className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-2 text-left transition-all ${selected ? "shadow-sm ring-1" : "border-slate-100 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}
+									style={selected ? {
+										borderColor: `color-mix(in oklab, ${paletteAccent} 55%, transparent)`,
+										backgroundColor: `color-mix(in oklab, ${paletteAccent} 10%, transparent)`,
+										boxShadow: `0 1px 3px color-mix(in oklab, ${paletteAccent} 25%, transparent)`,
+									} : undefined}
+								>
 									<input type="radio" name="default-password-view" value={view} checked={selected} onChange={() => updateSettings((current) => ({ ...current, passwordView: view }))} className="sr-only" />
-									<span className={`grid size-10 shrink-0 place-items-center rounded-lg ${selected ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}><Icon size={17} /></span>
+									<span
+										className="grid size-10 shrink-0 place-items-center rounded-lg"
+										style={selected ? {
+											backgroundColor: `color-mix(in oklab, ${paletteAccent} 16%, transparent)`,
+											color: paletteAccent,
+										} : { backgroundColor: "rgb(241 245 249)", color: "rgb(71 85 105)" }}
+									>
+										<Icon size={17} />
+									</span>
 									<span className="min-w-0 flex-1">
 										<span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">{view === "grid" ? "Card view" : "List view"}</span>
 										<span className="mt-0.5 block text-[10px] leading-3.5 text-slate-500 dark:text-slate-400">{view === "grid" ? "Display passwords as cards." : "Display passwords in compact rows."}</span>
 									</span>
-									<span className={`grid size-4 shrink-0 place-items-center rounded-full border ${selected ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 dark:border-slate-600"}`}>{selected && <Check size={11} strokeWidth={3} />}</span>
+									<span
+										className={`grid size-4 shrink-0 place-items-center rounded-full border ${selected ? "text-white" : "border-slate-300 dark:border-slate-600"}`}
+										style={selected ? { backgroundColor: paletteAccent, borderColor: paletteAccent } : undefined}
+									>{selected && <Check size={11} strokeWidth={3} />}</span>
 								</label>;
 							})}
 						</fieldset>
 					</SettingsSection>
 
-					<SettingsSection value="budget" icon={ChartNoAxesColumn} title="Budget Planner" description="Choose how you set and track your budget.">
+					<SettingsSection value="budget" icon={ChartNoAxesColumn} title="Budget Planner" description="Choose how you set and track your budget." accentColor={paletteAccent}>
 						<fieldset className="mx-2 grid gap-2 sm:mx-4 sm:grid-cols-2">
 							{([
 								{ mode: "cutoff" as const, title: "Set budget per cutoff", description: "Set individual budgets for each cutoff (5, 15, 20, 30)." },
@@ -367,25 +513,49 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 							]).map(({ mode, title, description }) => {
 								const selected = (settings.budgetMode ?? "monthly") === mode;
 								const Icon = mode === "monthly" ? CalendarDays : ReceiptText;
-								return <label key={mode} className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-2 text-left transition-all focus-within:ring-2 focus-within:ring-violet-400 ${selected ? "border-violet-400 bg-violet-50 shadow-sm shadow-violet-200/60 ring-1 ring-violet-300 dark:border-violet-500 dark:bg-violet-950/40 dark:ring-violet-700" : "border-slate-100 bg-white hover:border-violet-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}>
+								return <label
+									key={mode}
+									className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border p-2 text-left transition-all ${selected ? "shadow-sm ring-1" : "border-slate-100 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"}`}
+									style={selected ? {
+										borderColor: `color-mix(in oklab, ${paletteAccent} 55%, transparent)`,
+										backgroundColor: `color-mix(in oklab, ${paletteAccent} 10%, transparent)`,
+										boxShadow: `0 1px 3px color-mix(in oklab, ${paletteAccent} 25%, transparent)`,
+									} : undefined}
+								>
 									<input type="radio" name="default-budget-mode" value={mode} checked={selected} onChange={() => updateSettings((current) => ({ ...current, budgetMode: mode }))} className="sr-only" />
-									<span className={`grid size-10 shrink-0 place-items-center rounded-lg ${selected ? "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"}`}><Icon size={17} /></span>
+									<span
+										className="grid size-10 shrink-0 place-items-center rounded-lg"
+										style={selected ? {
+											backgroundColor: `color-mix(in oklab, ${paletteAccent} 16%, transparent)`,
+											color: paletteAccent,
+										} : { backgroundColor: "rgb(241 245 249)", color: "rgb(71 85 105)" }}
+									>
+										<Icon size={17} />
+									</span>
 									<span className="min-w-0 flex-1">
 										<span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">{title}</span>
 										<span className="mt-0.5 block text-[10px] leading-3.5 text-slate-500 dark:text-slate-400">{description}</span>
 									</span>
-									<span className={`grid size-4 shrink-0 place-items-center rounded-full border ${selected ? "border-violet-600 bg-violet-600 text-white" : "border-slate-300 dark:border-slate-600"}`}>{selected && <Check size={11} strokeWidth={3} />}</span>
+									<span
+										className={`grid size-4 shrink-0 place-items-center rounded-full border ${selected ? "text-white" : "border-slate-300 dark:border-slate-600"}`}
+										style={selected ? { backgroundColor: paletteAccent, borderColor: paletteAccent } : undefined}
+									>{selected && <Check size={11} strokeWidth={3} />}</span>
 								</label>;
 							})}
 						</fieldset>
 					</SettingsSection>
 
-					<SettingsSection value="family" icon={Bell} title="Family reminders" description="Manage daily reminders on this device.">
+					<SettingsSection value="family" icon={Bell} title="Family reminders" description="Manage daily reminders on this device." accentColor={paletteAccent}>
 						<div className="mx-2 sm:mx-4"><FamilyReminderSettings /></div>
 					</SettingsSection>
 					</Accordion>
 				</div>
-				<footer className="flex flex-wrap items-center justify-between gap-3 border-t border-violet-100 bg-white/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/90 sm:px-6">
+				<footer
+					className="flex flex-wrap items-center justify-between gap-3 border-t bg-white/80 px-5 py-4 dark:border-slate-800 dark:bg-slate-900/90 sm:px-6"
+					style={{
+						borderColor: `color-mix(in oklab, ${paletteAccent} 20%, transparent)`,
+					}}
+				>
 					<p className="max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">Restore the default page colors, navigation layout, order, password view, and budget mode.</p>
 					{restoreNotice && <div role="status" aria-live="polite" className="relative isolate flex w-full basis-full items-center gap-3 overflow-hidden rounded-2xl border border-emerald-200/80 bg-linear-to-br from-emerald-50 via-white to-green-50/70 px-4 py-3 shadow-md shadow-slate-900/5 ring-1 ring-inset ring-white/70 dark:border-emerald-900/80 dark:from-emerald-950/70 dark:via-slate-900 dark:to-green-950/30 dark:shadow-black/20 dark:ring-white/5">
 						<span aria-hidden="true" className="absolute inset-y-3 left-0 w-1 rounded-r-full bg-emerald-400" />
@@ -396,20 +566,31 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 							<span className="mt-0.5 block text-xs font-semibold leading-4 text-slate-900 dark:text-slate-100">Everything is back to its default settings.</span>
 						</span>
 					</div>}
-					<Button type="button" autoFocus={confirmRestore} variant="outline" className="palette-dialog-footer-button border-violet-200 bg-white text-violet-800 shadow-sm transition-colors hover:bg-violet-50 dark:border-violet-800 dark:bg-slate-900 dark:text-violet-200 dark:hover:bg-violet-950/40" onClick={() => {
-						if (!confirmRestore) {
-							setConfirmRestore(true);
-							return;
-						}
-						updateSettings(() => defaultSettings);
-						setConfirmRestore(false);
-						setRestoreNotice(true);
-						if (restoreNoticeTimeout.current) clearTimeout(restoreNoticeTimeout.current);
-						restoreNoticeTimeout.current = setTimeout(() => {
-							setRestoreNotice(false);
-							restoreNoticeTimeout.current = null;
-						}, 2000);
-					}}>
+					<Button
+						type="button"
+						autoFocus={confirmRestore}
+						variant="outline"
+						className="palette-dialog-footer-button shadow-sm transition-colors hover:opacity-90"
+						style={{
+							borderColor: `color-mix(in oklab, ${paletteAccent} 35%, transparent)`,
+							color: paletteAccent,
+							backgroundColor: confirmRestore ? `color-mix(in oklab, ${paletteAccent} 15%, transparent)` : undefined,
+						}}
+						onClick={() => {
+							if (!confirmRestore) {
+								setConfirmRestore(true);
+								return;
+							}
+							updateSettings(() => defaultSettings);
+							setConfirmRestore(false);
+							setRestoreNotice(true);
+							if (restoreNoticeTimeout.current) clearTimeout(restoreNoticeTimeout.current);
+							restoreNoticeTimeout.current = setTimeout(() => {
+								setRestoreNotice(false);
+								restoreNoticeTimeout.current = null;
+							}, 2000);
+						}}
+					>
 						{confirmRestore ? <><Check size={15} />Confirm</> : <><RotateCcw size={15} />Restore defaults</>}
 					</Button>
 				</footer>

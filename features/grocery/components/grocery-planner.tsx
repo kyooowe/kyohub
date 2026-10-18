@@ -95,7 +95,7 @@ export function GroceryPlanner({ initialItems, initialSyncDates = {}, initialErr
 	}, [month]);
 
 	async function handleToggleAutoAdd() {
-		if (togglingAutoAdd) return;
+		if (togglingAutoAdd || dayItems.length === 0) return;
 		const nextVal = !autoAddDates[selectedKey];
 		setTogglingAutoAdd(true);
 		setAutoAddDates((prev) => ({ ...prev, [selectedKey]: nextVal }));
@@ -239,6 +239,10 @@ export function GroceryPlanner({ initialItems, initialSyncDates = {}, initialErr
 						<GrocerySummary items={dayItems} doneCount={doneCount} />
 						{(() => {
 							const isAutoAddChecked = Boolean(autoAddDates[selectedKey]);
+							const hasActiveItem = dayItems.some((item) => !item.done);
+							if (!hasActiveItem && (!isAutoAddChecked || dayItems.length === 0)) {
+								return null;
+							}
 							const dayNum = selectedDate.getDate();
 							const cutoffDay = dayNum <= 5 ? 5 : dayNum <= 15 ? 15 : dayNum <= 20 ? 20 : 30;
 							return (

@@ -26,6 +26,20 @@ export const defaultSettingsPagePalettes = {
 	"/budget": "orange",
 } satisfies Record<NavigationHref, NamedPagePalette>;
 
+export const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
+	"/passwords": "violet",
+	"/grocery": "blue",
+	"/family-calendar": "teal",
+	"/budget": "rose",
+};
+
+export function getActivePagePalette(pathname: string, settings: AppSettings): NamedPagePalette {
+	const activeHref = pathname === "/" ? (settings.navigationOrder[0] ?? "/passwords") : pathname;
+	const current = navigationItems.find((item) => activeHref.startsWith(item.href)) ?? navigationItems[0];
+	const configured = settings.pagePalettes[current.href];
+	return configured === "default" || !configured ? defaultPagePalettes[current.href] : configured;
+}
+
 export const defaultSettings: AppSettings = {
 	desktopNavigation: "floating",
 	navigationOrder: navigationItems.map(({ href }) => href),
