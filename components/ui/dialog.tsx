@@ -4,8 +4,8 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import { cn } from "cn";
-import { getPagePaletteStyles } from "@/components/settings/page-palettes";
-import { navigationItems, useAppSettings, type PagePalette } from "@/components/settings/settings-context";
+import { getPagePaletteStyles, type NamedPagePalette } from "@/components/settings/page-palettes";
+import { getActivePagePalette, useAppSettings, type PagePalette } from "@/components/settings/settings-context";
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -25,13 +25,13 @@ function DialogContent({
 }: DialogContentProps) {
   const pathname = usePathname();
   const { settings } = useAppSettings();
-  const activeHref = pathname === "/" ? (settings.navigationOrder[0] ?? "/passwords") : pathname;
-  const page = navigationItems.find(({ href }) => activeHref.startsWith(href))?.href;
-  const pagePalette = paletteOverride === undefined
-    ? page ? settings.pagePalettes[page] : "default"
-    : paletteOverride;
-  const paletteAccent = pagePalette && pagePalette !== "default"
-    ? getPagePaletteStyles(pagePalette).accent
+  const resolvedPalette: NamedPagePalette | null = paletteOverride === null
+    ? null
+    : paletteOverride !== undefined
+      ? (paletteOverride === "default" ? getActivePagePalette(pathname, settings) : paletteOverride)
+      : getActivePagePalette(pathname, settings);
+  const paletteAccent = resolvedPalette
+    ? getPagePaletteStyles(resolvedPalette).accent
     : undefined;
 
   return (
@@ -45,10 +45,10 @@ function DialogContent({
             className,
           )}
           {...props}
-          data-page-palette={pagePalette && pagePalette !== "default" ? pagePalette : undefined}
+          data-page-palette={resolvedPalette ?? undefined}
           style={{
             ...(props.style ?? {}),
-            ...(paletteAccent ? { "--page-accent-base": paletteAccent } as CSSProperties : {}),
+            ...(paletteAccent ? { "--page-accent-base": paletteAccent, "--action-accent": paletteAccent } as CSSProperties : {}),
           }}
         >
           {children}

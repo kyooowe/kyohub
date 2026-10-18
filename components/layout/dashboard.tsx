@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
+  Calendar,
   CalendarDays,
   ChartNoAxesColumn,
   Key,
@@ -25,18 +26,12 @@ import {
   useAppSettings,
 } from "@/components/settings/settings-context";
 import {
+  defaultPagePalettes,
   navigationItems,
   type AppSettings,
   type NavigationHref,
 } from "@/components/settings/settings-model";
-import { getPagePaletteStyles, type NamedPagePalette } from "@/components/settings/page-palettes";
-
-const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
-  "/passwords": "violet",
-  "/grocery": "blue",
-  "/family-calendar": "teal",
-  "/budget": "rose",
-};
+import { getPagePaletteStyles } from "@/components/settings/page-palettes";
 
 export default function Dashboard({
   children,
@@ -203,18 +198,18 @@ function DashboardShell({
             A little more organized, a little less to remember.
           </div>
           <div className="flex items-center gap-3 border-t border-white/10 pt-4">
-            <div className="grid size-9 place-items-center rounded-full bg-linear-to-br from-fuchsia-300 to-violet-400 text-xs font-bold text-violet-950 ring-2 ring-white/10">
+            <div className="grid size-9 place-items-center rounded-full bg-linear-to-br from-[#0c2340] via-[#17756D] to-[#26A69A] text-xs font-bold text-white shadow-md shadow-[#17756D]/25 ring-2 ring-[#26A69A]/30">
               {user.initials}
             </div>
             <div>
               <p className="text-sm font-medium text-white">{user.name}</p>
-              <p className="text-xs text-violet-200/50">Personal space</p>
+              <p className="text-xs text-teal-200/60">Personal space</p>
             </div>
           </div>
         </div>
       </aside>
       <section className="min-w-0 flex-1">
-        <header data-page-palette-preserve className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-violet-100 bg-white/80 px-5 shadow-[0_1px_8px_rgba(68,48,125,0.04)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/90 md:px-10">
+        <header data-page-palette-preserve className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-teal-100/70 bg-white/80 px-5 shadow-[0_1px_8px_rgba(23,117,109,0.04)] backdrop-blur dark:border-slate-800 dark:bg-slate-950/90 md:px-10">
           <div className="flex min-w-0 items-center gap-4">
             <Link
               data-page-palette-preserve
@@ -254,7 +249,7 @@ function DashboardShell({
             )}
             <div className="hidden truncate text-sm text-slate-400 dark:text-slate-300 sm:block">
               My space{" "}
-              <span className="mx-2 text-violet-200 dark:text-violet-400">
+              <span className="mx-2 text-teal-200/80 dark:text-teal-800">
                 /
               </span>
               <strong className="font-medium text-slate-700 dark:text-slate-100">
@@ -264,16 +259,31 @@ function DashboardShell({
           </div>
           <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-300">
             <SettingsPanel trigger="header" />
-            <span className="hidden h-8 items-center rounded-lg border border-slate-200/80 bg-slate-50 px-2.5 font-medium text-slate-500 sm:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              {new Intl.DateTimeFormat("en", {
-                weekday: "short",
-                month: "short",
-                day: "numeric",
-              }).format(new Date())}
-            </span>
-            <span data-page-palette-preserve className="grid size-8 place-items-center rounded-full bg-linear-to-br from-violet-500 to-fuchsia-500 font-semibold text-white shadow-md shadow-violet-300/40 ring-2 ring-violet-100 dark:shadow-violet-950/50 dark:ring-violet-400/20">
-              {user.initials}
-            </span>
+            <div className="hidden h-8 items-center gap-2 rounded-xl border border-[#26A69A]/25 bg-linear-to-r from-[#26A69A]/10 via-[#17756D]/5 to-[#26A69A]/10 px-3 text-xs font-medium text-[#0c2340] shadow-xs backdrop-blur-xs transition-all duration-200 hover:border-[#26A69A]/45 hover:bg-[#26A69A]/15 hover:shadow-sm sm:inline-flex dark:border-[#26A69A]/30 dark:from-[#0c2340]/40 dark:via-[#17756D]/20 dark:to-[#26A69A]/10 dark:text-[#E0F2F1]">
+              <Calendar size={13} strokeWidth={2.2} className="shrink-0 text-[#17756D] dark:text-[#4DB6AC]" />
+              <span className="font-semibold tracking-tight">
+                {new Intl.DateTimeFormat("en", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                }).format(new Date())}
+              </span>
+            </div>
+            <div
+              className="relative flex shrink-0 items-center justify-center"
+              title={`${user.name} (${user.initials})`}
+            >
+              <span
+                data-page-palette-preserve
+                className="grid size-8 place-items-center rounded-full bg-linear-to-br from-[#0c2340] via-[#17756D] to-[#26A69A] text-xs font-bold text-white shadow-md shadow-[#17756D]/25 ring-2 ring-[#26A69A]/30 transition-all duration-200 hover:scale-105 hover:ring-[#26A69A]/50 dark:shadow-[#0c2340]/50 dark:ring-[#26A69A]/40"
+              >
+                {user.initials}
+              </span>
+              <span
+                aria-hidden="true"
+                className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full bg-[#26A69A] ring-2 ring-white dark:ring-slate-950"
+              />
+            </div>
           </div>
         </header>
         {shouldShowNavigationProgress && <DashboardNavigationProgress />}
