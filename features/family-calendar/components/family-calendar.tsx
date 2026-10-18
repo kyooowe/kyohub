@@ -32,7 +32,7 @@ export function FamilyCalendar({ initialEntries, initialError }: { initialEntrie
 	const [dialogEntry, setDialogEntry] = useState<FamilyAppointment | "new" | null>(null);
 	const [storageError, setStorageError] = useState(initialError);
 	const [submitting, setSubmitting] = useState(false);
-	const pagePaletteName = settings.pagePalettes["/baby-needs"];
+	const pagePaletteName = settings.pagePalettes["/family-calendar"];
 	const pagePalette = getPagePaletteStyles(pagePaletteName === "default" ? "teal" : pagePaletteName);
 
 	const dateKey = getDateKey(selectedDate);

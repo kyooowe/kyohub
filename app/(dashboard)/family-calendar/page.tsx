@@ -16,7 +16,7 @@ async function FamilyCalendarContent() {
 	}
 	return (
 		<>
-			<DashboardNavigationReady href="/baby-needs" />
+			<DashboardNavigationReady href="/family-calendar" />
 			<FamilyCalendar initialEntries={initialEntries} initialError={initialError} />
 		</>
 	);
