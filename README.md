@@ -33,11 +33,11 @@ Your family's shopping list, all in one place.
 </details>
 
 <details>
-<summary>🗓️ <strong>Baby calendar</strong></summary>
+<summary>🗓️ <strong>Family calendar</strong></summary>
 
 <br>
 
-Keep track of the little milestones that matter.
+Keep track of the family events and milestones that matter.
 
 - Schedule vaccinations and important dates.
 - Add notes for upcoming appointments.

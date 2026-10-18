@@ -10,7 +10,7 @@ import { familyAppointmentTypes, type FamilyAppointment } from "@/features/famil
 
 export function FamilyAppointmentDialog({ entry, selectedDate, onOpenChange, onSubmit, submitting = false }: { entry: FamilyAppointment | "new" | null; selectedDate: Date; onOpenChange: (open: boolean) => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void; submitting?: boolean }) {
 	const { settings } = useAppSettings();
-	const pagePalette = settings.pagePalettes["/baby-needs"];
+	const pagePalette = settings.pagePalettes["/family-calendar"];
 	const dialogPalette = pagePalette === "default" ? "teal" : pagePalette;
 
 	return <Dialog open={entry !== null} onOpenChange={onOpenChange}><DialogContent pagePalette={dialogPalette} data-page-palette-surface className="palette-dialog-panel max-w-sm overflow-hidden border-teal-200 bg-white p-0 shadow-2xl shadow-teal-950/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50 sm:rounded-2xl">

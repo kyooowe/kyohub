@@ -57,7 +57,7 @@ export async function GET(request: Request) {
 	const payload = JSON.stringify({
 		title: "Reminders Tomorrow",
 		body: reminders.length ? reminders.join("\n") : "No family events scheduled for tomorrow.",
-		url: "/baby-needs",
+		url: "/family-calendar",
 	});
 	const subscriptions = await db.orm.public.PushSubscription
 		.select("id", "endpoint", "p256dh", "auth")

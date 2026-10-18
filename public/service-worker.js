@@ -2,7 +2,7 @@ self.addEventListener("push", (event) => {
 	let notification = {
 		title: "Reminders Tomorrow",
 		body: "You have a family appointment tomorrow.",
-		url: "/baby-needs",
+		url: "/family-calendar",
 	};
 	if (event.data) {
 		try {
@@ -21,7 +21,7 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
-	const target = new URL(event.notification.data?.url ?? "/baby-needs", self.location.origin).href;
+	const target = new URL(event.notification.data?.url ?? "/family-calendar", self.location.origin).href;
 	event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
 		const client = clients.find((windowClient) => windowClient.url === target);
 		return client ? client.focus() : self.clients.openWindow(target);

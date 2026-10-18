@@ -16,7 +16,7 @@ import { getPagePaletteStyles, pagePaletteOptions, type NamedPagePalette } from 
 const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: string }> = {
 	"/passwords": { icon: KeyRound, color: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300" },
 	"/grocery": { icon: ShoppingCart, color: "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" },
-	"/baby-needs": { icon: CalendarDays, color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" },
+	"/family-calendar": { icon: CalendarDays, color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" },
 	"/budget": { icon: ChartNoAxesColumn, color: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300" },
 };
 

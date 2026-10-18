@@ -20,6 +20,7 @@ import {
 	Compass,
 	AlertTriangle,
 	Code2,
+	type LucideIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -57,7 +58,7 @@ interface StepPhase {
 	badge: string;
 	title: string;
 	subtitle: string;
-	icon: any;
+	icon: LucideIcon;
 	color: string;
 	accentBg: string;
 	accentBorder: string;

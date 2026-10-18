@@ -3,7 +3,7 @@ import { isPagePalette, type NamedPagePalette, type PagePalette } from "@/compon
 export const navigationItems = [
 	{ href: "/passwords", label: "Password manager" },
 	{ href: "/grocery", label: "Grocery planner" },
-	{ href: "/baby-needs", label: "Family Calendar" },
+	{ href: "/family-calendar", label: "Family Calendar" },
 	{ href: "/budget", label: "Budget planner" },
 ] as const;
 
@@ -22,7 +22,7 @@ export type AppSettings = {
 export const defaultSettingsPagePalettes = {
 	"/passwords": "teal",
 	"/grocery": "yellow",
-	"/baby-needs": "blue",
+	"/family-calendar": "blue",
 	"/budget": "orange",
 } satisfies Record<NavigationHref, NamedPagePalette>;
 
@@ -39,12 +39,15 @@ export function normalizeAppSettings(value: unknown): AppSettings {
 	const saved = value as Partial<AppSettings>;
 	const allowedHrefs = navigationItems.map(({ href }) => href);
 	const savedOrder = Array.isArray(saved.navigationOrder)
-		? saved.navigationOrder.filter((href): href is NavigationHref => allowedHrefs.includes(href as NavigationHref))
+		? saved.navigationOrder
+				.map((href) => (href === ("/baby-needs" as NavigationHref) ? "/family-calendar" : href))
+				.filter((href): href is NavigationHref => allowedHrefs.includes(href as NavigationHref))
 		: [];
 	const order = [...new Set(savedOrder)];
 	const savedPalettes = typeof saved.pagePalettes === "object" && saved.pagePalettes !== null
-		? saved.pagePalettes as Partial<Record<NavigationHref, unknown>>
+		? saved.pagePalettes as Partial<Record<NavigationHref | "/baby-needs", unknown>>
 		: {};
+	const familyCalendarPalette = savedPalettes["/family-calendar"] ?? savedPalettes["/baby-needs"];
 
 	return {
 		desktopNavigation: saved.desktopNavigation === "sidebar" ? "sidebar" : "floating",
@@ -52,7 +55,7 @@ export function normalizeAppSettings(value: unknown): AppSettings {
 		pagePalettes: {
 			"/passwords": isPagePalette(savedPalettes["/passwords"]) ? savedPalettes["/passwords"] : defaultSettings.pagePalettes["/passwords"],
 			"/grocery": isPagePalette(savedPalettes["/grocery"]) ? savedPalettes["/grocery"] : defaultSettings.pagePalettes["/grocery"],
-			"/baby-needs": isPagePalette(savedPalettes["/baby-needs"]) ? savedPalettes["/baby-needs"] : defaultSettings.pagePalettes["/baby-needs"],
+			"/family-calendar": isPagePalette(familyCalendarPalette) ? familyCalendarPalette : defaultSettings.pagePalettes["/family-calendar"],
 			"/budget": isPagePalette(savedPalettes["/budget"]) ? savedPalettes["/budget"] : defaultSettings.pagePalettes["/budget"],
 		},
 		passwordView: saved.passwordView === "list" ? "list" : "grid",
@@ -69,6 +72,9 @@ export function parseAppSettings(value: unknown): AppSettings {
 	const allowedHrefs = navigationItems.map(({ href }) => href);
 	if (candidate.desktopNavigation !== "sidebar" && candidate.desktopNavigation !== "floating") {
 		throw new Error("Invalid desktop navigation setting.");
+	}
+	if (Array.isArray(candidate.navigationOrder)) {
+		candidate.navigationOrder = candidate.navigationOrder.map((href) => href === "/baby-needs" ? "/family-calendar" : href);
 	}
 	if (
 		!Array.isArray(candidate.navigationOrder)
@@ -90,6 +96,9 @@ export function parseAppSettings(value: unknown): AppSettings {
 		throw new Error("Invalid page palette settings.");
 	}
 	const pagePalettes = palettes as Record<string, unknown>;
+	if ("/baby-needs" in pagePalettes && !("/family-calendar" in pagePalettes)) {
+		pagePalettes["/family-calendar"] = pagePalettes["/baby-needs"];
+	}
 	for (const href of allowedHrefs) {
 		if (!isPagePalette(pagePalettes[href])) throw new Error(`Invalid page palette for ${href}.`);
 	}
@@ -100,7 +109,7 @@ export function parseAppSettings(value: unknown): AppSettings {
 		pagePalettes: {
 			"/passwords": pagePalettes["/passwords"],
 			"/grocery": pagePalettes["/grocery"],
-			"/baby-needs": pagePalettes["/baby-needs"],
+			"/family-calendar": pagePalettes["/family-calendar"],
 			"/budget": pagePalettes["/budget"],
 		} as AppSettings["pagePalettes"],
 		passwordView: candidate.passwordView,

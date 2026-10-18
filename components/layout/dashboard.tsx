@@ -34,7 +34,7 @@ import { getPagePaletteStyles, type NamedPagePalette } from "@/components/settin
 const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
   "/passwords": "violet",
   "/grocery": "blue",
-  "/baby-needs": "teal",
+  "/family-calendar": "teal",
   "/budget": "rose",
 };
 
@@ -77,7 +77,7 @@ function DashboardShell({
   const icons = {
     "/passwords": Key,
     "/grocery": ShoppingCart,
-    "/baby-needs": CalendarDays,
+    "/family-calendar": CalendarDays,
     "/budget": ChartNoAxesColumn,
   } satisfies Record<NavigationHref, typeof Key>;
   const navigation = settings.navigationOrder.map((href) => {
