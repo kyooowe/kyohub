@@ -906,7 +906,82 @@ const pagePaletteStyles = {
       glow: "bg-[#E2EBFF]/20",
     },
   },
-} as const;
+  pastelHorizon: {
+    label: "Pastel Horizon",
+    swatch: "bg-[#BAC8E8]",
+    accent: "#6B609E",
+    iconGradient: "from-[#435899] via-[#7967A8] to-[#BD5F85]",
+    pageHeading:
+      "from-[#435899] via-[#7967A8] to-[#BD5F85] dark:from-[#D8E4FC] dark:via-[#EAE0F9] dark:to-[#FDE2EC]",
+    featureHeader: {
+      gradient: "from-[#435899] via-[#7967A8] to-[#BD5F85]",
+      shadow: "shadow-[#7967A8]/25",
+      darkShadow: "dark:shadow-[#2B1B40]/35",
+      description: "text-white/95",
+      glow: "bg-[#D8E4FC]/25",
+    },
+  },
+  pastelAurora: {
+    label: "Pastel Aurora",
+    swatch: "bg-[#BFD7F5]",
+    accent: "#526EA3",
+    iconGradient: "from-[#355B8A] via-[#655896] to-[#A85888]",
+    pageHeading:
+      "from-[#355B8A] via-[#655896] to-[#A85888] dark:from-[#D6E7FC] dark:via-[#ECE0F9] dark:to-[#FCE0EF]",
+    featureHeader: {
+      gradient: "from-[#355B8A] via-[#655896] to-[#A85888]",
+      shadow: "shadow-[#655896]/25",
+      darkShadow: "dark:shadow-[#1E2342]/35",
+      description: "text-white/95",
+      glow: "bg-[#D6E7FC]/25",
+    },
+  },
+  pastelDawn: {
+    label: "Pastel Dawn",
+    swatch: "bg-[#F7D8CE]",
+    accent: "#A85A4E",
+    iconGradient: "from-[#8A4638] via-[#9B536E] to-[#6A578F]",
+    pageHeading:
+      "from-[#8A4638] via-[#9B536E] to-[#6A578F] dark:from-[#FFE5DC] dark:via-[#FDE0EA] dark:to-[#ECE2F8]",
+    featureHeader: {
+      gradient: "from-[#8A4638] via-[#9B536E] to-[#6A578F]",
+      shadow: "shadow-[#9B536E]/25",
+      darkShadow: "dark:shadow-[#3A1E2A]/35",
+      description: "text-white/95",
+      glow: "bg-[#FFE5DC]/25",
+    },
+  },
+  pastelMist: {
+    label: "Pastel Mist",
+    swatch: "bg-[#C8CFEE]",
+    accent: "#635D96",
+    iconGradient: "from-[#3F4F7E] via-[#5F568C] to-[#88679A]",
+    pageHeading:
+      "from-[#3F4F7E] via-[#5F568C] to-[#88679A] dark:from-[#DEE4F9] dark:via-[#E7E0F6] dark:to-[#F4E1F8]",
+    featureHeader: {
+      gradient: "from-[#3F4F7E] via-[#5F568C] to-[#88679A]",
+      shadow: "shadow-[#5F568C]/25",
+      darkShadow: "dark:shadow-[#231E3B]/35",
+      description: "text-white/95",
+      glow: "bg-[#DEE4F9]/25",
+    },
+  },
+  blushPeriwinkle: {
+    label: "Blush Periwinkle",
+    swatch: "bg-[#F3CAD6]",
+    accent: "#9E5072",
+    iconGradient: "from-[#964264] via-[#7B5385] to-[#48598F]",
+    pageHeading:
+      "from-[#964264] via-[#7B5385] to-[#48598F] dark:from-[#FDE0EA] dark:via-[#EDE0F6] dark:to-[#DDE6F9]",
+    featureHeader: {
+      gradient: "from-[#964264] via-[#7B5385] to-[#48598F]",
+      shadow: "shadow-[#7B5385]/25",
+      darkShadow: "dark:shadow-[#361E2E]/35",
+      description: "text-white/95",
+      glow: "bg-[#FDE0EA]/25",
+    },
+  },
+};
 
 export type NamedPagePalette = keyof typeof pagePaletteStyles;
 export type PagePalette = "default" | NamedPagePalette;

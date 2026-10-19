@@ -14,7 +14,6 @@ import {
 	Loader2,
 	Ruler,
 	Scale,
-	Smile,
 	PartyPopper,
 	ArrowRight,
 } from "lucide-react";
@@ -355,164 +354,176 @@ export function BabyProfileCard({
 		<div className="space-y-4">
 			<BabyTrackerAlert alert={alert} onDismiss={clearAlert} />
 			<div className="relative w-full min-w-0 max-w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-linear-to-br from-white via-rose-50/30 to-amber-50/20 p-4 shadow-sm backdrop-blur-md transition-all sm:p-6 dark:border-slate-800 dark:from-slate-900 dark:via-slate-900/90 dark:to-rose-950/20">
-			{/* Decorative nursery background glow */}
-			<div
-				className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full opacity-25 blur-3xl"
-				style={{ backgroundColor: paletteAccent || "#B66F57" }}
-			/>
+				{/* Decorative nursery background glow */}
+				<div
+					className="pointer-events-none absolute -right-10 -top-10 size-48 rounded-full opacity-25 blur-3xl"
+					style={{ backgroundColor: paletteAccent || "#B66F57" }}
+				/>
 
-			{/* Main Layout */}
-			<div className="flex flex-col gap-4 sm:gap-5">
-				{/* Top Row: Avatar + Name + Badges + Edit Button */}
-				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex items-center gap-3.5 sm:gap-4">
-						{/* Avatar */}
-						<div className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-rose-400 via-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/25 sm:size-16">
-							<Baby size={30} className="text-white drop-shadow-xs" />
-							{profile.gender && profile.gender !== "unspecified" && (
-								<span
-									className={`absolute -bottom-1 -right-1 flex size-5.5 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold shadow-xs dark:border-slate-900 ${
-										profile.gender === "boy"
-											? "bg-sky-500 text-white"
-											: "bg-pink-500 text-white"
-									}`}
-									title={profile.gender}
-								>
-									{profile.gender === "boy" ? "👦" : "👧"}
-								</span>
-							)}
-						</div>
-
-						{/* Identity & Age Headline */}
-						<div className="min-w-0">
-							<div className="flex flex-wrap items-center gap-2">
-								<h2 className="truncate text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-									{profile.name}
-								</h2>
-								<span
-									className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize ${
-										genderBadgeStyles[profile.gender || "unspecified"]
-									}`}
-								>
-									{profile.gender}
-								</span>
-								{profile.bloodType && (
-									<span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50/80 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-300">
-										<Heart size={10} className="fill-red-500 text-red-500" />
-										{profile.bloodType === "unknown" ? "Blood: Unknown" : profile.bloodType}
+				{/* Main Layout */}
+				<div className="flex flex-col gap-4 sm:gap-5">
+					{/* Top Row: Avatar + Name + Badges + Edit Button */}
+					<div className="flex items-start justify-between gap-3 sm:items-center sm:gap-4">
+						<div className="flex min-w-0 flex-1 items-start gap-3.5 sm:items-center sm:gap-4">
+							{/* Avatar */}
+							<div className="relative grid size-14 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-rose-400 via-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/25 sm:size-16">
+								<Baby size={30} className="text-white drop-shadow-xs" />
+								{profile.gender && profile.gender !== "unspecified" && (
+									<span
+										className={`absolute -bottom-1 -right-1 flex size-5.5 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold shadow-xs dark:border-slate-900 ${profile.gender === "boy"
+												? "bg-sky-500 text-white"
+												: "bg-pink-500 text-white"
+											}`}
+										title={profile.gender}
+									>
+										{profile.gender === "boy" ? "👦" : "👧"}
 									</span>
 								)}
 							</div>
 
-							{/* Age Highlight with Celebration Badge */}
-							{ageInfo && (
-								<div className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-									<span className="inline-flex items-center gap-1.5 font-bold text-rose-700 dark:text-rose-300">
-										<PartyPopper size={14} className="text-rose-500" />
-										{ageInfo.formatted}
-									</span>
-									<span className="text-slate-300 dark:text-slate-700">•</span>
-									<span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
-										<Calendar size={13} className="text-slate-400" />
-										Born {new Date(profile.birthDate).toLocaleDateString(undefined, { dateStyle: "medium" })}
-									</span>
+							{/* Identity & Age Headline */}
+							<div className="min-w-0 flex-1">
+								<div className="flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+									<h2 className="truncate text-lg font-bold tracking-tight leading-tight text-slate-900 dark:text-white sm:text-2xl sm:leading-normal">
+										{profile.name}
+									</h2>
+									<div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+										{profile.bloodType && (
+											<span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50/80 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:border-red-900/60 dark:bg-red-950/60 dark:text-red-300">
+												<Heart size={10} className="fill-red-500 text-red-500" />
+												{profile.bloodType === "unknown" ? "Blood: Unknown" : profile.bloodType}
+											</span>
+										)}
+										<span
+											className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize ${genderBadgeStyles[profile.gender || "unspecified"]
+												}`}
+										>
+											{profile.gender}
+										</span>
+									</div>
 								</div>
+
+								{/* Age Highlight with Celebration Badge */}
+								{ageInfo && (
+									<div className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+										<span className="inline-flex items-center gap-1.5 font-bold text-rose-700 dark:text-rose-300">
+											<PartyPopper size={14} className="text-rose-500" />
+											{ageInfo.formatted}
+										</span>
+										<span className="text-slate-300 dark:text-slate-700">•</span>
+										<span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+											<Calendar size={13} className="text-slate-400" />
+											Born {new Date(profile.birthDate).toLocaleDateString(undefined, { dateStyle: "medium" })}
+										</span>
+									</div>
+								)}
+							</div>
+						</div>
+
+						{/* Edit Button: Circular pencil in top-right on mobile, full button on desktop */}
+						<div className="shrink-0 self-start sm:self-center">
+							{/* Mobile: Top-right circular pencil button */}
+							<button
+								type="button"
+								onClick={() => setOpen(true)}
+								aria-label="Edit Profile"
+								title="Edit Profile"
+								className="inline-flex size-7.5 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-600 shadow-2xs transition-all hover:border-slate-300 hover:bg-white hover:text-slate-900 active:scale-90 sm:hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+							>
+								<Edit3 size={13} />
+							</button>
+
+							{/* Desktop: Full button */}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => setOpen(true)}
+								className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-xl border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-white hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+							>
+								<Edit3 size={13} />
+								<span>Edit Profile</span>
+							</Button>
+						</div>
+					</div>
+
+					{/* Bottom Row: Quick Vitals Pill Cards (Responsive Grid) */}
+					<div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4 sm:gap-3">
+						{/* Birth Weight */}
+						<div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
+							<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
+								<Scale size={15} />
+							</span>
+							<div className="min-w-0">
+								<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
+									Birth Weight
+								</p>
+								<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
+									{profile.birthWeight
+										? `${profile.birthWeight.replace(/[^0-9.]/g, "")} kg`
+										: "Not set"}
+								</p>
+							</div>
+						</div>
+
+						{/* Birth Length */}
+						<div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
+							<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-950/70 dark:text-teal-300">
+								<Ruler size={15} />
+							</span>
+							<div className="min-w-0">
+								<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
+									Birth Length
+								</p>
+								<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
+									{profile.birthHeight
+										? `${profile.birthHeight.replace(/[^0-9.]/g, "")} cm`
+										: "Not set"}
+								</p>
+							</div>
+						</div>
+
+						{/* Pediatrician with quick call */}
+						<div className="col-span-2 sm:col-span-2 flex items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
+							<div className="flex min-w-0 items-center gap-2">
+								<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300">
+									<Stethoscope size={15} />
+								</span>
+								<div className="min-w-0">
+									<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
+										Pediatrician
+									</p>
+									<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
+										{profile.pediatrician || "Not assigned"}
+									</p>
+								</div>
+							</div>
+							{profile.pediatricianPhone && (
+								<a
+									href={`tel:${profile.pediatricianPhone}`}
+									className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 shadow-2xs transition-colors hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/70 dark:text-rose-300 dark:hover:bg-rose-900"
+									title={`Call ${profile.pediatrician}`}
+								>
+									<Phone size={12} />
+									<span className="hidden xs:inline">Call</span>
+								</a>
 							)}
 						</div>
 					</div>
 
-					{/* Edit Button */}
-					<div className="self-end sm:self-center">
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={() => setOpen(true)}
-							className="inline-flex h-8 sm:h-9 items-center gap-1.5 rounded-xl border-slate-200 bg-white/80 px-3 text-xs font-semibold text-slate-700 shadow-2xs transition-colors hover:bg-white hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-						>
-							<Edit3 size={13} />
-							<span>Edit Profile</span>
-						</Button>
-					</div>
-				</div>
-
-				{/* Bottom Row: Quick Vitals Pill Cards (Responsive Grid) */}
-				<div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4 sm:gap-3">
-					{/* Birth Weight */}
-					<div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
-						<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300">
-							<Scale size={15} />
-						</span>
-						<div className="min-w-0">
-							<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
-								Birth Weight
-							</p>
-							<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
-								{profile.birthWeight
-									? `${profile.birthWeight.replace(/[^0-9.]/g, "")} kg`
-									: "Not set"}
-							</p>
-						</div>
-					</div>
-
-					{/* Birth Length */}
-					<div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
-						<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-950/70 dark:text-teal-300">
-							<Ruler size={15} />
-						</span>
-						<div className="min-w-0">
-							<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
-								Birth Length
-							</p>
-							<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
-								{profile.birthHeight
-									? `${profile.birthHeight.replace(/[^0-9.]/g, "")} cm`
-									: "Not set"}
-							</p>
-						</div>
-					</div>
-
-					{/* Pediatrician with quick call */}
-					<div className="col-span-2 sm:col-span-2 flex items-center justify-between gap-2 rounded-2xl border border-slate-100 bg-white/70 p-2.5 shadow-2xs backdrop-blur-xs sm:p-3 dark:border-slate-800/80 dark:bg-slate-900/60">
-						<div className="flex min-w-0 items-center gap-2">
-							<span className="grid size-8 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300">
-								<Stethoscope size={15} />
+					{/* Allergy Alert Pill (if present) */}
+					{profile.allergies && (
+						<div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-900/80 dark:bg-amber-950/60 dark:text-amber-200">
+							<AlertCircle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
+							<span className="truncate">
+								Known Sensitivities: <strong className="font-semibold">{profile.allergies}</strong>
 							</span>
-							<div className="min-w-0">
-								<p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
-									Pediatrician
-								</p>
-								<p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100 sm:text-sm">
-									{profile.pediatrician || "Not assigned"}
-								</p>
-							</div>
 						</div>
-						{profile.pediatricianPhone && (
-							<a
-								href={`tel:${profile.pediatricianPhone}`}
-								className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 shadow-2xs transition-colors hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/70 dark:text-rose-300 dark:hover:bg-rose-900"
-								title={`Call ${profile.pediatrician}`}
-							>
-								<Phone size={12} />
-								<span className="hidden xs:inline">Call</span>
-							</a>
-						)}
-					</div>
+					)}
 				</div>
 
-				{/* Allergy Alert Pill (if present) */}
-				{profile.allergies && (
-					<div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-900/80 dark:bg-amber-950/60 dark:text-amber-200">
-						<AlertCircle size={14} className="shrink-0 text-amber-600 dark:text-amber-400" />
-						<span className="truncate">
-							Known Sensitivities: <strong className="font-semibold">{profile.allergies}</strong>
-						</span>
-					</div>
-				)}
+				{dialogNode}
 			</div>
-
-			{dialogNode}
 		</div>
-	</div>
 	);
 }
