@@ -23,7 +23,7 @@ export function PasswordDialog({ entry, onOpenChange, onSubmit, submitting = fal
 		<Dialog open={entry !== null} onOpenChange={onOpenChange}>
 			<DialogContent pagePalette={dialogPalette} data-page-palette-surface className="palette-dialog-panel password-dialog-panel max-w-sm overflow-hidden border bg-white p-0 shadow-2xl sm:rounded-3xl">
 				<PaletteDialogHeader eyebrow="PASSWORD VAULT" title={entry === "new" ? "Add a password" : "Edit password"} description="Keep your login details together." icon={<KeyRound size={18} strokeWidth={2} />} closeLabel="Close dialog" />
-				{entry && <div className="px-6 py-5"><PasswordForm key={entry === "new" ? "new" : entry.id} entry={entry} onSubmit={submit} submitting={submitting} /></div>}
+				{entry && <div className="px-6 py-5"><PasswordForm key={entry === "new" ? "new" : entry.id} entry={entry} onSubmit={submit} onCancel={() => onOpenChange(false)} submitting={submitting} /></div>}
 			</DialogContent>
 		</Dialog>
 	);

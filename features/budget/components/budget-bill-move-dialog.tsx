@@ -346,22 +346,23 @@ function BudgetBillMoveDialogContent({
 			</div>
 
 			{/* Footer buttons */}
-			<div className="shrink-0 flex items-center justify-end gap-2 border-t border-slate-100 bg-slate-50/40 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:gap-2.5 sm:px-6 sm:py-3.5">
+			<div className="palette-dialog-footer shrink-0 flex items-center justify-end gap-2 p-4 sm:px-6">
 				<Button
 					data-page-palette-secondary
 					type="button"
 					variant="outline"
 					onClick={() => onOpenChange(false)}
 					disabled={submitting}
-					className="palette-dialog-footer-button border border-slate-200 bg-white font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+					className="palette-dialog-footer-button border font-medium transition-colors duration-150"
 				>
 					Cancel
 				</Button>
 				<Button
 					type="button"
+					variant="ghost"
 					onClick={handleConfirm}
 					disabled={submitting || isCutoffSelectedPast}
-					className="palette-action-button palette-dialog-footer-button border font-medium text-white shadow-md hover:opacity-95 disabled:opacity-50"
+					className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
 				>
 					{submitting ? (
 						<>

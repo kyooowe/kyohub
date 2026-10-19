@@ -496,8 +496,7 @@ export function BudgetGroceryDialog({
 								type="submit"
 								size="sm"
 								disabled={addingItem || !newItemName.trim()}
-								className="h-8.5 rounded-lg px-3 text-xs font-semibold text-white shadow-xs transition-all hover:opacity-95 active:scale-95 disabled:opacity-50"
-								style={{ backgroundColor: paletteStyles.accent }}
+								className="palette-action-button h-8.5 rounded-lg border px-3 text-xs font-semibold transition-all hover:opacity-95 active:scale-95 disabled:opacity-50"
 							>
 								{addingItem ? <Loader2 size={13} className="animate-spin" /> : "Add"}
 							</Button>
@@ -516,11 +515,12 @@ export function BudgetGroceryDialog({
 						</Link>
 
 						<Button
+							data-page-palette-secondary
 							type="button"
 							variant="outline"
 							size="sm"
 							onClick={() => onOpenChange(false)}
-							className="rounded-xl border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+							className="rounded-xl border text-xs font-medium transition-colors"
 						>
 							Done
 						</Button>

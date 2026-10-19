@@ -131,6 +131,17 @@
 	box-shadow: 0 5px 12px color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 20%, transparent), inset 0 1px 0 rgb(255 255 255 / 82%);
 }
 
+.palette-dialog-footer {
+	border-top: 1px solid color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 18%, #e2e8f0);
+	background-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 7%, white);
+}
+
+:root.dark .palette-dialog-footer,
+.dark .palette-dialog-footer {
+	border-top: 1px solid color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 25%, #1e293b);
+	background-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 12%, #0f172a);
+}
+
 .palette-dialog-footer-button {
 	box-sizing: border-box;
 	display: inline-flex;
@@ -147,6 +158,14 @@
 	font-size: 0.8125rem;
 	line-height: 1.25rem;
 	white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+	.palette-dialog-footer-button {
+		flex: 1 1 0%;
+		min-width: 0;
+		width: auto;
+	}
 }
 
 .page-callout {
@@ -1854,15 +1873,15 @@ main[data-page-palette] [data-budget-outline="surface"] {
 }
 
 [data-page-palette] [data-page-palette-secondary] {
-	border-color: var(--page-accent-200);
-	background-color: var(--page-accent-50);
-	color: var(--page-accent-700);
+	border-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 35%, white);
+	background-color: white;
+	color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 85%, #1e293b);
 }
 
 [data-page-palette] [data-page-palette-secondary]:hover:not(:disabled) {
-	border-color: var(--page-accent-300);
-	background-color: var(--page-accent-100);
-	color: var(--page-accent-800);
+	border-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 50%, white);
+	background-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 8%, white);
+	color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 95%, black);
 }
 
 [data-page-palette] [data-page-palette-control] {
@@ -1901,16 +1920,18 @@ main[data-page-palette] [data-budget-outline="surface"] {
 	box-shadow: 0 8px 18px -12px color-mix(in oklab, var(--page-accent-base) 75%, transparent);
 }
 
-:root.dark [data-page-palette] [data-page-palette-secondary] {
-	border-color: var(--page-accent-800);
-	background-color: var(--page-accent-950);
-	color: var(--page-accent-200);
+:root.dark [data-page-palette] [data-page-palette-secondary],
+.dark [data-page-palette] [data-page-palette-secondary] {
+	border-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 40%, #334155);
+	background-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 12%, #0f172a);
+	color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 75%, white);
 }
 
-:root.dark [data-page-palette] [data-page-palette-secondary]:hover:not(:disabled) {
-	border-color: var(--page-accent-700);
-	background-color: var(--page-accent-900);
-	color: var(--page-accent-100);
+:root.dark [data-page-palette] [data-page-palette-secondary]:hover:not(:disabled),
+.dark [data-page-palette] [data-page-palette-secondary]:hover:not(:disabled) {
+	border-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 60%, #475569);
+	background-color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 20%, #0f172a);
+	color: color-mix(in oklab, var(--action-accent, var(--page-accent-base)) 90%, white);
 }
 
 :root.dark [data-page-palette] [data-page-palette-control] {
@@ -2202,6 +2223,10 @@ main[data-page-palette="teal"] [data-budget-outline="emerald"] {
 
 .metric-summary-card--emerald {
 	--metric-decoration: #10b981;
+}
+
+.metric-summary-card--teal {
+	--metric-decoration: #0d9488;
 }
 
 :root.dark .metric-summary-card::before {

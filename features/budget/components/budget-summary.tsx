@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { cutoffDateRanges, cutoffShortLabels, monthLabel, money, type BillOccurrence } from "@/features/budget/lib/budget-utils";
+import { BudgetAlert } from "@/features/budget/components/budget-alert";
 import type { BudgetBill, CutoffDay } from "@/features/budget/types";
 import type { BudgetMode } from "@/components/settings/settings-model";
 
@@ -80,7 +81,7 @@ export function BudgetSummary({
 			<DialogContent className="palette-dialog-panel max-w-lg overflow-hidden border-amber-200 bg-white p-0 shadow-2xl shadow-amber-950/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50 sm:rounded-2xl">
 				<PaletteDialogHeader tone="warning" eyebrow="BUDGET PLANNER" title="Overdue bills" description={`${overdueBills.length} unpaid bill${overdueBills.length === 1 ? "" : "s"} past the due date`} icon={<AlertTriangle size={19} />} closeLabel="Close dialog" />
 				<div className="max-h-[60vh] space-y-2 overflow-y-auto px-6 py-5">
-					{error && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">{error}</p>}
+					<BudgetAlert message={error} />
 					{overdueBills.map(({ bill, monthKey }) => <div key={`${bill.id}-${monthKey}`} className="flex items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/40">
 						<div className="min-w-0">
 							<p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{bill.title}</p>

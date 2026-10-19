@@ -5,6 +5,7 @@ export const navigationItems = [
 	{ href: "/grocery", label: "Grocery planner" },
 	{ href: "/family-calendar", label: "Family Calendar" },
 	{ href: "/budget", label: "Budget planner" },
+	{ href: "/baby-tracker", label: "Baby Tracker" },
 ] as const;
 
 export type NavigationHref = (typeof navigationItems)[number]["href"];
@@ -24,6 +25,7 @@ export const defaultSettingsPagePalettes = {
 	"/grocery": "yellow",
 	"/family-calendar": "blue",
 	"/budget": "orange",
+	"/baby-tracker": "rose",
 } satisfies Record<NavigationHref, NamedPagePalette>;
 
 export const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
@@ -31,6 +33,7 @@ export const defaultPagePalettes: Record<NavigationHref, NamedPagePalette> = {
 	"/grocery": "blue",
 	"/family-calendar": "teal",
 	"/budget": "rose",
+	"/baby-tracker": "rose",
 };
 
 export function getActivePagePalette(pathname: string, settings: AppSettings): NamedPagePalette {
@@ -71,6 +74,7 @@ export function normalizeAppSettings(value: unknown): AppSettings {
 			"/grocery": isPagePalette(savedPalettes["/grocery"]) ? savedPalettes["/grocery"] : defaultSettings.pagePalettes["/grocery"],
 			"/family-calendar": isPagePalette(familyCalendarPalette) ? familyCalendarPalette : defaultSettings.pagePalettes["/family-calendar"],
 			"/budget": isPagePalette(savedPalettes["/budget"]) ? savedPalettes["/budget"] : defaultSettings.pagePalettes["/budget"],
+			"/baby-tracker": isPagePalette(savedPalettes["/baby-tracker"]) ? savedPalettes["/baby-tracker"] : defaultSettings.pagePalettes["/baby-tracker"],
 		},
 		passwordView: saved.passwordView === "list" ? "list" : "grid",
 		budgetMode: saved.budgetMode === "cutoff" ? "cutoff" : "monthly",
@@ -87,17 +91,16 @@ export function parseAppSettings(value: unknown): AppSettings {
 	if (candidate.desktopNavigation !== "sidebar" && candidate.desktopNavigation !== "floating") {
 		throw new Error("Invalid desktop navigation setting.");
 	}
+	let order: NavigationHref[] = [];
 	if (Array.isArray(candidate.navigationOrder)) {
-		candidate.navigationOrder = candidate.navigationOrder.map((href) => href === "/baby-needs" ? "/family-calendar" : href);
+		const mapped = candidate.navigationOrder.map((href) => (href === "/baby-needs" ? "/family-calendar" : href));
+		order = mapped.filter((href): href is NavigationHref => allowedHrefs.includes(href as NavigationHref));
 	}
-	if (
-		!Array.isArray(candidate.navigationOrder)
-		|| candidate.navigationOrder.length !== allowedHrefs.length
-		|| !candidate.navigationOrder.every((href) => allowedHrefs.includes(href as NavigationHref))
-		|| new Set(candidate.navigationOrder).size !== allowedHrefs.length
-	) {
-		throw new Error("Invalid navigation order.");
+	const completeOrder = [...new Set(order)];
+	for (const href of allowedHrefs) {
+		if (!completeOrder.includes(href)) completeOrder.push(href);
 	}
+
 	if (candidate.passwordView !== "grid" && candidate.passwordView !== "list") {
 		throw new Error("Invalid password view setting.");
 	}
@@ -113,18 +116,16 @@ export function parseAppSettings(value: unknown): AppSettings {
 	if ("/baby-needs" in pagePalettes && !("/family-calendar" in pagePalettes)) {
 		pagePalettes["/family-calendar"] = pagePalettes["/baby-needs"];
 	}
-	for (const href of allowedHrefs) {
-		if (!isPagePalette(pagePalettes[href])) throw new Error(`Invalid page palette for ${href}.`);
-	}
 
 	return {
 		desktopNavigation: candidate.desktopNavigation,
-		navigationOrder: candidate.navigationOrder as NavigationHref[],
+		navigationOrder: completeOrder,
 		pagePalettes: {
-			"/passwords": pagePalettes["/passwords"],
-			"/grocery": pagePalettes["/grocery"],
-			"/family-calendar": pagePalettes["/family-calendar"],
-			"/budget": pagePalettes["/budget"],
+			"/passwords": isPagePalette(pagePalettes["/passwords"]) ? pagePalettes["/passwords"] : defaultSettings.pagePalettes["/passwords"],
+			"/grocery": isPagePalette(pagePalettes["/grocery"]) ? pagePalettes["/grocery"] : defaultSettings.pagePalettes["/grocery"],
+			"/family-calendar": isPagePalette(pagePalettes["/family-calendar"]) ? pagePalettes["/family-calendar"] : defaultSettings.pagePalettes["/family-calendar"],
+			"/budget": isPagePalette(pagePalettes["/budget"]) ? pagePalettes["/budget"] : defaultSettings.pagePalettes["/budget"],
+			"/baby-tracker": isPagePalette(pagePalettes["/baby-tracker"]) ? pagePalettes["/baby-tracker"] : defaultSettings.pagePalettes["/baby-tracker"],
 		} as AppSettings["pagePalettes"],
 		passwordView: candidate.passwordView,
 		budgetMode: candidate.budgetMode === "cutoff" ? "cutoff" : "monthly",

@@ -374,8 +374,8 @@ export function PasswordManager({ initialEntries, initialError }: { initialEntri
 							<p className="text-xs text-slate-500 dark:text-slate-300">Saved password entry</p>
 						</div>
 					</div>
-					<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-						<DialogClose disabled={submitting} className="palette-dialog-footer-button border border-slate-200 bg-white text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">Keep password</DialogClose>
+					<div className="palette-dialog-footer -mx-6 -mb-5 mt-6 flex flex-col-reverse gap-2 p-4 sm:flex-row sm:justify-end sm:px-6">
+						<DialogClose data-page-palette-secondary disabled={submitting} className="palette-dialog-footer-button border font-medium transition-colors duration-150">Keep password</DialogClose>
 						<Button type="button" disabled={submitting} className="palette-dialog-footer-button bg-red-600 text-sm font-medium text-white shadow-sm shadow-red-200 transition-all hover:bg-red-700 hover:shadow-md" onClick={() => void deleteEntry()}>{submitting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />} {submitting ? "Deleting…" : "Delete password"}</Button>
 					</div>
 				</div>

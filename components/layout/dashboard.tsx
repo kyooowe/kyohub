@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
+  Baby,
   Calendar,
   CalendarDays,
   ChartNoAxesColumn,
@@ -74,6 +75,7 @@ function DashboardShell({
     "/grocery": ShoppingCart,
     "/family-calendar": CalendarDays,
     "/budget": ChartNoAxesColumn,
+    "/baby-tracker": Baby,
   } satisfies Record<NavigationHref, typeof Key>;
   const navigation = settings.navigationOrder.map((href) => {
     const item = navigationItems.find((entry) => entry.href === href)!;
@@ -257,8 +259,7 @@ function DashboardShell({
               </strong>
             </div>
           </div>
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-300">
-            <SettingsPanel trigger="header" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-300 sm:gap-3">
             <div className="hidden h-8 items-center gap-2 rounded-xl border border-[#26A69A]/25 bg-linear-to-r from-[#26A69A]/10 via-[#17756D]/5 to-[#26A69A]/10 px-3 text-xs font-medium text-[#0c2340] shadow-xs backdrop-blur-xs transition-all duration-200 hover:border-[#26A69A]/45 hover:bg-[#26A69A]/15 hover:shadow-sm sm:inline-flex dark:border-[#26A69A]/30 dark:from-[#0c2340]/40 dark:via-[#17756D]/20 dark:to-[#26A69A]/10 dark:text-[#E0F2F1]">
               <Calendar size={13} strokeWidth={2.2} className="shrink-0 text-[#17756D] dark:text-[#4DB6AC]" />
               <span className="font-semibold tracking-tight">
@@ -269,6 +270,8 @@ function DashboardShell({
                 }).format(new Date())}
               </span>
             </div>
+            <LockButton onLock={lockApp} disabled={locking} compact />
+            <SettingsPanel trigger="header" />
             <div
               className="relative flex shrink-0 items-center justify-center"
               title={`${user.name} (${user.initials})`}
@@ -300,7 +303,10 @@ function DashboardShell({
       <nav
         data-page-palette-preserve
         aria-label="Main navigation"
-        className="floating-navigation-bar fixed bottom-3 left-1/2 z-50 grid h-[3.875rem] w-[min(calc(100%_-_1.5rem),28rem)] -translate-x-1/2 grid-cols-6 items-center gap-0.5 rounded-2xl border p-1 backdrop-blur-xl md:hidden"
+        className="floating-navigation-bar fixed bottom-3 left-1/2 z-50 grid h-[3.875rem] w-[min(calc(100%_-_1.5rem),28rem)] -translate-x-1/2 items-center gap-0.5 rounded-2xl border p-1 backdrop-blur-xl md:hidden"
+        style={{
+          gridTemplateColumns: `repeat(${navigation.length}, minmax(0, 1fr))`,
+        }}
       >
         {navigation.map(({ href, label, icon: Icon }) => {
           const active = current.href === href;
@@ -319,14 +325,12 @@ function DashboardShell({
             </Link>
           );
         })}
-        <LockButton onLock={lockApp} disabled={locking} compact className="floating-navigation-action justify-self-center" />
-        <SettingsPanel trigger="floating" compact />
       </nav>
       {settings.desktopNavigation === "floating" && (
         <nav
           data-page-palette-preserve
           aria-label="Main navigation"
-          className="desktop-floating-navigation-bar fixed bottom-6 left-1/2 z-50 hidden h-[3.875rem] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center justify-between gap-2 rounded-2xl border p-2.5 backdrop-blur-xl md:flex"
+          className="desktop-floating-navigation-bar fixed bottom-6 left-1/2 z-50 hidden h-[3.875rem] w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-2 rounded-2xl border p-2.5 backdrop-blur-xl md:flex"
         >
           <div className="flex min-w-0 items-center gap-1">
             <span className="shrink-0 px-2 text-[10px] font-semibold tracking-[0.14em] text-slate-500 dark:text-slate-400">
@@ -349,10 +353,6 @@ function DashboardShell({
                 </Link>
               );
             })}
-          </div>
-          <div className="flex shrink-0 items-center gap-1 border-l border-slate-200 pl-2 dark:border-slate-700">
-            <LockButton onLock={lockApp} disabled={locking} compact className="floating-navigation-action" />
-            <SettingsPanel trigger="floating" compact />
           </div>
         </nav>
       )}

@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7dbcd05686575a5fbedbda8d3edd0268f58b5e8d791124b54dc58032a2504741'>;
+  StorageHashBase<'16d48236170993c5ba33c36b495b72a3b85bc0be12c45abab8dd7f7187446b6e'>;
 export type ExecutionHash =
-  ExecutionHashBase<'e5ad667427ab89edcc76ebc2dea1d5eaf83e9369ad8ba97f22e6c0a42f6a5649'>;
+  ExecutionHashBase<'dcf8b676c6537c9c286e7f963d226e145da7c11b3ee48f47b04d5fb84bd82441'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -254,6 +254,39 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly value: CodecTypes['pg/text@1']['output'];
     };
+    readonly BabyGrowth: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly headCircumferenceCm: CodecTypes['pg/float8@1']['output'] | null;
+      readonly heightCm: CodecTypes['pg/float8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthAge: CodecTypes['pg/int4@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly recordedDate: CodecTypes['pg/text@1']['output'];
+      readonly weightKg: CodecTypes['pg/float8@1']['output'];
+    };
+    readonly BabyMedicalNote: {
+      readonly category: CodecTypes['pg/text@1']['output'];
+      readonly clinicName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly doctorAdvice: CodecTypes['pg/text@1']['output'];
+      readonly doctorName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly noteDate: CodecTypes['pg/text@1']['output'];
+      readonly symptoms: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyMedicine: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dosage: CodecTypes['pg/text@1']['output'];
+      readonly endDate: CodecTypes['pg/text@1']['output'];
+      readonly frequency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly instructions: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly startDate: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -262,6 +295,40 @@ export type FieldOutputTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyProfile: {
+      readonly allergies: CodecTypes['pg/text@1']['output'];
+      readonly birthDate: CodecTypes['pg/text@1']['output'];
+      readonly birthHeight: CodecTypes['pg/text@1']['output'];
+      readonly birthWeight: CodecTypes['pg/text@1']['output'];
+      readonly bloodType: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly gender: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly pediatrician: CodecTypes['pg/text@1']['output'];
+      readonly pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyStoolLog: {
+      readonly amount: CodecTypes['pg/text@1']['output'];
+      readonly color: CodecTypes['pg/text@1']['output'];
+      readonly consistency: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly type: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyVaccine: {
+      readonly administeredBy: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dose: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly vaccineDate: CodecTypes['pg/text@1']['output'];
+      readonly vaccineName: CodecTypes['pg/text@1']['output'];
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['output'];
@@ -312,6 +379,39 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly value: CodecTypes['pg/text@1']['input'];
     };
+    readonly BabyGrowth: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly headCircumferenceCm: CodecTypes['pg/float8@1']['input'] | null;
+      readonly heightCm: CodecTypes['pg/float8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthAge: CodecTypes['pg/int4@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly recordedDate: CodecTypes['pg/text@1']['input'];
+      readonly weightKg: CodecTypes['pg/float8@1']['input'];
+    };
+    readonly BabyMedicalNote: {
+      readonly category: CodecTypes['pg/text@1']['input'];
+      readonly clinicName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly doctorAdvice: CodecTypes['pg/text@1']['input'];
+      readonly doctorName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly noteDate: CodecTypes['pg/text@1']['input'];
+      readonly symptoms: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyMedicine: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dosage: CodecTypes['pg/text@1']['input'];
+      readonly endDate: CodecTypes['pg/text@1']['input'];
+      readonly frequency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly instructions: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly startDate: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -320,6 +420,40 @@ export type FieldInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyProfile: {
+      readonly allergies: CodecTypes['pg/text@1']['input'];
+      readonly birthDate: CodecTypes['pg/text@1']['input'];
+      readonly birthHeight: CodecTypes['pg/text@1']['input'];
+      readonly birthWeight: CodecTypes['pg/text@1']['input'];
+      readonly bloodType: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly gender: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly pediatrician: CodecTypes['pg/text@1']['input'];
+      readonly pediatricianPhone: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyStoolLog: {
+      readonly amount: CodecTypes['pg/text@1']['input'];
+      readonly color: CodecTypes['pg/text@1']['input'];
+      readonly consistency: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyVaccine: {
+      readonly administeredBy: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dose: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly vaccineDate: CodecTypes['pg/text@1']['input'];
+      readonly vaccineName: CodecTypes['pg/text@1']['input'];
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['input'];
@@ -370,6 +504,39 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly value: CodecTypes['pg/text@1']['output'];
     };
+    readonly BabyGrowth: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly headCircumferenceCm: CodecTypes['pg/float8@1']['output'] | null;
+      readonly heightCm: CodecTypes['pg/float8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly monthAge: CodecTypes['pg/int4@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly recordedDate: CodecTypes['pg/text@1']['output'];
+      readonly weightKg: CodecTypes['pg/float8@1']['output'];
+    };
+    readonly BabyMedicalNote: {
+      readonly category: CodecTypes['pg/text@1']['output'];
+      readonly clinicName: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly doctorAdvice: CodecTypes['pg/text@1']['output'];
+      readonly doctorName: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly noteDate: CodecTypes['pg/text@1']['output'];
+      readonly symptoms: CodecTypes['pg/text@1']['output'];
+      readonly title: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyMedicine: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dosage: CodecTypes['pg/text@1']['output'];
+      readonly endDate: CodecTypes['pg/text@1']['output'];
+      readonly frequency: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly instructions: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly startDate: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -378,6 +545,40 @@ export type StorageColumnTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyProfile: {
+      readonly allergies: CodecTypes['pg/text@1']['output'];
+      readonly birthDate: CodecTypes['pg/text@1']['output'];
+      readonly birthHeight: CodecTypes['pg/text@1']['output'];
+      readonly birthWeight: CodecTypes['pg/text@1']['output'];
+      readonly bloodType: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly gender: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly name: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly pediatrician: CodecTypes['pg/text@1']['output'];
+      readonly pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyStoolLog: {
+      readonly amount: CodecTypes['pg/text@1']['output'];
+      readonly color: CodecTypes['pg/text@1']['output'];
+      readonly consistency: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly type: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabyVaccine: {
+      readonly administeredBy: CodecTypes['pg/text@1']['output'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly dose: CodecTypes['pg/text@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+      readonly vaccineDate: CodecTypes['pg/text@1']['output'];
+      readonly vaccineName: CodecTypes['pg/text@1']['output'];
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['output'];
@@ -428,6 +629,39 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/text@1']['input'];
       readonly value: CodecTypes['pg/text@1']['input'];
     };
+    readonly BabyGrowth: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly headCircumferenceCm: CodecTypes['pg/float8@1']['input'] | null;
+      readonly heightCm: CodecTypes['pg/float8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly monthAge: CodecTypes['pg/int4@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly recordedDate: CodecTypes['pg/text@1']['input'];
+      readonly weightKg: CodecTypes['pg/float8@1']['input'];
+    };
+    readonly BabyMedicalNote: {
+      readonly category: CodecTypes['pg/text@1']['input'];
+      readonly clinicName: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly doctorAdvice: CodecTypes['pg/text@1']['input'];
+      readonly doctorName: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly noteDate: CodecTypes['pg/text@1']['input'];
+      readonly symptoms: CodecTypes['pg/text@1']['input'];
+      readonly title: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyMedicine: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dosage: CodecTypes['pg/text@1']['input'];
+      readonly endDate: CodecTypes['pg/text@1']['input'];
+      readonly frequency: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly instructions: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly startDate: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -436,6 +670,40 @@ export type StorageColumnInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyProfile: {
+      readonly allergies: CodecTypes['pg/text@1']['input'];
+      readonly birthDate: CodecTypes['pg/text@1']['input'];
+      readonly birthHeight: CodecTypes['pg/text@1']['input'];
+      readonly birthWeight: CodecTypes['pg/text@1']['input'];
+      readonly bloodType: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly gender: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly name: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly pediatrician: CodecTypes['pg/text@1']['input'];
+      readonly pediatricianPhone: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyStoolLog: {
+      readonly amount: CodecTypes['pg/text@1']['input'];
+      readonly color: CodecTypes['pg/text@1']['input'];
+      readonly consistency: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly type: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabyVaccine: {
+      readonly administeredBy: CodecTypes['pg/text@1']['input'];
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly dose: CodecTypes['pg/text@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+      readonly vaccineDate: CodecTypes['pg/text@1']['input'];
+      readonly vaccineName: CodecTypes['pg/text@1']['input'];
     };
     readonly BudgetBill: {
       readonly amountCents: CodecTypes['pg/int4@1']['input'];
@@ -487,6 +755,42 @@ export namespace Models {
     value: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_BabyGrowth = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    headCircumferenceCm: CodecTypes['pg/float8@1']['output'] | null;
+    heightCm: CodecTypes['pg/float8@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    monthAge: CodecTypes['pg/int4@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    recordedDate: CodecTypes['pg/text@1']['output'];
+    weightKg: CodecTypes['pg/float8@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabyMedicalNote = {
+    category: CodecTypes['pg/text@1']['output'];
+    clinicName: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    doctorAdvice: CodecTypes['pg/text@1']['output'];
+    doctorName: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    noteDate: CodecTypes['pg/text@1']['output'];
+    symptoms: CodecTypes['pg/text@1']['output'];
+    title: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabyMedicine = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    dosage: CodecTypes['pg/text@1']['output'];
+    endDate: CodecTypes['pg/text@1']['output'];
+    frequency: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    instructions: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    startDate: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_BabyNeed = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     dateKey: CodecTypes['pg/text@1']['output'];
@@ -495,6 +799,43 @@ export namespace Models {
     notes: CodecTypes['pg/text@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
     type: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabyProfile = {
+    allergies: CodecTypes['pg/text@1']['output'];
+    birthDate: CodecTypes['pg/text@1']['output'];
+    birthHeight: CodecTypes['pg/text@1']['output'];
+    birthWeight: CodecTypes['pg/text@1']['output'];
+    bloodType: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    gender: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    name: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    pediatrician: CodecTypes['pg/text@1']['output'];
+    pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabyStoolLog = {
+    amount: CodecTypes['pg/text@1']['output'];
+    color: CodecTypes['pg/text@1']['output'];
+    consistency: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    type: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabyVaccine = {
+    administeredBy: CodecTypes['pg/text@1']['output'];
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    dose: CodecTypes['pg/text@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    vaccineDate: CodecTypes['pg/text@1']['output'];
+    vaccineName: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
   export type public_BudgetBill = {
@@ -548,7 +889,13 @@ export namespace Models {
 export declare const models: {
   public: {
     AppSetting: Models.public_AppSetting;
+    BabyGrowth: Models.public_BabyGrowth;
+    BabyMedicalNote: Models.public_BabyMedicalNote;
+    BabyMedicine: Models.public_BabyMedicine;
     BabyNeed: Models.public_BabyNeed;
+    BabyProfile: Models.public_BabyProfile;
+    BabyStoolLog: Models.public_BabyStoolLog;
+    BabyVaccine: Models.public_BabyVaccine;
     BudgetBill: Models.public_BudgetBill;
     GroceryItem: Models.public_GroceryItem;
     MonthlyBudget: Models.public_MonthlyBudget;
@@ -591,6 +938,231 @@ type ContractBase = Omit<
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
               indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly BabyGrowth: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly headCircumferenceCm: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                };
+                readonly heightCm: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly monthAge: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly recordedDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly weightKg: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyGrowth_monthAge_idx_1b7d5f6d';
+                  readonly prefix: 'BabyGrowth_monthAge_idx';
+                  readonly columns: readonly ['monthAge'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BabyGrowth_recordedDate_idx_be6072a0';
+                  readonly prefix: 'BabyGrowth_recordedDate_idx';
+                  readonly columns: readonly ['recordedDate'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly BabyMedicalNote: {
+              columns: {
+                readonly category: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'general'>;
+                  };
+                };
+                readonly clinicName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly doctorAdvice: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly doctorName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly noteDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly symptoms: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly title: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyMedicalNote_noteDate_idx_1ee0108a';
+                  readonly prefix: 'BabyMedicalNote_noteDate_idx';
+                  readonly columns: readonly ['noteDate'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly BabyMedicine: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly dosage: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly endDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly frequency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly instructions: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly startDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'active'>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyMedicine_status_idx_e98638ab';
+                  readonly prefix: 'BabyMedicine_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [];
             };
             readonly BabyNeed: {
@@ -647,6 +1219,262 @@ type ContractBase = Omit<
                   readonly name: 'BabyNeed_dateKey_idx_bf583274';
                   readonly prefix: 'BabyNeed_dateKey_idx';
                   readonly columns: readonly ['dateKey'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly BabyProfile: {
+              columns: {
+                readonly allergies: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly birthDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly birthHeight: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly birthWeight: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly bloodType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly gender: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'unspecified'>;
+                  };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly name: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly pediatrician: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly pediatricianPhone: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly BabyStoolLog: {
+              columns: {
+                readonly amount: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'medium'>;
+                  };
+                };
+                readonly color: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'yellow'>;
+                  };
+                };
+                readonly consistency: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'soft'>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly loggedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly type: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'stool'>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyStoolLog_type_idx_b6b604ea';
+                  readonly prefix: 'BabyStoolLog_type_idx';
+                  readonly columns: readonly ['type'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
+            readonly BabyVaccine: {
+              columns: {
+                readonly administeredBy: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly dose: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'upcoming'>;
+                  };
+                };
+                readonly vaccineDate: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly vaccineName: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyVaccine_status_idx_e98638ab';
+                  readonly prefix: 'BabyVaccine_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BabyVaccine_vaccineDate_idx_28a615a0';
+                  readonly prefix: 'BabyVaccine_vaccineDate_idx';
+                  readonly columns: readonly ['vaccineDate'];
                   readonly unique: false;
                 },
               ];
@@ -903,7 +1731,31 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'AppSetting';
     };
+    readonly BabyGrowth: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyGrowth';
+    };
+    readonly BabyMedicalNote: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyMedicalNote';
+    };
+    readonly BabyMedicine: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyMedicine';
+    };
     readonly BabyNeed: { readonly namespace: 'public' & NamespaceId; readonly model: 'BabyNeed' };
+    readonly BabyProfile: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyProfile';
+    };
+    readonly BabyStoolLog: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyStoolLog';
+    };
+    readonly BabyVaccine: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyVaccine';
+    };
     readonly BudgetBill: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BudgetBill';
@@ -947,6 +1799,183 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly value: { readonly column: 'value' };
+              };
+            };
+          };
+          readonly BabyGrowth: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly headCircumferenceCm: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly heightCm: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly monthAge: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly recordedDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly weightKg: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyGrowth';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly headCircumferenceCm: { readonly column: 'headCircumferenceCm' };
+                readonly heightCm: { readonly column: 'heightCm' };
+                readonly id: { readonly column: 'id' };
+                readonly monthAge: { readonly column: 'monthAge' };
+                readonly notes: { readonly column: 'notes' };
+                readonly recordedDate: { readonly column: 'recordedDate' };
+                readonly weightKg: { readonly column: 'weightKg' };
+              };
+            };
+          };
+          readonly BabyMedicalNote: {
+            readonly fields: {
+              readonly category: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly clinicName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly doctorAdvice: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly doctorName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly noteDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly symptoms: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyMedicalNote';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly category: { readonly column: 'category' };
+                readonly clinicName: { readonly column: 'clinicName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly doctorAdvice: { readonly column: 'doctorAdvice' };
+                readonly doctorName: { readonly column: 'doctorName' };
+                readonly id: { readonly column: 'id' };
+                readonly noteDate: { readonly column: 'noteDate' };
+                readonly symptoms: { readonly column: 'symptoms' };
+                readonly title: { readonly column: 'title' };
+              };
+            };
+          };
+          readonly BabyMedicine: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly dosage: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly endDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly frequency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly instructions: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly startDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyMedicine';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly dosage: { readonly column: 'dosage' };
+                readonly endDate: { readonly column: 'endDate' };
+                readonly frequency: { readonly column: 'frequency' };
+                readonly id: { readonly column: 'id' };
+                readonly instructions: { readonly column: 'instructions' };
+                readonly name: { readonly column: 'name' };
+                readonly notes: { readonly column: 'notes' };
+                readonly startDate: { readonly column: 'startDate' };
+                readonly status: { readonly column: 'status' };
               };
             };
           };
@@ -996,6 +2025,191 @@ type ContractBase = Omit<
                 readonly notes: { readonly column: 'notes' };
                 readonly title: { readonly column: 'title' };
                 readonly type: { readonly column: 'type' };
+              };
+            };
+          };
+          readonly BabyProfile: {
+            readonly fields: {
+              readonly allergies: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly birthDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly birthHeight: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly birthWeight: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bloodType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly gender: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly name: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly pediatrician: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly pediatricianPhone: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyProfile';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly allergies: { readonly column: 'allergies' };
+                readonly birthDate: { readonly column: 'birthDate' };
+                readonly birthHeight: { readonly column: 'birthHeight' };
+                readonly birthWeight: { readonly column: 'birthWeight' };
+                readonly bloodType: { readonly column: 'bloodType' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly gender: { readonly column: 'gender' };
+                readonly id: { readonly column: 'id' };
+                readonly name: { readonly column: 'name' };
+                readonly notes: { readonly column: 'notes' };
+                readonly pediatrician: { readonly column: 'pediatrician' };
+                readonly pediatricianPhone: { readonly column: 'pediatricianPhone' };
+              };
+            };
+          };
+          readonly BabyStoolLog: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly color: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly consistency: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly loggedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly type: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyStoolLog';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly color: { readonly column: 'color' };
+                readonly consistency: { readonly column: 'consistency' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly loggedAt: { readonly column: 'loggedAt' };
+                readonly notes: { readonly column: 'notes' };
+                readonly type: { readonly column: 'type' };
+              };
+            };
+          };
+          readonly BabyVaccine: {
+            readonly fields: {
+              readonly administeredBy: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly dose: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly vaccineDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly vaccineName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyVaccine';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly administeredBy: { readonly column: 'administeredBy' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly dose: { readonly column: 'dose' };
+                readonly id: { readonly column: 'id' };
+                readonly notes: { readonly column: 'notes' };
+                readonly status: { readonly column: 'status' };
+                readonly vaccineDate: { readonly column: 'vaccineDate' };
+                readonly vaccineName: { readonly column: 'vaccineName' };
               };
             };
           };
@@ -1257,7 +2471,55 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'BabyGrowth';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabyMedicalNote';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabyMedicine';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'BabyNeed';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabyProfile';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabyStoolLog';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabyVaccine';
             readonly field: 'id';
             readonly namespace: 'public';
           };

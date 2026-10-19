@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { usePathname } from "next/navigation";
-import { Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
+import { Baby, Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
@@ -19,6 +19,7 @@ const navigationVisuals: Record<NavigationHref, { icon: LucideIcon; color: strin
 	"/grocery": { icon: ShoppingCart, color: "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300" },
 	"/family-calendar": { icon: CalendarDays, color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300" },
 	"/budget": { icon: ChartNoAxesColumn, color: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300" },
+	"/baby-tracker": { icon: Baby, color: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300" },
 };
 
 const paletteOptionDetails: Partial<Record<NamedPagePalette, { icon: LucideIcon; description: string; tone: string; iconColor: string }>> = {
@@ -223,7 +224,7 @@ export function SettingsPanel({ trigger, compact = false }: { trigger: "sidebar"
 			className={trigger === "sidebar"
 				? "hidden min-h-11 w-full justify-start gap-3 rounded-md bg-transparent px-3 text-slate-200/80 transition-colors hover:bg-white/5 hover:text-white md:flex"
 				: trigger === "header"
-					? "md:hidden"
+					? "size-9 justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
 					: compact
 					? "floating-navigation-action relative z-10 grid size-9 shrink-0 place-items-center justify-self-center rounded-full transition-colors"
 					: "floating-navigation-action relative z-10 grid size-11 shrink-0 place-items-center rounded-full transition-colors"}
