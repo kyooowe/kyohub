@@ -332,12 +332,12 @@ export function GrowthTracker({
 								{latestWeightAssessment
 									? `${latestWeightAssessment.diffFormatted}`
 									: weightDelta
-									? Number(weightDelta) >= 0
-										? `+${weightDelta} kg gain`
-										: `${weightDelta} kg change`
-									: latest
-									? `At ${latest.monthAge} months`
-									: "No measurements yet"}
+										? Number(weightDelta) >= 0
+											? `+${weightDelta} kg gain`
+											: `${weightDelta} kg change`
+										: latest
+											? `At ${latest.monthAge} months`
+											: "No measurements yet"}
 							</p>
 						</div>
 						<div className="flex shrink-0 self-end">
@@ -384,10 +384,10 @@ export function GrowthTracker({
 								{latestHeightAssessment
 									? `${latestHeightAssessment.diffFormatted}`
 									: heightDelta
-									? `+${heightDelta} cm growth`
-									: latest
-									? `At ${latest.monthAge} months`
-									: "Length progression"}
+										? `+${heightDelta} cm growth`
+										: latest
+											? `At ${latest.monthAge} months`
+											: "Length progression"}
 							</p>
 						</div>
 						<div className="flex shrink-0 self-end">
@@ -504,11 +504,10 @@ export function GrowthTracker({
 											key={option.id}
 											type="button"
 											onClick={() => setChartMetric(option.id)}
-											className={`password-filter-mode-option flex-1 sm:flex-initial inline-flex h-8 sm:h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all ${
-												active
+											className={`password-filter-mode-option flex-1 sm:flex-initial inline-flex h-8 sm:h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all ${active
 													? "password-filter-mode-option--active"
 													: "border-transparent text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-											}`}
+												}`}
 										>
 											<Icon size={14} className="shrink-0" />
 											<span>{option.label}</span>
@@ -524,11 +523,10 @@ export function GrowthTracker({
 							<button
 								type="button"
 								onClick={() => setShowWhoBenchmark((prev) => !prev)}
-								className={`password-row-count-control flex-1 sm:flex-initial inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition-colors ${
-									showWhoBenchmark
+								className={`password-row-count-control flex-1 sm:flex-initial inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition-colors ${showWhoBenchmark
 										? "password-filter-mode-option--active"
 										: "text-slate-600 hover:text-slate-900 dark:text-slate-300"
-								}`}
+									}`}
 							>
 								<Info size={14} className="shrink-0" />
 								<span>{showWhoBenchmark ? "WHO Curve On" : "Show WHO Curve"}</span>

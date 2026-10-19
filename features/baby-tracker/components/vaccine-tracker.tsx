@@ -8,13 +8,14 @@ import {
 	AlertTriangle,
 	Plus,
 	Trash2,
-	Edit3,
+	Pencil,
 	ShieldCheck,
 	Shield,
 	Loader2,
 	Calendar,
-	Sparkles,
 	ArrowRight,
+	Search,
+	X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,19 @@ import type { BabyVaccine, VaccineStatus } from "../types";
 import { standardChildhoodVaccines } from "../types";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
 import { toast } from "sonner";
+
+type GroupedVaccine = {
+	vaccineName: string;
+	doses: BabyVaccine[];
+	totalDoses: number;
+	completedDoses: number;
+	isAllCompleted: boolean;
+	hasOverdue: boolean;
+	hasUpcoming: boolean;
+	nextDose: BabyVaccine | null;
+	administeredBy: string;
+	notes: string;
+};
 
 export function VaccineTracker({
 	vaccines,
@@ -48,6 +62,9 @@ export function VaccineTracker({
 }) {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [editingVaccine, setEditingVaccine] = useState<BabyVaccine | null>(null);
+	const [formVaccineName, setFormVaccineName] = useState("");
+	const [formDose, setFormDose] = useState("");
+	const [searchQuery, setSearchQuery] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [filter, setFilter] = useState<"all" | "upcoming" | "completed" | "overdue">("all");
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(3000);
@@ -76,15 +93,139 @@ export function VaccineTracker({
 		return { total, completed, upcoming, overdue, completionRate };
 	}, [vaccines, todayStr]);
 
-	const filteredVaccines = useMemo(() => {
-		return vaccines.filter((v) => {
-			const isOverdue = v.status === "overdue" || (v.status === "upcoming" && v.vaccineDate < todayStr);
-			if (filter === "completed") return v.status === "completed";
-			if (filter === "upcoming") return v.status === "upcoming" && !isOverdue;
-			if (filter === "overdue") return isOverdue;
+	// Group vaccines with the same name into 1 item
+	const groupedVaccines = useMemo(() => {
+		const map = new Map<string, BabyVaccine[]>();
+
+		for (const v of vaccines) {
+			const key = v.vaccineName.trim().toLowerCase();
+			const existing = map.get(key) || [];
+			existing.push(v);
+			map.set(key, existing);
+		}
+
+		const groups: GroupedVaccine[] = [];
+
+		for (const doses of map.values()) {
+			// Sort doses chronologically
+			doses.sort((a, b) => a.vaccineDate.localeCompare(b.vaccineDate));
+
+			const totalDoses = doses.length;
+			let completedDoses = 0;
+			let hasOverdue = false;
+			let hasUpcoming = false;
+			let nextDose: BabyVaccine | null = null;
+			let administeredBy = "";
+			let notes = "";
+
+			for (const d of doses) {
+				const isCompleted = d.status === "completed";
+				const isOverdue = !isCompleted && (d.status === "overdue" || d.vaccineDate < todayStr);
+				if (isCompleted) {
+					completedDoses++;
+				} else if (isOverdue) {
+					hasOverdue = true;
+					if (!nextDose) nextDose = d;
+				} else if (d.status === "upcoming") {
+					hasUpcoming = true;
+					if (!nextDose) nextDose = d;
+				}
+				if (!administeredBy && d.administeredBy) administeredBy = d.administeredBy;
+				if (!notes && d.notes) notes = d.notes;
+			}
+
+			if (!nextDose && doses.length > 0) {
+				nextDose = doses[doses.length - 1];
+			}
+
+			groups.push({
+				vaccineName: doses[0].vaccineName,
+				doses,
+				totalDoses,
+				completedDoses,
+				isAllCompleted: completedDoses === totalDoses && totalDoses > 0,
+				hasOverdue,
+				hasUpcoming,
+				nextDose,
+				administeredBy,
+				notes,
+			});
+		}
+
+		// Sort groups: overdue first, then upcoming, then completed
+		groups.sort((a, b) => {
+			if (a.hasOverdue && !b.hasOverdue) return -1;
+			if (!a.hasOverdue && b.hasOverdue) return 1;
+			if (a.hasUpcoming && !b.hasUpcoming) return -1;
+			if (!a.hasUpcoming && b.hasUpcoming) return 1;
+			return (a.nextDose?.vaccineDate || "").localeCompare(b.nextDose?.vaccineDate || "");
+		});
+
+		return groups;
+	}, [vaccines, todayStr]);
+
+	const tabCounts = useMemo(() => {
+		let completed = 0;
+		let upcoming = 0;
+		let overdue = 0;
+		for (const g of groupedVaccines) {
+			if (g.isAllCompleted) completed++;
+			if (g.hasUpcoming) upcoming++;
+			if (g.hasOverdue) overdue++;
+		}
+		return { total: groupedVaccines.length, completed, upcoming, overdue };
+	}, [groupedVaccines]);
+
+	// List of unique past & standard vaccine names for autocomplete
+	const pastVaccineOptions = useMemo(() => {
+		const names = new Set<string>();
+		// 1. Existing user's tracked vaccines
+		for (const v of vaccines) {
+			if (v.vaccineName?.trim()) names.add(v.vaccineName.trim());
+		}
+		// 2. Standard childhood schedule vaccines
+		for (const s of standardChildhoodVaccines) {
+			if (s.vaccineName?.trim()) names.add(s.vaccineName.trim());
+		}
+		return Array.from(names);
+	}, [vaccines]);
+
+	function handleVaccineNameChange(name: string) {
+		setFormVaccineName(name);
+		if (!editingVaccine) {
+			const existingDoses = vaccines.filter(
+				(v) => v.vaccineName.trim().toLowerCase() === name.trim().toLowerCase()
+			);
+			if (existingDoses.length > 0) {
+				setFormDose(`Dose ${existingDoses.length + 1}`);
+			}
+		}
+	}
+
+	const filteredGroups = useMemo(() => {
+		const query = searchQuery.trim().toLowerCase();
+		return groupedVaccines.filter((g) => {
+			if (filter === "completed" && !g.isAllCompleted) return false;
+			if (filter === "upcoming" && !g.hasUpcoming) return false;
+			if (filter === "overdue" && !g.hasOverdue) return false;
+
+			if (query) {
+				const matchName = g.vaccineName.toLowerCase().includes(query);
+				const matchDoctor = g.administeredBy?.toLowerCase().includes(query);
+				const matchNotes = g.notes?.toLowerCase().includes(query);
+				const matchDoses = g.doses.some(
+					(d) =>
+						d.dose.toLowerCase().includes(query) ||
+						d.vaccineDate.includes(query) ||
+						d.administeredBy?.toLowerCase().includes(query) ||
+						d.notes?.toLowerCase().includes(query)
+				);
+				return matchName || matchDoctor || matchNotes || matchDoses;
+			}
+
 			return true;
 		});
-	}, [vaccines, filter, todayStr]);
+	}, [groupedVaccines, filter, searchQuery]);
 
 	async function handleStatusToggle(vaccine: BabyVaccine) {
 		if (submitting) return;
@@ -111,9 +252,9 @@ export function VaccineTracker({
 		setSubmitting(true);
 
 		const form = new FormData(event.currentTarget);
-		const vaccineName = String(form.get("vaccineName") || "").trim();
+		const vaccineName = formVaccineName.trim() || String(form.get("vaccineName") || "").trim();
 		const vaccineDate = String(form.get("vaccineDate") || "").trim();
-		const dose = String(form.get("dose") || "").trim();
+		const dose = formDose.trim() || String(form.get("dose") || "").trim();
 		const status = (form.get("status") as VaccineStatus) || "upcoming";
 		const administeredBy = String(form.get("administeredBy") || "").trim();
 		const notes = String(form.get("notes") || "").trim();
@@ -155,6 +296,21 @@ export function VaccineTracker({
 		try {
 			await onDeleteVaccine(id);
 			showAlert("VACCINE DELETED", "Vaccine record deleted successfully.");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to delete vaccine");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	async function handleDeleteGroup(group: GroupedVaccine) {
+		if (submitting) return;
+		setSubmitting(true);
+		try {
+			for (const d of group.doses) {
+				await onDeleteVaccine(d.id);
+			}
+			showAlert("VACCINE DELETED", `${group.vaccineName} removed from schedule.`);
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : "Failed to delete vaccine");
 		} finally {
@@ -354,40 +510,64 @@ export function VaccineTracker({
 				</div>
 			)}
 
-			{/* Controls, Filters & Add Buttons (Styled like Image 2) */}
+			{/* Controls, Filters, Search & Add Buttons */}
 			<div
 				style={{ "--password-accent": paletteAccent } as CSSProperties}
 				className="password-library-header relative w-full min-w-0 max-w-full overflow-hidden rounded-3xl border p-2.5 shadow-md sm:p-3"
 			>
 				<span aria-hidden="true" className="password-library-orbit pointer-events-none absolute -right-5 -top-10 size-28 rounded-full" />
-				<div className="relative z-10 flex w-full min-w-0 flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-					{/* Filter Pills */}
-					<div className="password-filter-mode-group flex w-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:w-auto">
-						{(
-							[
-								{ key: "all", label: `All (${stats.total})` },
-								{ key: "upcoming", label: `Upcoming (${stats.upcoming})` },
-								{ key: "completed", label: `Completed (${stats.completed})` },
-								{ key: "overdue", label: `Overdue (${stats.overdue})` },
-							] as const
-						).map((tab) => (
-							<button
-								key={tab.key}
-								type="button"
-								onClick={() => setFilter(tab.key)}
-								className={`password-filter-mode-option shrink-0 inline-flex h-8 sm:h-9 items-center rounded-lg border px-2.5 text-xs font-semibold transition-all ${
-									filter === tab.key
-										? "password-filter-mode-option--active"
-										: "border-transparent text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-								}`}
-							>
-								{tab.label}
-							</button>
-						))}
+				<div className="relative z-10 flex w-full min-w-0 flex-col gap-2.5 sm:gap-3 xl:flex-row xl:items-center xl:justify-between">
+					{/* Left controls: Search input on the left + Filter Pills */}
+					<div className="flex w-full min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+						{/* Search Input (On the left, matching height of filter pills: h-10 sm:h-11) */}
+						<label className="relative block w-full min-w-0 sm:w-56 sm:flex-initial xl:w-72">
+							<Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+							<Input
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								placeholder="Search vaccines, doses, notes..."
+								aria-label="Search vaccines"
+								className="h-10 sm:h-11 w-full rounded-xl border-white/80 bg-white/75 pl-9.5 pr-8 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-rose-400 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100"
+							/>
+							{searchQuery && (
+								<button
+									type="button"
+									onClick={() => setSearchQuery("")}
+									className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+									aria-label="Clear search"
+								>
+									<X size={14} />
+								</button>
+							)}
+						</label>
+
+						{/* Filter Pills */}
+						<div className="password-filter-mode-group flex shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs">
+							{(
+								[
+									{ key: "all", label: `All (${tabCounts.total})` },
+									{ key: "upcoming", label: `Upcoming (${tabCounts.upcoming})` },
+									{ key: "completed", label: `Completed (${tabCounts.completed})` },
+									{ key: "overdue", label: `Overdue (${tabCounts.overdue})` },
+								] as const
+							).map((tab) => (
+								<button
+									key={tab.key}
+									type="button"
+									onClick={() => setFilter(tab.key)}
+									className={`password-filter-mode-option shrink-0 inline-flex h-8 sm:h-9 items-center rounded-lg border px-2.5 text-xs font-semibold transition-all ${filter === tab.key
+											? "password-filter-mode-option--active"
+											: "border-transparent text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+										}`}
+								>
+									{tab.label}
+								</button>
+							))}
+						</div>
 					</div>
 
 					{/* Actions */}
-					<div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+					<div className="flex shrink-0 items-center gap-2">
 						{vaccines.length === 0 && (
 							<Button
 								type="button"
@@ -395,7 +575,7 @@ export function VaccineTracker({
 								variant="outline"
 								onClick={handleSeedStandard}
 								disabled={submitting}
-								className="h-9 flex-1 sm:flex-initial gap-1.5 rounded-xl border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+								className="h-10 sm:h-11 flex-1 sm:flex-initial gap-1.5 rounded-xl border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
 							>
 								<ShieldCheck size={14} />
 								Load Standard Schedule
@@ -405,10 +585,12 @@ export function VaccineTracker({
 							type="button"
 							onClick={() => {
 								setEditingVaccine(null);
+								setFormVaccineName("");
+								setFormDose("Dose 1");
 								setDialogOpen(true);
 							}}
 							style={{ "--action-accent": paletteAccent } as CSSProperties}
-							className="palette-action-button h-9 flex-1 sm:flex-initial gap-1.5 rounded-xl border px-3.5 text-xs font-bold shadow-xs transition-all active:scale-95"
+							className="palette-action-button h-10 sm:h-11 flex-1 sm:flex-initial gap-1.5 rounded-xl border px-3.5 text-xs font-bold shadow-xs transition-all active:scale-95"
 						>
 							<Plus size={14} /> Add Vaccine
 						</Button>
@@ -416,133 +598,225 @@ export function VaccineTracker({
 				</div>
 			</div>
 
-			{/* Vaccine Records List (Responsive Grid: 1 col on mobile, 2 col on sm/tablet, 3 col on lg) */}
-			<div className="space-y-3">
-				{filteredVaccines.length === 0 ? (
+			{/* Vaccine Records List (Horizontal Row Cards grouped by vaccine name) */}
+			<div className="space-y-2.5">
+				{filteredGroups.length === 0 ? (
 					<div className="flex min-h-48 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
 						<span className="grid size-12 place-items-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/70 dark:text-rose-300">
 							<Syringe size={22} />
 						</span>
 						<p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-							No vaccines found in this view
+							{searchQuery ? "No vaccines matching your search" : "No vaccines found in this view"}
 						</p>
 						<p className="max-w-xs text-xs text-slate-500 dark:text-slate-400">
-							{vaccines.length === 0
+							{searchQuery
+								? `No results found for "${searchQuery}". Try a different keyword or clear search.`
+								: vaccines.length === 0
 								? "Click 'Load Standard Schedule' to import standard childhood immunizations or add custom vaccines."
 								: "Try selecting another filter above."}
 						</p>
+						{searchQuery && (
+							<button
+								type="button"
+								onClick={() => setSearchQuery("")}
+								className="mt-1 inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+							>
+								Clear search
+							</button>
+						)}
 					</div>
 				) : (
-					<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
-						{filteredVaccines.map((v) => {
-							const isCompleted = v.status === "completed";
-							const isOverdue = !isCompleted && (v.status === "overdue" || v.vaccineDate < todayStr);
+					filteredGroups.map((group) => {
+						return (
+							<article
+								key={group.vaccineName}
+								data-page-palette-preserve
+								className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-x-4"
+							>
+								{/* Left Squircle Icon */}
+								{group.isAllCompleted ? (
+									<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-emerald-50 to-emerald-100/70 text-emerald-600 shadow-xs sm:size-11 dark:from-emerald-950/60 dark:to-emerald-900/40 dark:text-emerald-400">
+										<ShieldCheck size={19} className="sm:size-[21px]" />
+									</span>
+								) : group.hasOverdue ? (
+									<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-amber-50 to-amber-100/70 text-amber-600 shadow-xs sm:size-11 dark:from-amber-950/60 dark:to-amber-900/40 dark:text-amber-400">
+										<AlertTriangle size={19} className="sm:size-[21px]" />
+									</span>
+								) : (
+									<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-rose-50 to-rose-100/70 text-rose-600 shadow-xs sm:size-11 dark:from-rose-950/60 dark:to-rose-900/40 dark:text-rose-400">
+										<Syringe size={19} className="sm:size-[21px]" />
+									</span>
+								)}
 
-							return (
-								<div
-									key={v.id}
-									className={`flex flex-col justify-between rounded-2xl border p-4 shadow-2xs transition-all hover:shadow-xs ${
-										isCompleted
-											? "border-emerald-200/80 bg-linear-to-br from-emerald-50/50 via-white to-white dark:border-emerald-950/70 dark:from-emerald-950/20 dark:via-slate-900 dark:to-slate-900"
-											: isOverdue
-											? "border-amber-200/80 bg-linear-to-br from-amber-50/50 via-white to-white dark:border-amber-950/70 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900"
-											: "border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900"
-									}`}
-								>
-									<div>
-										{/* Top Row: Name + Status Badge + Actions */}
-										<div className="flex items-start justify-between gap-2">
-											<div className="flex items-start gap-2.5 min-w-0">
-												{/* Quick Checkmark Toggle */}
-												<button
-													type="button"
-													onClick={() => handleStatusToggle(v)}
-													disabled={submitting}
-													className={`mt-0.5 grid size-7 shrink-0 place-items-center rounded-xl border transition-all ${
-														isCompleted
-															? "border-emerald-500 bg-emerald-500 text-white shadow-2xs"
-															: "border-slate-300 bg-white hover:border-emerald-400 dark:border-slate-700 dark:bg-slate-800"
-													}`}
-													title={isCompleted ? "Completed! Tap to mark upcoming" : "Tap to mark completed"}
-													aria-label={isCompleted ? "Completed" : "Mark as completed"}
-												>
-													{isCompleted && <CheckCircle2 size={16} />}
-												</button>
-
-												<div className="min-w-0">
-													<h4 className="truncate font-bold text-slate-900 dark:text-slate-100 text-sm">
-														{v.vaccineName}
-													</h4>
-													<div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-														{v.dose && (
-															<span className="rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-																{v.dose}
-															</span>
-														)}
-														<span
-															className={`rounded-md px-2 py-0.5 text-[11px] font-bold capitalize ${
-																isCompleted
-																	? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300"
-																	: isOverdue
-																	? "bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300"
-																	: "bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300"
-															}`}
-														>
-															{isCompleted ? "Completed" : isOverdue ? "Overdue" : "Upcoming"}
-														</span>
-													</div>
-												</div>
-											</div>
-
-											{/* Edit / Delete Actions */}
-											<div className="flex items-center gap-0.5">
-												<button
-													type="button"
-													onClick={() => {
-														setEditingVaccine(v);
-														setDialogOpen(true);
-													}}
-													className="inline-flex size-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
-													title="Edit vaccine"
-												>
-													<Edit3 size={13} />
-												</button>
-												<button
-													type="button"
-													onClick={() => handleDelete(v.id)}
-													disabled={submitting}
-													className="inline-flex size-7 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950 dark:hover:text-rose-400"
-													title="Delete vaccine"
-												>
-													<Trash2 size={13} />
-												</button>
-											</div>
-										</div>
-
-										{/* Notes excerpt if any */}
-										{v.notes && (
-											<p className="mt-2 text-xs text-slate-600 dark:text-slate-400 italic">
-												&ldquo;{v.notes}&rdquo;
-											</p>
-										)}
-									</div>
-
-									{/* Footer Meta */}
-									<div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-										<span className="inline-flex items-center gap-1">
-											<Calendar size={12} className="text-slate-400" />
-											{v.vaccineDate}
-										</span>
-										{v.administeredBy && (
-											<span className="truncate max-w-[130px]" title={v.administeredBy}>
-												By {v.administeredBy}
+								{/* Title and Subtitle Metadata */}
+								<div className="min-w-0">
+									<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+										<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
+											{group.vaccineName}
+										</p>
+										{group.isAllCompleted ? (
+											<span className="inline-flex shrink-0 items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+												Completed ({group.completedDoses}/{group.totalDoses})
+											</span>
+										) : group.hasOverdue ? (
+											<span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+												Needs Attention
+											</span>
+										) : (
+											<span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+												{group.completedDoses} of {group.totalDoses} Doses
 											</span>
 										)}
 									</div>
+
+									<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+										{group.nextDose ? (
+											<span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+												<Calendar size={12} className="text-slate-400" />
+												{group.isAllCompleted ? "Last:" : "Next:"} {group.nextDose.dose ? `${group.nextDose.dose} · ` : ""}{group.nextDose.vaccineDate}
+											</span>
+										) : null}
+										{group.administeredBy ? (
+											<>
+												<span aria-hidden="true">·</span>
+												<span className="truncate max-w-[180px]" title={group.administeredBy}>
+													By {group.administeredBy}
+												</span>
+											</>
+										) : null}
+										{group.notes ? (
+											<>
+												<span aria-hidden="true">·</span>
+												<span className="max-w-[200px] truncate italic sm:max-w-xs md:max-w-sm">
+													&ldquo;{group.notes}&rdquo;
+												</span>
+											</>
+										) : null}
+									</div>
 								</div>
-							);
-						})}
-					</div>
+
+								{/* Right Side: Divider, Doses, and Action Pill */}
+								<div className="col-span-full flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-800">
+									{/* Doses List with quick check toggle */}
+									<div className="flex flex-wrap items-center gap-1.5">
+										{group.doses.map((doseItem) => {
+											const isCompleted = doseItem.status === "completed";
+											const isOverdue = !isCompleted && (doseItem.status === "overdue" || doseItem.vaccineDate < todayStr);
+
+											return (
+												<div
+													key={doseItem.id}
+													className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-medium transition-all ${
+														isCompleted
+															? "border-emerald-200/90 bg-emerald-50/70 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+															: isOverdue
+															? "border-amber-200/90 bg-amber-50/70 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300"
+															: "border-slate-200 bg-white/80 text-slate-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300"
+													}`}
+												>
+													<button
+														type="button"
+														onClick={() => handleStatusToggle(doseItem)}
+														disabled={submitting}
+														className={`grid size-4 place-items-center rounded-md border transition-all ${
+															isCompleted
+																? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
+																: "border-slate-300 bg-white hover:border-emerald-400 dark:border-slate-600 dark:bg-slate-800"
+														}`}
+														title={isCompleted ? `${doseItem.dose || "Dose"}: Completed (tap to toggle)` : `${doseItem.dose || "Dose"}: Upcoming (tap to complete)`}
+														aria-label={isCompleted ? `Mark ${doseItem.dose || "Dose"} as upcoming` : `Mark ${doseItem.dose || "Dose"} as completed`}
+													>
+														{isCompleted && <CheckCircle2 size={11} strokeWidth={2.5} />}
+													</button>
+
+													<button
+														type="button"
+														onClick={() => {
+															setEditingVaccine(doseItem);
+															setFormVaccineName(doseItem.vaccineName);
+															setFormDose(doseItem.dose || "Dose 1");
+															setDialogOpen(true);
+														}}
+														className="font-semibold hover:underline text-left cursor-pointer"
+														title="Click to edit dose"
+													>
+														{doseItem.dose || "Dose"}
+													</button>
+
+													<span
+														className={`inline-flex items-center rounded-full px-1.5 py-0.2 text-[10px] font-semibold ${
+															isCompleted
+																? "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+																: isOverdue
+																? "bg-amber-100/80 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
+																: "bg-sky-100/80 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300"
+														}`}
+													>
+														{isCompleted ? "Done" : isOverdue ? "Overdue" : doseItem.vaccineDate}
+													</span>
+												</div>
+											);
+										})}
+									</div>
+
+									{/* Actions Pill Group (Add Dose, Edit, Delete) */}
+									<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-sm"
+											disabled={submitting}
+											className="budget-bill-action size-7.5 rounded-xl text-slate-500 transition-colors hover:text-slate-900 sm:size-8 dark:text-slate-400 dark:hover:text-white"
+											aria-label={`Add next dose for ${group.vaccineName}`}
+											title="Add next dose"
+											onClick={() => {
+												setFormVaccineName(group.vaccineName);
+												setFormDose(`Dose ${group.totalDoses + 1}`);
+												setEditingVaccine(null);
+												setDialogOpen(true);
+											}}
+										>
+											<Plus size={14} className="sm:size-[15px]" />
+										</Button>
+
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-sm"
+											disabled={submitting}
+											className="budget-bill-action budget-bill-action--edit size-7.5 rounded-xl text-slate-500 transition-colors sm:size-8 dark:text-slate-400"
+											aria-label={`Edit ${group.vaccineName}`}
+											title="Edit vaccine details"
+											onClick={() => {
+												const target = group.nextDose ?? group.doses[0];
+												if (target) {
+													setEditingVaccine(target);
+													setFormVaccineName(target.vaccineName);
+													setFormDose(target.dose || "Dose 1");
+												}
+												setDialogOpen(true);
+											}}
+										>
+											<Pencil size={14} className="sm:size-[15px]" />
+										</Button>
+
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-sm"
+											disabled={submitting}
+											className="budget-bill-action budget-bill-action--delete size-7.5 rounded-xl text-slate-400 transition-colors sm:size-8 dark:text-slate-400"
+											aria-label={`Delete ${group.vaccineName}`}
+											title="Delete all doses for this vaccine"
+											onClick={() => handleDeleteGroup(group)}
+										>
+											<Trash2 size={14} className="sm:size-[15px]" />
+										</Button>
+									</div>
+								</div>
+							</article>
+						);
+					})
 				)}
 			</div>
 
@@ -560,18 +834,60 @@ export function VaccineTracker({
 						icon={<Syringe size={18} />}
 						closeLabel="Close dialog"
 					/>
-					<form onSubmit={handleSubmit} className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto">
-						<div className="space-y-3.5 p-5 sm:p-6 text-sm">
-							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
-								<span>Vaccine Name</span>
+					<form
+						key={editingVaccine ? editingVaccine.id : `${formVaccineName}-${formDose}-${dialogOpen}`}
+						onSubmit={handleSubmit}
+						className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto"
+					>
+						<div className="space-y-4 p-5 sm:p-6 text-sm">
+							<div className="space-y-1.5">
+								<label className="block text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									Vaccine Name
+								</label>
 								<Input
 									name="vaccineName"
 									required
-									defaultValue={editingVaccine?.vaccineName ?? ""}
+									list="past-vaccine-options"
+									value={formVaccineName}
+									onChange={(e) => handleVaccineNameChange(e.target.value)}
 									placeholder="e.g. DTaP-HepB-IPV (Hexavalent)"
+									autoComplete="off"
 									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 								/>
-							</label>
+								<datalist id="past-vaccine-options">
+									{pastVaccineOptions.map((name) => (
+										<option key={name} value={name} />
+									))}
+								</datalist>
+
+								{/* Quick suggestions from past / standard vaccines */}
+								{pastVaccineOptions.length > 0 && !editingVaccine && (
+									<div className="space-y-1 pt-1">
+										<span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+											Quick select past / recommended:
+										</span>
+										<div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+											{pastVaccineOptions.slice(0, 8).map((name) => {
+												const active = formVaccineName.trim().toLowerCase() === name.toLowerCase();
+												return (
+													<button
+														key={name}
+														type="button"
+														onClick={() => handleVaccineNameChange(name)}
+														className={`rounded-lg border px-2 py-0.5 text-[11px] transition-all cursor-pointer ${
+															active
+																? "border-rose-400 bg-rose-50 font-bold text-rose-700 shadow-2xs dark:border-rose-700 dark:bg-rose-950/70 dark:text-rose-300"
+																: "border-slate-200 bg-white/80 font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300"
+														}`}
+													>
+														{name}
+													</button>
+												);
+											})}
+										</div>
+									</div>
+								)}
+							</div>
 
 							<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
 								<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
@@ -585,15 +901,55 @@ export function VaccineTracker({
 									/>
 								</label>
 
-								<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
-									<span>Dose</span>
+								<div className="space-y-1.5">
+									<div className="flex items-center justify-between">
+										<span className="text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">Dose</span>
+										{formVaccineName && !editingVaccine && (
+											<span className="text-[10px] text-slate-500 dark:text-slate-400">
+												{(() => {
+													const count = vaccines.filter(
+														(v) => v.vaccineName.trim().toLowerCase() === formVaccineName.trim().toLowerCase()
+													).length;
+													return count > 0 ? `${count} past dose${count > 1 ? "s" : ""} on record` : "New vaccine";
+												})()}
+											</span>
+										)}
+									</div>
 									<Input
 										name="dose"
+										list="dose-options"
+										value={formDose}
+										onChange={(e) => setFormDose(e.target.value)}
 										placeholder="e.g. Dose 1, Booster"
-										defaultValue={editingVaccine?.dose ?? "Dose 1"}
+										autoComplete="off"
 										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>
-								</label>
+									<datalist id="dose-options">
+										<option value="Birth dose" />
+										<option value="Dose 1" />
+										<option value="Dose 2" />
+										<option value="Dose 3" />
+										<option value="Dose 4" />
+										<option value="Booster 1" />
+										<option value="Booster 2" />
+									</datalist>
+									<div className="flex flex-wrap gap-1 pt-0.5">
+										{["Dose 1", "Dose 2", "Dose 3", "Booster 1", "Booster 2"].map((d) => (
+											<button
+												key={d}
+												type="button"
+												onClick={() => setFormDose(d)}
+												className={`rounded-md border px-2 py-0.5 text-[10px] transition-all cursor-pointer ${
+													formDose.toLowerCase() === d.toLowerCase()
+														? "border-rose-400 bg-rose-50 font-bold text-rose-700 dark:border-rose-700 dark:bg-rose-950/70 dark:text-rose-300"
+														: "border-slate-200 bg-white/80 font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300"
+												}`}
+											>
+												{d}
+											</button>
+										))}
+									</div>
+								</div>
 							</div>
 
 							<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
@@ -634,36 +990,55 @@ export function VaccineTracker({
 							</label>
 						</div>
 
-						<div className="palette-dialog-footer sticky bottom-0 flex flex-wrap justify-end gap-2 p-4 sm:px-6">
-							<Button
-								data-page-palette-secondary
-								type="button"
-								disabled={submitting}
-								variant="outline"
-								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
-								onClick={() => setDialogOpen(false)}
-							>
-								Cancel
-							</Button>
-							<Button
-								type="submit"
-								variant="ghost"
-								disabled={submitting}
-								style={{ "--action-accent": paletteAccent } as CSSProperties}
-								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
-							>
-								{submitting ? (
-									<>
-										<Loader2 size={16} className="animate-spin shrink-0" />
-										<span>Saving...</span>
-									</>
-								) : (
-									<>
-										{editingVaccine ? null : <Plus size={16} className="shrink-0" />}
-										<span>{editingVaccine ? "Save changes" : "Schedule vaccine"}</span>
-									</>
+						<div className="palette-dialog-footer sticky bottom-0 flex flex-wrap items-center justify-between gap-2 p-4 sm:px-6">
+							<div>
+								{editingVaccine && (
+									<Button
+										type="button"
+										variant="ghost"
+										disabled={submitting}
+										className="h-9 gap-1.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/50"
+										onClick={async () => {
+											await handleDelete(editingVaccine.id);
+											setDialogOpen(false);
+											setEditingVaccine(null);
+										}}
+									>
+										<Trash2 size={14} /> Delete this dose
+									</Button>
 								)}
-							</Button>
+							</div>
+							<div className="flex flex-wrap items-center gap-2">
+								<Button
+									data-page-palette-secondary
+									type="button"
+									disabled={submitting}
+									variant="outline"
+									className="palette-dialog-footer-button border font-medium transition-colors duration-150"
+									onClick={() => setDialogOpen(false)}
+								>
+									Cancel
+								</Button>
+								<Button
+									type="submit"
+									variant="ghost"
+									disabled={submitting}
+									style={{ "--action-accent": paletteAccent } as CSSProperties}
+									className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
+								>
+									{submitting ? (
+										<>
+											<Loader2 size={16} className="animate-spin shrink-0" />
+											<span>Saving...</span>
+										</>
+									) : (
+										<>
+											{editingVaccine ? null : <Plus size={16} className="shrink-0" />}
+											<span>{editingVaccine ? "Save changes" : "Schedule vaccine"}</span>
+										</>
+									)}
+								</Button>
+							</div>
 						</div>
 					</form>
 				</DialogContent>

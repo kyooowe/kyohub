@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { usePathname } from "next/navigation";
-import { Baby, Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, LayoutGrid, List, Moon, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
+import { Baby, Bell, CalendarDays, ChartNoAxesColumn, Check, ChevronDown, ChevronRight, Cloud, CloudSun, Handshake, Heart, House, KeyRound, LaptopMinimal, Layers, LayoutGrid, List, Moon, Mountain, Palette, ReceiptText, RotateCcw, Settings2, ShoppingCart, Sparkles, Sprout, Sun, Sunrise, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
@@ -47,6 +47,11 @@ const paletteOptionDetails: Partial<Record<NamedPagePalette, { icon: LucideIcon;
 	pinkCloud: { icon: Heart, description: "Soft pink tones with a gentle warmth.", tone: "Pink cloud pastel", iconColor: "text-[#713047]" },
 	babyBlue: { icon: CloudSun, description: "Light, airy blue tones.", tone: "Baby blue pastel", iconColor: "text-[#2f5278]" },
 	apricotCream: { icon: Sunrise, description: "Soft peachy tones with a creamy finish.", tone: "Apricot cream pastel", iconColor: "text-[#77452c]" },
+	pastelHorizon: { icon: Mountain, description: "Dreamy periwinkle, ethereal lavender, and blush pink tones.", tone: "Pastel horizon", iconColor: "text-[#7967A8]" },
+	pastelAurora: { icon: Sparkles, description: "Celestial periwinkle, mystic lilac, and aurora rose.", tone: "Pastel aurora", iconColor: "text-[#655896]" },
+	pastelDawn: { icon: Sunrise, description: "Warm peach dawn, petal rose, and misty lavender.", tone: "Pastel dawn", iconColor: "text-[#9B536E]" },
+	pastelMist: { icon: Cloud, description: "Powdery periwinkle and soft morning mountain mist.", tone: "Pastel mist", iconColor: "text-[#5F568C]" },
+	blushPeriwinkle: { icon: Layers, description: "Translucent rose quartz, mauve, and soft periwinkle.", tone: "Blush periwinkle", iconColor: "text-[#964264]" },
 };
 
 function SectionHeading({

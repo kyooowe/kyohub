@@ -8,7 +8,6 @@ import {
 	Info,
 	Loader2,
 	Droplets,
-	Sparkles,
 	Search,
 	Grid2X2,
 	Baby,
@@ -17,6 +16,7 @@ import {
 	ArrowRight,
 	ShieldCheck,
 	Smile,
+	Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -485,95 +485,114 @@ export function StoolCounter({
 						</p>
 					</div>
 				) : (
-					<div className="grid grid-cols-1 gap-2.5 sm:gap-3">
+					<div className="space-y-2.5">
 						{displayedLogs.map((log) => {
 							const date = new Date(log.loggedAt);
 							const colorMeta = stoolColorMetadata[log.color] || stoolColorMetadata.yellow;
 							const consistencyMeta = stoolConsistencyMetadata[log.consistency] || stoolConsistencyMetadata.soft;
 
 							return (
-								<div
+								<article
 									key={log.id}
-									className="group flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-4 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+									data-page-palette-preserve
+									className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-x-4"
 								>
-									<div className="flex items-start gap-3">
-										{/* Icon Badge */}
-										<div
-											className={`grid size-10 shrink-0 place-items-center rounded-xl text-base ${
-												log.type === "stool"
-													? "bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300"
-													: log.type === "wet"
-													? "bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300"
-													: "bg-purple-100 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
-											}`}
-										>
-											{log.type === "stool" ? (
-												<Sparkles size={18} />
-											) : log.type === "wet" ? (
-												<Droplets size={18} />
+									{/* Left Squircle Icon */}
+									{log.type === "wet" ? (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-sky-50 to-sky-100/70 text-sky-600 shadow-xs sm:size-11 dark:from-sky-950/60 dark:to-sky-900/40 dark:text-sky-400">
+											<Droplets size={19} className="sm:size-[21px]" />
+										</span>
+									) : log.type === "stool" ? (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-amber-50 to-amber-100/70 text-amber-600 shadow-xs sm:size-11 dark:from-amber-950/60 dark:to-amber-900/40 dark:text-amber-400">
+											<BabyDiaperIcon size={19} className="sm:size-[21px]" />
+										</span>
+									) : (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-purple-50 to-purple-100/70 text-purple-600 shadow-xs sm:size-11 dark:from-purple-950/60 dark:to-purple-900/40 dark:text-purple-400">
+											<Baby size={19} className="sm:size-[21px]" />
+										</span>
+									)}
+
+									{/* Title and Subtitle Metadata */}
+									<div className="min-w-0">
+										<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+											<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
+												{log.type === "both" ? "Wet + Stool Diaper" : log.type === "stool" ? "Dirty Diaper" : "Wet Diaper"}
+											</p>
+											{log.type === "wet" ? (
+												<span className="inline-flex shrink-0 items-center rounded-full bg-sky-50 px-2.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+													Wet Only
+												</span>
+											) : log.type === "stool" ? (
+												<span className="inline-flex shrink-0 items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+													Dirty Diaper
+												</span>
 											) : (
-												<Baby size={18} />
+												<span className="inline-flex shrink-0 items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-[10px] font-semibold text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
+													Wet + Dirty
+												</span>
 											)}
 										</div>
 
-										{/* Details */}
-										<div className="min-w-0">
-											<div className="flex flex-wrap items-center gap-1.5">
-												<span className="text-sm font-bold capitalize text-slate-900 dark:text-slate-100">
-													{log.type === "both" ? "Wet + Stool" : log.type} Diaper
-												</span>
-												<span className="text-slate-300 dark:text-slate-700">•</span>
-												<span className="text-xs text-slate-500 dark:text-slate-400">
-													{date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-												</span>
-												<span className="text-slate-300 dark:text-slate-700">•</span>
-												<span className="text-xs text-slate-500 dark:text-slate-400">
-													{date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
-												</span>
-											</div>
+										<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+											<span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+												<Clock size={12} className="text-slate-400" />
+												{date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+											</span>
+											<span aria-hidden="true">·</span>
+											<span className="inline-flex items-center gap-1">
+												<Calendar size={12} className="text-slate-400" />
+												{date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+											</span>
+											{log.notes ? (
+												<>
+													<span aria-hidden="true">·</span>
+													<span className="max-w-[200px] truncate italic sm:max-w-xs md:max-w-sm">
+														&ldquo;{log.notes}&rdquo;
+													</span>
+												</>
+											) : null}
+										</div>
+									</div>
 
-											{/* Stool details if stool/both */}
+									{/* Right Side: Divider, Attribute Pills, and Action Pill */}
+									<div className="col-span-full flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-800">
+										{/* Stool details pills */}
+										<div className="flex flex-wrap items-center gap-1.5">
 											{(log.type === "stool" || log.type === "both") && (
-												<div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
-													{/* Color swatch */}
-													<span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-														<span className={`size-2.5 rounded-full ${colorMeta.swatch}`} />
-														{colorMeta.label}
-													</span>
-
-													{/* Consistency */}
-													<span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-														{consistencyMeta.label}
-													</span>
-
-													{/* Amount */}
-													<span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] capitalize text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-														{log.amount} amount
-													</span>
-												</div>
+												<span className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-medium text-slate-800 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
+													<span className={`size-2.5 rounded-full border border-black/10 ${colorMeta.swatch}`} />
+													<span>{colorMeta.label}</span>
+												</span>
 											)}
 
-											{log.notes && (
-												<p className="mt-1 text-xs text-slate-600 dark:text-slate-300 italic">
-													&ldquo;{log.notes}&rdquo;
-												</p>
+											{(log.type === "stool" || log.type === "both") && (
+												<span className="inline-flex items-center rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
+													{consistencyMeta.label}
+												</span>
 											)}
+
+											<span className="inline-flex items-center rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-medium capitalize text-slate-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-300">
+												{log.amount} amount
+											</span>
+										</div>
+
+										{/* Action Pill Group */}
+										<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												disabled={submitting}
+												className="budget-bill-action budget-bill-action--delete size-7.5 rounded-xl text-slate-400 transition-colors sm:size-8 dark:text-slate-400"
+												aria-label="Delete diaper log"
+												title="Delete diaper log"
+												onClick={() => handleDelete(log.id)}
+											>
+												<Trash2 size={14} className="sm:size-[15px]" />
+											</Button>
 										</div>
 									</div>
-
-									{/* Delete Action */}
-									<div className="flex self-end sm:self-center">
-										<button
-											type="button"
-											onClick={() => handleDelete(log.id)}
-											disabled={submitting}
-											aria-label="Delete diaper log"
-											className="inline-flex size-8 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/70 dark:hover:text-rose-300"
-										>
-											<Trash2 size={14} />
-										</button>
-									</div>
-								</div>
+								</article>
 							);
 						})}
 					</div>
@@ -585,7 +604,7 @@ export function StoolCounter({
 				<DialogContent
 					pagePalette={dialogPalette}
 					data-page-palette-surface
-					className="palette-dialog-panel max-h-[92vh] max-w-lg overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+					className="palette-dialog-panel flex max-h-[90dvh] max-w-lg flex-col overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
 				>
 					<PaletteDialogHeader
 						eyebrow="DAILY CARE"
@@ -594,7 +613,7 @@ export function StoolCounter({
 						icon={<Droplets size={18} />}
 						closeLabel="Close dialog"
 					/>
-					<form onSubmit={handleDetailedSubmit} className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto">
+					<form onSubmit={handleDetailedSubmit} className="flex flex-1 min-h-0 flex-col overflow-y-auto">
 						<div className="space-y-4 p-5 sm:p-6 text-sm">
 							{/* Diaper Type Selection Buttons */}
 							<div className="space-y-1.5">
@@ -755,7 +774,7 @@ export function StoolCounter({
 				<DialogContent
 					pagePalette={dialogPalette}
 					data-page-palette-surface
-					className="palette-dialog-panel max-h-[92vh] max-w-xl overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+					className="palette-dialog-panel flex max-h-[90dvh] max-w-xl flex-col overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
 				>
 					<PaletteDialogHeader
 						eyebrow="PEDIATRIC HEALTH REFERENCE"
@@ -764,7 +783,7 @@ export function StoolCounter({
 						icon={<HelpCircle size={18} />}
 						closeLabel="Close guide"
 					/>
-					<div className="max-h-[calc(92vh-85px)] overflow-y-auto p-5 sm:p-6 space-y-3.5 text-xs sm:text-sm">
+					<div className="flex-1 min-h-0 overflow-y-auto p-5 sm:p-6 pb-6 space-y-3.5 text-xs sm:text-sm">
 						{(Object.keys(stoolColorMetadata) as StoolColor[]).map((cKey) => {
 							const meta = stoolColorMetadata[cKey];
 							const isAlert = cKey === "black" || cKey === "clay";
@@ -799,6 +818,18 @@ export function StoolCounter({
 								<li>Accompanied by high fever, lethargy, or refusal to feed</li>
 							</ul>
 						</div>
+					</div>
+
+					<div className="palette-dialog-footer sticky bottom-0 flex justify-end gap-2 p-4 sm:px-6">
+						<Button
+							type="button"
+							variant="ghost"
+							onClick={() => setGuideOpen(false)}
+							style={{ "--action-accent": paletteAccent } as CSSProperties}
+							className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
+						>
+							Close guide
+						</Button>
 					</div>
 				</DialogContent>
 			</Dialog>
