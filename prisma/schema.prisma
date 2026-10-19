@@ -67,3 +67,89 @@ model AppSetting {
   id    String @id
   value String
 }
+
+model BabyProfile {
+  id                String           @id @default(uuid())
+  name              String
+  birthDate         String
+  gender            String           @default("unspecified")
+  bloodType         String           @default("")
+  birthWeight       String           @default("")
+  birthHeight       String           @default("")
+  pediatrician      String           @default("")
+  pediatricianPhone String           @default("")
+  allergies         String           @default("")
+  notes             String           @default("")
+  createdAt         TimestamptzString @default(now())
+}
+
+model BabyStoolLog {
+  id          String           @id @default(uuid())
+  loggedAt    TimestamptzString @default(now())
+  type        String           @default("stool")
+  consistency String           @default("soft")
+  color       String           @default("yellow")
+  amount      String           @default("medium")
+  notes       String           @default("")
+  createdAt   TimestamptzString @default(now())
+
+  @@index([type])
+}
+
+model BabyVaccine {
+  id             String           @id @default(uuid())
+  vaccineName    String
+  vaccineDate    String
+  status         String           @default("upcoming")
+  dose           String           @default("")
+  administeredBy String           @default("")
+  notes          String           @default("")
+  createdAt      TimestamptzString @default(now())
+
+  @@index([vaccineDate])
+  @@index([status])
+}
+
+model BabyMedicine {
+  id           String           @id @default(uuid())
+  name         String
+  dosage       String
+  instructions String
+  startDate    String
+  endDate      String           @default("")
+  frequency    String           @default("")
+  status       String           @default("active")
+  notes        String           @default("")
+  createdAt    TimestamptzString @default(now())
+
+  @@index([status])
+}
+
+model BabyGrowth {
+  id                  String           @id @default(uuid())
+  recordedDate        String
+  monthAge            Int
+  heightCm            Float
+  weightKg            Float
+  headCircumferenceCm Float?
+  notes               String           @default("")
+  createdAt           TimestamptzString @default(now())
+
+  @@index([recordedDate])
+  @@index([monthAge])
+}
+
+model BabyMedicalNote {
+  id           String           @id @default(uuid())
+  noteDate     String
+  title        String           @default("")
+  symptoms     String
+  doctorAdvice String
+  doctorName   String           @default("")
+  clinicName   String           @default("")
+  category     String           @default("general")
+  createdAt    TimestamptzString @default(now())
+
+  @@index([noteDate])
+}
+

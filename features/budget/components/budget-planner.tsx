@@ -9,6 +9,7 @@ import { createBudgetBill, deleteBudgetBill, getBudgetData, moveBudgetBill, save
 import { BudgetBillList } from "@/features/budget/components/budget-bill-list";
 import { BudgetExpenseChart } from "@/features/budget/components/budget-expense-chart";
 import { BudgetCutoffBreakdown } from "@/features/budget/components/budget-cutoff-breakdown";
+import { BudgetAlert } from "@/features/budget/components/budget-alert";
 import { BudgetForms } from "@/features/budget/components/budget-forms";
 import { BudgetGroceryDialog } from "@/features/budget/components/budget-grocery-dialog";
 import { BudgetHeader } from "@/features/budget/components/budget-header";
@@ -62,6 +63,20 @@ export function BudgetPlanner({
 	const [pendingPaymentKeys, setPendingPaymentKeys] = useState<string[]>([]);
 	const [deletingBillId, setDeletingBillId] = useState<string | null>(null);
 	const [error, setError] = useState(initialError);
+	const [errorTimestamp, setErrorTimestamp] = useState(0);
+
+	const showFormError = (msg: string) => {
+		setError(msg);
+		setErrorTimestamp(Date.now());
+	};
+
+	useEffect(() => {
+		if (!error) return;
+		const timer = setTimeout(() => {
+			setError("");
+		}, 3000);
+		return () => clearTimeout(timer);
+	}, [error, errorTimestamp]);
 
 	const budget = budgets.find((item) => item.monthKey === selectedMonth);
 	const monthBills = billsForMonth(bills, selectedMonth);
@@ -213,7 +228,7 @@ export function BudgetPlanner({
 			setError("");
 			setBudgetDialogOpen(false);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "Could not save monthly budget.");
+			showFormError(cause instanceof Error ? cause.message : "Could not save monthly budget.");
 		} finally {
 			setSubmitting(false);
 		}
@@ -234,7 +249,7 @@ export function BudgetPlanner({
 			setError("");
 			setBudgetDialogOpen(false);
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "Could not save cutoff budgets.");
+			showFormError(cause instanceof Error ? cause.message : "Could not save cutoff budgets.");
 		} finally {
 			setSubmitting(false);
 		}
@@ -279,7 +294,7 @@ export function BudgetPlanner({
 		event.preventDefault();
 		const amount = centsFromInput(billAmount);
 		if (amount === null || !billTitle.trim()) {
-			setError("Enter a bill name and a valid amount.");
+			showFormError("Enter a bill name and a valid amount.");
 			return;
 		}
 		const title = billTitle.trim();
@@ -289,7 +304,7 @@ export function BudgetPlanner({
 			bill.id !== editingBillId && bill.category !== "daily-expense" && bill.category !== "grocery" && bill.title.trim().toLowerCase() === title.toLowerCase(),
 		);
 		if (duplicate) {
-			toast.error("A bill with this name already exists.");
+			showFormError("A bill with this name already exists.");
 			return;
 		}
 		const billBeingEdited = bills.find((bill) => bill.id === editingBillId);
@@ -318,7 +333,7 @@ export function BudgetPlanner({
 			await load();
 			setError("");
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : `Could not ${editingBillId ? "update" : "add"} bill.`);
+			showFormError(cause instanceof Error ? cause.message : `Could not ${editingBillId ? "update" : "add"} bill.`);
 		} finally {
 			setSubmitting(false);
 		}
@@ -384,7 +399,7 @@ export function BudgetPlanner({
 			setError("");
 			return true;
 		} catch (cause) {
-			setError(cause instanceof Error ? cause.message : "Could not move bill.");
+			showFormError(cause instanceof Error ? cause.message : "Could not move bill.");
 			return false;
 		} finally {
 			setSubmitting(false);
@@ -392,7 +407,11 @@ export function BudgetPlanner({
 	}
 
 	return <>
-		{error && <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</div>}
+		{error && !billDialogOpen && !budgetDialogOpen && (
+			<div className="mb-4">
+				<BudgetAlert message={error} onDismiss={() => setError("")} />
+			</div>
+		)}
 		<BudgetHeader selectedMonth={selectedMonth} onSelectMonth={selectMonth} />
 		<BudgetSummary
 			selectedMonth={selectedMonth}
@@ -432,15 +451,20 @@ export function BudgetPlanner({
 			editingBill={Boolean(editingBillId)}
 			submitting={submitting}
 			error={error}
+			onClearError={() => setError("")}
 			billFormRef={billFormRef}
 			onSubmitBill={submitBill}
 			onCancelBill={resetBillForm}
 			budgetDialogOpen={budgetDialogOpen}
-			onBudgetDialogOpenChange={setBudgetDialogOpen}
+			onBudgetDialogOpenChange={(open) => {
+				setBudgetDialogOpen(open);
+				if (!open) setError("");
+			}}
 			billDialogOpen={billDialogOpen}
 			onBillDialogOpenChange={(open) => {
 				setBillDialogOpen(open);
 				if (!open && editingBillId) resetBillForm();
+				if (!open) setError("");
 			}}
 		/>
 		<div className="space-y-4">

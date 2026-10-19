@@ -60,13 +60,13 @@ function GroceryForm({
 					className="h-10 border-blue-200 bg-white text-slate-900 placeholder:text-slate-400 shadow-sm transition focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 				/>
 			</label>
-			<div className="flex flex-wrap justify-end gap-2 border-t border-blue-100 pt-4 dark:border-slate-700">
+			<div className="palette-dialog-footer -mx-6 -mb-5 mt-5 flex flex-wrap justify-end gap-2 p-4 sm:px-6">
 				<Button
 					data-page-palette-secondary
 					type="button"
 					disabled={submitting}
 					variant="outline"
-					className="palette-dialog-footer-button border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+					className="palette-dialog-footer-button border font-medium transition-colors duration-150"
 					onClick={() => onOpenChange(false)}
 				>
 					Cancel
@@ -77,8 +77,17 @@ function GroceryForm({
 					disabled={submitting}
 					className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
 				>
-					{submitting && <Loader2 size={16} className="animate-spin" />}
-					{entry ? "Save changes" : <><Plus size={16} />Add item</>}
+					{submitting ? (
+						<>
+							<Loader2 size={16} className="animate-spin shrink-0" />
+							<span>Saving...</span>
+						</>
+					) : (
+						<>
+							{entry ? null : <Plus size={16} className="shrink-0" />}
+							<span>{entry ? "Save changes" : "Add item"}</span>
+						</>
+					)}
 				</Button>
 			</div>
 		</form>

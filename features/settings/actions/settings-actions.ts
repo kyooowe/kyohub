@@ -2,7 +2,7 @@
 
 import { db } from "@/prisma/db";
 import { requireAuth } from "@/features/auth/lib/session";
-import { defaultSettings, parseAppSettings, type AppSettings } from "@/components/settings/settings-model";
+import { defaultSettings, normalizeAppSettings, parseAppSettings, type AppSettings } from "@/components/settings/settings-model";
 
 const sharedSettingsId = "shared";
 
@@ -12,7 +12,7 @@ export async function fetchAppSettings(): Promise<{ settings: AppSettings; isSto
 	if (!row) return { settings: defaultSettings, isStored: false };
 
 	try {
-		return { settings: parseAppSettings(JSON.parse(row.value)), isStored: true };
+		return { settings: normalizeAppSettings(JSON.parse(row.value)), isStored: true };
 	} catch (error) {
 		throw new Error("Could not load saved settings from the database.", { cause: error });
 	}

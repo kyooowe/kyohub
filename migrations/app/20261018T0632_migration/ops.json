@@ -1,0 +1,509 @@
+[
+  {
+    "id": "table.BabyGrowth",
+    "label": "Create table \"BabyGrowth\"",
+    "summary": "Creates table \"BabyGrowth\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyGrowth"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyGrowth\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyGrowth\"",
+        "sql": "CREATE TABLE \"public\".\"BabyGrowth\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"headCircumferenceCm\" float8,\n  \"heightCm\" float8 NOT NULL,\n  \"id\" text NOT NULL,\n  \"monthAge\" int4 NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"recordedDate\" text NOT NULL,\n  \"weightKg\" float8 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyGrowth\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BabyMedicalNote",
+    "label": "Create table \"BabyMedicalNote\"",
+    "summary": "Creates table \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyMedicalNote\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicalNote\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyMedicalNote\"",
+        "sql": "CREATE TABLE \"public\".\"BabyMedicalNote\" (\n  \"category\" text DEFAULT 'general' NOT NULL,\n  \"clinicName\" text DEFAULT '' NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"doctorAdvice\" text NOT NULL,\n  \"doctorName\" text DEFAULT '' NOT NULL,\n  \"id\" text NOT NULL,\n  \"noteDate\" text NOT NULL,\n  \"symptoms\" text NOT NULL,\n  \"title\" text DEFAULT '' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyMedicalNote\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicalNote\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BabyMedicine",
+    "label": "Create table \"BabyMedicine\"",
+    "summary": "Creates table \"BabyMedicine\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyMedicine"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyMedicine\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicine\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyMedicine\"",
+        "sql": "CREATE TABLE \"public\".\"BabyMedicine\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dosage\" text NOT NULL,\n  \"endDate\" text DEFAULT '' NOT NULL,\n  \"frequency\" text DEFAULT '' NOT NULL,\n  \"id\" text NOT NULL,\n  \"instructions\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"startDate\" text NOT NULL,\n  \"status\" text DEFAULT 'active' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyMedicine\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicine\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BabyProfile",
+    "label": "Create table \"BabyProfile\"",
+    "summary": "Creates table \"BabyProfile\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyProfile"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyProfile\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyProfile\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyProfile\"",
+        "sql": "CREATE TABLE \"public\".\"BabyProfile\" (\n  \"allergies\" text DEFAULT '' NOT NULL,\n  \"birthDate\" text NOT NULL,\n  \"birthHeight\" text DEFAULT '' NOT NULL,\n  \"birthWeight\" text DEFAULT '' NOT NULL,\n  \"bloodType\" text DEFAULT '' NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"gender\" text DEFAULT 'unspecified' NOT NULL,\n  \"id\" text NOT NULL,\n  \"name\" text NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"pediatrician\" text DEFAULT '' NOT NULL,\n  \"pediatricianPhone\" text DEFAULT '' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyProfile\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyProfile\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BabyStoolLog",
+    "label": "Create table \"BabyStoolLog\"",
+    "summary": "Creates table \"BabyStoolLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyStoolLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyStoolLog\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyStoolLog\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyStoolLog\"",
+        "sql": "CREATE TABLE \"public\".\"BabyStoolLog\" (\n  \"amount\" text DEFAULT 'medium' NOT NULL,\n  \"color\" text DEFAULT 'yellow' NOT NULL,\n  \"consistency\" text DEFAULT 'soft' NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" text NOT NULL,\n  \"loggedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"type\" text DEFAULT 'stool' NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyStoolLog\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyStoolLog\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.BabyVaccine",
+    "label": "Create table \"BabyVaccine\"",
+    "summary": "Creates table \"BabyVaccine\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "BabyVaccine"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"BabyVaccine\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"BabyVaccine\"",
+        "sql": "CREATE TABLE \"public\".\"BabyVaccine\" (\n  \"administeredBy\" text DEFAULT '' NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"dose\" text DEFAULT '' NOT NULL,\n  \"id\" text NOT NULL,\n  \"notes\" text DEFAULT '' NOT NULL,\n  \"status\" text DEFAULT 'upcoming' NOT NULL,\n  \"vaccineDate\" text NOT NULL,\n  \"vaccineName\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"BabyVaccine\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyGrowth.BabyGrowth_monthAge_idx_1b7d5f6d",
+    "label": "Create index \"BabyGrowth_monthAge_idx_1b7d5f6d\" on \"BabyGrowth\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyGrowth_monthAge_idx_1b7d5f6d",
+        "table": "BabyGrowth"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyGrowth_monthAge_idx_1b7d5f6d\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth_monthAge_idx_1b7d5f6d\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyGrowth_monthAge_idx_1b7d5f6d\"",
+        "sql": "CREATE INDEX \"BabyGrowth_monthAge_idx_1b7d5f6d\" ON \"public\".\"BabyGrowth\" (\"monthAge\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyGrowth_monthAge_idx_1b7d5f6d\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth_monthAge_idx_1b7d5f6d\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyGrowth.BabyGrowth_recordedDate_idx_be6072a0",
+    "label": "Create index \"BabyGrowth_recordedDate_idx_be6072a0\" on \"BabyGrowth\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyGrowth_recordedDate_idx_be6072a0",
+        "table": "BabyGrowth"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyGrowth_recordedDate_idx_be6072a0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth_recordedDate_idx_be6072a0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyGrowth_recordedDate_idx_be6072a0\"",
+        "sql": "CREATE INDEX \"BabyGrowth_recordedDate_idx_be6072a0\" ON \"public\".\"BabyGrowth\" (\"recordedDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyGrowth_recordedDate_idx_be6072a0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyGrowth_recordedDate_idx_be6072a0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyMedicalNote.BabyMedicalNote_noteDate_idx_1ee0108a",
+    "label": "Create index \"BabyMedicalNote_noteDate_idx_1ee0108a\" on \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyMedicalNote_noteDate_idx_1ee0108a",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyMedicalNote_noteDate_idx_1ee0108a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicalNote_noteDate_idx_1ee0108a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyMedicalNote_noteDate_idx_1ee0108a\"",
+        "sql": "CREATE INDEX \"BabyMedicalNote_noteDate_idx_1ee0108a\" ON \"public\".\"BabyMedicalNote\" (\"noteDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyMedicalNote_noteDate_idx_1ee0108a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicalNote_noteDate_idx_1ee0108a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyMedicine.BabyMedicine_status_idx_e98638ab",
+    "label": "Create index \"BabyMedicine_status_idx_e98638ab\" on \"BabyMedicine\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyMedicine_status_idx_e98638ab",
+        "table": "BabyMedicine"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyMedicine_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicine_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyMedicine_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"BabyMedicine_status_idx_e98638ab\" ON \"public\".\"BabyMedicine\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyMedicine_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyMedicine_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyStoolLog.BabyStoolLog_type_idx_b6b604ea",
+    "label": "Create index \"BabyStoolLog_type_idx_b6b604ea\" on \"BabyStoolLog\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyStoolLog_type_idx_b6b604ea",
+        "table": "BabyStoolLog"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyStoolLog_type_idx_b6b604ea\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyStoolLog_type_idx_b6b604ea\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyStoolLog_type_idx_b6b604ea\"",
+        "sql": "CREATE INDEX \"BabyStoolLog_type_idx_b6b604ea\" ON \"public\".\"BabyStoolLog\" (\"type\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyStoolLog_type_idx_b6b604ea\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyStoolLog_type_idx_b6b604ea\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyVaccine.BabyVaccine_status_idx_e98638ab",
+    "label": "Create index \"BabyVaccine_status_idx_e98638ab\" on \"BabyVaccine\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyVaccine_status_idx_e98638ab",
+        "table": "BabyVaccine"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyVaccine_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyVaccine_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"BabyVaccine_status_idx_e98638ab\" ON \"public\".\"BabyVaccine\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyVaccine_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.BabyVaccine.BabyVaccine_vaccineDate_idx_28a615a0",
+    "label": "Create index \"BabyVaccine_vaccineDate_idx_28a615a0\" on \"BabyVaccine\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "BabyVaccine_vaccineDate_idx_28a615a0",
+        "table": "BabyVaccine"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"BabyVaccine_vaccineDate_idx_28a615a0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine_vaccineDate_idx_28a615a0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"BabyVaccine_vaccineDate_idx_28a615a0\"",
+        "sql": "CREATE INDEX \"BabyVaccine_vaccineDate_idx_28a615a0\" ON \"public\".\"BabyVaccine\" (\"vaccineDate\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"BabyVaccine_vaccineDate_idx_28a615a0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"BabyVaccine_vaccineDate_idx_28a615a0\""
+        ]
+      }
+    ]
+  }
+]

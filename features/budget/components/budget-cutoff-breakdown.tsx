@@ -112,7 +112,7 @@ export function BudgetCutoffBreakdown({
 								<article
 									key={day}
 									data-page-palette-preserve
-									className={`budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-3xl border px-3.5 py-3 transition-all hover:-translate-y-0.5 sm:px-4 sm:py-3.5 md:grid-cols-[auto_minmax(0,1fr)_auto] ${
+									className={`budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-3xl border px-3.5 py-3 transition-all hover:-translate-y-0.5 sm:px-4 sm:py-3.5 md:grid-cols-[auto_minmax(0,1fr)_360px] md:gap-x-4 ${
 										isCurrent ? "ring-2 ring-[var(--page-accent-base)]/50" : ""
 									}`}
 								>
@@ -190,7 +190,7 @@ export function BudgetCutoffBreakdown({
 
 									{/* Right Section: Budget & Status Badge */}
 									<div className="col-span-full flex min-w-0 items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-700">
-										<div className="text-left md:text-right">
+										<div className="text-left">
 											<p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Budget</p>
 											<span className="whitespace-nowrap text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
 												{money.format(cutoffBudget / 100)}

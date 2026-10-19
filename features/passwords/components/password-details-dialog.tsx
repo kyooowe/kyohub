@@ -61,7 +61,7 @@ export function PasswordDetailsDialog({ entry, revealed, onOpenChange, onToggleR
 					</div>
 				</div>
 				</div>
-				<footer className="flex flex-row flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-3 py-4 dark:border-slate-800 dark:bg-slate-950/40 sm:px-6">
+				<footer className="palette-dialog-footer flex flex-row flex-wrap justify-end gap-2 p-4 sm:px-6">
 					<Button type="button" variant="outline" className="palette-dialog-footer-button border-rose-200 bg-white text-rose-600 shadow-sm transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 hover:shadow-md active:translate-y-0 dark:border-rose-900 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-rose-950/40" onClick={onDelete}><Trash2 size={16} />Delete</Button>
 					<Button type="button" variant="ghost" className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150" onClick={onEdit}><Pencil size={16} />Edit password</Button>
 				</footer>

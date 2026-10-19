@@ -1,0 +1,807 @@
+"use client";
+
+import { useState, useMemo, type FormEvent, type CSSProperties } from "react";
+import {
+	Clock,
+	Plus,
+	Trash2,
+	Info,
+	Loader2,
+	Droplets,
+	Sparkles,
+	Search,
+	Grid2X2,
+	Baby,
+	HelpCircle,
+	CheckCircle,
+	ArrowRight,
+	ShieldCheck,
+	Smile,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+function BabyDiaperIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
+	return (
+		<svg
+			width={size}
+			height={size}
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			className={className}
+			aria-hidden="true"
+		>
+			<path d="M4.5 6.5h15l-1.3 6a6.5 6.5 0 0 1-6.2 5.5 6.5 6.5 0 0 1-6.2-5.5L4.5 6.5Z" />
+			<path d="M4.5 9h3.5" />
+			<path d="M16 9h3.5" />
+			<circle cx="12" cy="12" r="1.5" />
+		</svg>
+	);
+}
+import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
+import { Input } from "@/components/ui/input";
+import type { PagePalette } from "@/components/settings/page-palettes";
+import type { BabyStoolLog, DiaperType, StoolAmount, StoolColor, StoolConsistency } from "../types";
+import {
+	getDiaperStats,
+	isSameDay,
+	stoolColorMetadata,
+	stoolConsistencyMetadata,
+} from "../lib/baby-tracker-utils";
+import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
+import { toast } from "sonner";
+
+export function StoolCounter({
+	logs,
+	onCreateLog,
+	onQuickLog,
+	onDeleteLog,
+	paletteAccent = "#B66F57",
+	dialogPalette,
+}: {
+	logs: BabyStoolLog[];
+	onCreateLog: (data: Parameters<typeof import("../actions/baby-tracker-actions").createStoolLog>[0]) => Promise<void>;
+	onQuickLog: (type: DiaperType) => Promise<void>;
+	onDeleteLog: (id: string) => Promise<void>;
+	paletteAccent?: string;
+	dialogPalette?: PagePalette;
+}) {
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [guideOpen, setGuideOpen] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
+	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "stool" | "wet" | "both">("all");
+	const [searchQuery, setSearchQuery] = useState("");
+	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(3000);
+
+	// Detailed modal form states
+	const [diaperType, setDiaperType] = useState<DiaperType>("stool");
+	const [consistency, setConsistency] = useState<StoolConsistency>("soft");
+	const [selectedColor, setSelectedColor] = useState<StoolColor>("yellow");
+	const [amount, setAmount] = useState<StoolAmount>("medium");
+
+	const stats = getDiaperStats(logs);
+
+	async function handleQuick(type: DiaperType) {
+		if (submitting) return;
+		setSubmitting(true);
+		try {
+			await onQuickLog(type);
+			showAlert(
+				"DIAPER LOGGED",
+				type === "stool"
+					? "Logged dirty / stool diaper! 💩"
+					: type === "wet"
+					? "Logged wet diaper! 💧"
+					: "Logged combined wet & stool diaper! ✨"
+			);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to log diaper");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	async function handleDetailedSubmit(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault();
+		if (submitting) return;
+		setSubmitting(true);
+
+		const form = new FormData(event.currentTarget);
+		const notes = String(form.get("notes") || "").trim();
+		const dateTimeValue = String(form.get("loggedAt") || "").trim();
+
+		try {
+			await onCreateLog({
+				type: diaperType,
+				consistency,
+				color: selectedColor,
+				amount,
+				notes,
+				loggedAt: dateTimeValue ? new Date(dateTimeValue).toISOString() : new Date().toISOString(),
+			});
+			showAlert("DIAPER LOGGED", "Detailed diaper change recorded successfully!");
+			setDialogOpen(false);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to record log");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	async function handleDelete(id: string) {
+		if (submitting) return;
+		setSubmitting(true);
+		try {
+			await onDeleteLog(id);
+			showAlert("DIAPER REMOVED", "Diaper log removed successfully.");
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : "Failed to delete log");
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
+	const today = new Date();
+	const displayedLogs = useMemo(() => {
+		return logs.filter((log) => {
+			if (activeFilter === "today" && !isSameDay(new Date(log.loggedAt), today)) {
+				return false;
+			}
+			if (activeFilter === "stool" && log.type !== "stool" && log.type !== "both") {
+				return false;
+			}
+			if (activeFilter === "wet" && log.type !== "wet" && log.type !== "both") {
+				return false;
+			}
+			if (activeFilter === "both" && log.type !== "both") {
+				return false;
+			}
+
+			if (searchQuery.trim()) {
+				const q = searchQuery.toLowerCase().trim();
+				const matchesNotes = log.notes?.toLowerCase().includes(q);
+				const matchesType = log.type.toLowerCase().includes(q);
+				const matchesColor = log.color.toLowerCase().includes(q);
+				const matchesConsistency = log.consistency.toLowerCase().includes(q);
+				if (!matchesNotes && !matchesType && !matchesColor && !matchesConsistency) {
+					return false;
+				}
+			}
+
+			return true;
+		});
+	}, [logs, activeFilter, searchQuery, today]);
+
+	return (
+		<div className="w-full min-w-0 max-w-full space-y-5 sm:space-y-6">
+			{/* Alert notification banner */}
+			<BabyTrackerAlert alert={alert} onDismiss={clearAlert} />
+
+			{/* Quick Log Action Station: Big tactile buttons for parents holding a baby */}
+			<div className="relative overflow-hidden rounded-3xl border border-rose-200/70 bg-linear-to-r from-rose-50/70 via-white to-amber-50/50 p-3.5 shadow-xs sm:p-4 dark:border-rose-900/60 dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950">
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<p className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+							QUICK CARE STATION
+						</p>
+						<p className="text-xs text-slate-600 dark:text-slate-400">
+							Tap once to instantly log a change, or open detailed log for color & consistency.
+						</p>
+					</div>
+					<div className="flex flex-wrap items-center gap-2">
+						{/* Quick Wet */}
+						<button
+							type="button"
+							onClick={() => handleQuick("wet")}
+							disabled={submitting}
+							className="inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border border-sky-200 bg-sky-50 px-3.5 text-xs font-bold text-sky-800 shadow-2xs transition-all hover:bg-sky-100 active:scale-95 disabled:opacity-50 dark:border-sky-800/80 dark:bg-sky-950/70 dark:text-sky-200"
+						>
+							<Droplets size={15} className="text-sky-600 dark:text-sky-400" />
+							<span>+ Wet</span>
+						</button>
+
+						{/* Quick Stool */}
+						<button
+							type="button"
+							onClick={() => handleQuick("stool")}
+							disabled={submitting}
+							className="inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border border-amber-200 bg-amber-50 px-3.5 text-xs font-bold text-amber-800 shadow-2xs transition-all hover:bg-amber-100 active:scale-95 disabled:opacity-50 dark:border-amber-800/80 dark:bg-amber-950/70 dark:text-amber-200"
+						>
+							<BabyDiaperIcon size={15} className="text-amber-600 dark:text-amber-400" />
+							<span>+ Dirty</span>
+						</button>
+
+						{/* Quick Both */}
+						<button
+							type="button"
+							onClick={() => handleQuick("both")}
+							disabled={submitting}
+							className="inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border border-purple-200 bg-purple-50 px-3.5 text-xs font-bold text-purple-800 shadow-2xs transition-all hover:bg-purple-100 active:scale-95 disabled:opacity-50 dark:border-purple-800/80 dark:bg-purple-950/70 dark:text-purple-200"
+						>
+							<Baby size={15} className="text-purple-600 dark:text-purple-400" />
+							<span>+ Both</span>
+						</button>
+
+						{/* Detailed Log Modal CTA */}
+						<button
+							type="button"
+							onClick={() => setDialogOpen(true)}
+							style={{ "--action-accent": paletteAccent } as CSSProperties}
+							className="palette-action-button inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all active:scale-95"
+						>
+							<Plus size={15} />
+							<span>Detailed Log</span>
+						</button>
+
+						{/* Stool Color Guide CTA */}
+						<button
+							type="button"
+							onClick={() => setGuideOpen(true)}
+							className="inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-2xs transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+							title="Baby Stool Color Guide"
+							aria-label="Baby Stool Color Guide"
+						>
+							<HelpCircle size={17} />
+						</button>
+					</div>
+				</div>
+			</div>
+
+			{/* Metric Counters Grid */}
+			<div data-page-palette-preserve className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+				{/* Wet Diapers Card (Sky) */}
+				<Card className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-blue-200 bg-[#f5f8ff] py-0 shadow-sm shadow-blue-950/5 ring-0 transition-shadow hover:shadow-md dark:border-blue-900/70 dark:bg-[#151b2b]">
+					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[1fr_auto] grid-rows-[auto_1fr] gap-x-3 gap-y-2.5 p-3.5">
+						<div className="flex min-w-0 items-center gap-2">
+							<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-blue-500 text-white shadow-2xs">
+								<Droplets size={18} strokeWidth={2} />
+							</span>
+							<p className="whitespace-nowrap text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+								Wet Diapers
+							</p>
+						</div>
+						<div className="flex shrink-0 items-center justify-end">
+							<span className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-blue-100/90 px-2.5 text-[9px] font-bold tracking-wider text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
+								<Droplets size={10} /> {stats.todayWets >= 4 ? "HYDRATED" : "LOGGED"}
+							</span>
+						</div>
+						<div className="self-end">
+							<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+								{stats.todayWets}
+							</p>
+							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+								Goal: 4–6+ wet/day
+							</p>
+						</div>
+						<div className="flex shrink-0 self-end">
+							<button
+								type="button"
+								onClick={() => setActiveFilter("wet")}
+								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-blue-500/10 px-3 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-300"
+							>
+								<ArrowRight size={12} /> View all
+							</button>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Stools Today Card (Amber) */}
+				<Card className="metric-summary-card metric-summary-card--amber relative gap-0 overflow-hidden rounded-3xl border border-amber-200 bg-[#fffaf0] py-0 shadow-sm shadow-amber-950/5 ring-0 transition-shadow hover:shadow-md dark:border-amber-900/70 dark:bg-[#151b2b]">
+					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[1fr_auto] grid-rows-[auto_1fr] gap-x-3 gap-y-2.5 p-3.5">
+						<div className="flex min-w-0 items-center gap-2">
+							<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow-2xs">
+								<BabyDiaperIcon size={18} className="text-white" />
+							</span>
+							<p className="whitespace-nowrap text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+								Dirty Diapers
+							</p>
+						</div>
+						<div className="flex shrink-0 items-center justify-end">
+							<span className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-amber-100/90 px-2.5 text-[9px] font-bold tracking-wider text-amber-800 dark:bg-amber-950/80 dark:text-amber-300">
+								<Smile size={10} /> {stats.todayStools > 0 ? "NORMAL" : "LOG DUE"}
+							</span>
+						</div>
+						<div className="self-end">
+							<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+								{stats.todayStools}
+							</p>
+							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+								Bowel movements
+							</p>
+						</div>
+						<div className="flex shrink-0 self-end">
+							<button
+								type="button"
+								onClick={() => setActiveFilter("stool")}
+								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-amber-500/10 px-3 text-[11px] font-medium text-amber-800 transition-colors hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:text-amber-300"
+							>
+								<ArrowRight size={12} /> View all
+							</button>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Total Changes Card (Violet) */}
+				<Card className="metric-summary-card metric-summary-card--violet relative gap-0 overflow-hidden rounded-3xl border border-violet-200 bg-[#f8f6ff] py-0 shadow-sm shadow-violet-950/5 ring-0 transition-shadow hover:shadow-md dark:border-violet-900/70 dark:bg-[#151b2b]">
+					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[1fr_auto] grid-rows-[auto_1fr] gap-x-3 gap-y-2.5 p-3.5">
+						<div className="flex min-w-0 items-center gap-2">
+							<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-violet-500 text-white shadow-2xs">
+								<Baby size={18} strokeWidth={2} />
+							</span>
+							<p className="whitespace-nowrap text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+								Total Changes
+							</p>
+						</div>
+						<div className="flex shrink-0 items-center justify-end">
+							<span className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-emerald-100/80 px-2.5 text-[9px] font-semibold tracking-wider text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
+								<ShieldCheck size={10} /> FRESH
+							</span>
+						</div>
+						<div className="self-end">
+							<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+								{stats.todayTotal}
+							</p>
+							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+								Diapers changed today
+							</p>
+						</div>
+						<div className="flex shrink-0 self-end">
+							<button
+								type="button"
+								onClick={() => setActiveFilter("all")}
+								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-violet-500/10 px-3 text-[11px] font-medium text-violet-700 transition-colors hover:bg-violet-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300"
+							>
+								<ArrowRight size={12} /> View all
+							</button>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Last Changed Card (Teal) */}
+				<Card className="metric-summary-card metric-summary-card--teal relative gap-0 overflow-hidden rounded-3xl border border-teal-200 bg-[#eafbf6] py-0 shadow-sm shadow-teal-950/5 ring-0 transition-shadow hover:shadow-md dark:border-teal-900/70 dark:bg-[#151b2b]">
+					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[1fr_auto] grid-rows-[auto_1fr] gap-x-3 gap-y-2.5 p-3.5">
+						<div className="flex min-w-0 items-center gap-2">
+							<span className="grid size-9 shrink-0 place-items-center rounded-xl bg-teal-600 text-white shadow-2xs">
+								<Clock size={18} strokeWidth={2} />
+							</span>
+							<p className="whitespace-nowrap text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+								Last Changed
+							</p>
+						</div>
+						<div className="flex shrink-0 items-center justify-end">
+							<span className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-teal-100/90 px-2.5 text-[9px] font-bold tracking-wider text-teal-800 dark:bg-teal-950/80 dark:text-teal-300">
+								<Clock size={10} /> RECENT
+							</span>
+						</div>
+						<div className="self-end">
+							<p className="text-2xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
+								{stats.lastChanged}
+							</p>
+							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+								{stats.lastLogTime ? `at ${stats.lastLogTime}` : "Timeline history"}
+							</p>
+						</div>
+						<div className="flex shrink-0 self-end">
+							<button
+								type="button"
+								onClick={() => setGuideOpen(true)}
+								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-teal-500/10 px-3 text-[11px] font-medium text-teal-700 transition-colors hover:bg-teal-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:text-teal-300"
+							>
+								<ArrowRight size={12} /> Guide
+							</button>
+						</div>
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Search & Filter Bar */}
+			<div
+				style={{ "--password-accent": paletteAccent } as CSSProperties}
+				className="password-library-header relative w-full min-w-0 max-w-full overflow-hidden rounded-3xl border p-2.5 shadow-md sm:p-3"
+			>
+				<span aria-hidden="true" className="password-library-orbit pointer-events-none absolute -right-5 -top-10 size-28 rounded-full" />
+				<div className="relative z-10 flex w-full min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
+					{/* Search Input */}
+					<label className="relative order-1 block min-w-0 flex-1 sm:w-60 sm:flex-initial">
+						<Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+						<Input
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							placeholder="Search notes, color, type..."
+							aria-label="Search diaper logs"
+							className="h-9 sm:h-10 rounded-xl border-white/80 bg-white/80 pl-9 pr-3 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-rose-400 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100"
+						/>
+					</label>
+
+					{/* Filter Pills */}
+					<div className="password-filter-mode-group order-3 flex w-full basis-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:order-2 sm:w-auto sm:basis-auto">
+						{(
+							[
+								{ id: "all", label: "All", icon: Grid2X2 },
+								{ id: "today", label: `Today (${stats.todayTotal})`, icon: Clock },
+								{ id: "wet", label: "Wet", icon: Droplets },
+								{ id: "stool", label: "Dirty", icon: BabyDiaperIcon },
+								{ id: "both", label: "Both", icon: Baby },
+							] as const
+						).map((option) => {
+							const active = activeFilter === option.id;
+							const Icon = option.icon;
+							return (
+								<button
+									key={option.id}
+									type="button"
+									onClick={() => setActiveFilter(option.id)}
+									className={`password-filter-mode-option inline-flex h-8 sm:h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all ${
+										active
+											? "password-filter-mode-option--active"
+											: "border-transparent text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+									}`}
+								>
+									<Icon size={13} className="shrink-0" />
+									<span>{option.label}</span>
+								</button>
+							);
+						})}
+					</div>
+				</div>
+			</div>
+
+			{/* Timeline History Cards */}
+			<div className="space-y-3">
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+							Diaper & Stool Timeline
+						</h3>
+						<span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+							{displayedLogs.length}
+						</span>
+					</div>
+					<button
+						type="button"
+						onClick={() => setGuideOpen(true)}
+						className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:underline dark:text-rose-400"
+					>
+						<Info size={13} />
+						<span>Stool Color Guide</span>
+					</button>
+				</div>
+
+				{displayedLogs.length === 0 ? (
+					<div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-200 bg-white/50 p-6 text-center dark:border-slate-800 dark:bg-slate-900/50">
+						<span className="grid size-12 place-items-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/70 dark:text-rose-300">
+							<Baby size={22} />
+						</span>
+						<p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+							{activeFilter === "today" ? "No diapers logged today yet" : "No diaper records found"}
+						</p>
+						<p className="max-w-xs text-xs text-slate-500 dark:text-slate-400">
+							Use the quick care buttons at the top to log wet and dirty diapers with a single tap.
+						</p>
+					</div>
+				) : (
+					<div className="grid grid-cols-1 gap-2.5 sm:gap-3">
+						{displayedLogs.map((log) => {
+							const date = new Date(log.loggedAt);
+							const colorMeta = stoolColorMetadata[log.color] || stoolColorMetadata.yellow;
+							const consistencyMeta = stoolConsistencyMetadata[log.consistency] || stoolConsistencyMetadata.soft;
+
+							return (
+								<div
+									key={log.id}
+									className="group flex flex-col gap-2 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-2xs transition-all hover:border-slate-300 hover:shadow-xs sm:flex-row sm:items-center sm:justify-between sm:p-4 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+								>
+									<div className="flex items-start gap-3">
+										{/* Icon Badge */}
+										<div
+											className={`grid size-10 shrink-0 place-items-center rounded-xl text-base ${
+												log.type === "stool"
+													? "bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300"
+													: log.type === "wet"
+													? "bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300"
+													: "bg-purple-100 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
+											}`}
+										>
+											{log.type === "stool" ? (
+												<Sparkles size={18} />
+											) : log.type === "wet" ? (
+												<Droplets size={18} />
+											) : (
+												<Baby size={18} />
+											)}
+										</div>
+
+										{/* Details */}
+										<div className="min-w-0">
+											<div className="flex flex-wrap items-center gap-1.5">
+												<span className="text-sm font-bold capitalize text-slate-900 dark:text-slate-100">
+													{log.type === "both" ? "Wet + Stool" : log.type} Diaper
+												</span>
+												<span className="text-slate-300 dark:text-slate-700">•</span>
+												<span className="text-xs text-slate-500 dark:text-slate-400">
+													{date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+												</span>
+												<span className="text-slate-300 dark:text-slate-700">•</span>
+												<span className="text-xs text-slate-500 dark:text-slate-400">
+													{date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+												</span>
+											</div>
+
+											{/* Stool details if stool/both */}
+											{(log.type === "stool" || log.type === "both") && (
+												<div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+													{/* Color swatch */}
+													<span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+														<span className={`size-2.5 rounded-full ${colorMeta.swatch}`} />
+														{colorMeta.label}
+													</span>
+
+													{/* Consistency */}
+													<span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+														{consistencyMeta.label}
+													</span>
+
+													{/* Amount */}
+													<span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] capitalize text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+														{log.amount} amount
+													</span>
+												</div>
+											)}
+
+											{log.notes && (
+												<p className="mt-1 text-xs text-slate-600 dark:text-slate-300 italic">
+													&ldquo;{log.notes}&rdquo;
+												</p>
+											)}
+										</div>
+									</div>
+
+									{/* Delete Action */}
+									<div className="flex self-end sm:self-center">
+										<button
+											type="button"
+											onClick={() => handleDelete(log.id)}
+											disabled={submitting}
+											aria-label="Delete diaper log"
+											className="inline-flex size-8 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/70 dark:hover:text-rose-300"
+										>
+											<Trash2 size={14} />
+										</button>
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				)}
+			</div>
+
+			{/* Detailed Log Dialog */}
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent
+					pagePalette={dialogPalette}
+					data-page-palette-surface
+					className="palette-dialog-panel max-h-[92vh] max-w-lg overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+				>
+					<PaletteDialogHeader
+						eyebrow="DAILY CARE"
+						title="Detailed Diaper Entry"
+						description="Record diaper consistency, color, and stool characteristics for tracking digestion."
+						icon={<Droplets size={18} />}
+						closeLabel="Close dialog"
+					/>
+					<form onSubmit={handleDetailedSubmit} className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto">
+						<div className="space-y-4 p-5 sm:p-6 text-sm">
+							{/* Diaper Type Selection Buttons */}
+							<div className="space-y-1.5">
+								<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									<span>Diaper Type</span>
+								</label>
+								<div className="grid grid-cols-3 gap-2">
+									{(
+										[
+											{ id: "wet", label: "Wet Only", icon: Droplets, color: "text-sky-600" },
+											{ id: "stool", label: "Dirty Only", icon: BabyDiaperIcon, color: "text-amber-600" },
+											{ id: "both", label: "Wet + Stool", icon: Baby, color: "text-purple-600" },
+										] as const
+									).map((t) => {
+										const selected = diaperType === t.id;
+										const Icon = t.icon;
+										return (
+											<button
+												key={t.id}
+												type="button"
+												onClick={() => setDiaperType(t.id)}
+												className={`flex flex-col items-center justify-center gap-1 rounded-2xl border p-3 text-xs font-semibold transition-all ${
+													selected
+														? "border-rose-400 bg-rose-50/80 text-rose-900 shadow-2xs dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-200"
+														: "border-rose-200/70 bg-white hover:bg-slate-50 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+												}`}
+											>
+												<Icon size={18} className={t.color} />
+												<span>{t.label}</span>
+											</button>
+										);
+									})}
+								</div>
+							</div>
+
+							{/* Stool Color Options (if stool or both) */}
+							{(diaperType === "stool" || diaperType === "both") && (
+								<div className="space-y-1.5">
+									<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+										<span>Stool Color</span>
+									</label>
+									<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+										{(Object.keys(stoolColorMetadata) as StoolColor[]).map((cKey) => {
+											const meta = stoolColorMetadata[cKey];
+											const isSelected = selectedColor === cKey;
+											return (
+												<button
+													key={cKey}
+													type="button"
+													onClick={() => setSelectedColor(cKey)}
+													className={`flex items-center gap-2 rounded-xl border p-2 text-left text-xs transition-all ${
+														isSelected
+															? "border-rose-400 bg-rose-50/80 font-bold text-rose-900 shadow-2xs dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-200"
+															: "border-rose-200/70 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+													}`}
+												>
+													<span className={`size-3.5 shrink-0 rounded-full border border-black/10 shadow-2xs ${meta.swatch}`} />
+													<span className="truncate">{meta.label}</span>
+												</button>
+											);
+										})}
+									</div>
+								</div>
+							)}
+
+							{/* Stool Consistency & Amount */}
+							{(diaperType === "stool" || diaperType === "both") && (
+								<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
+									<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+										<span>Consistency</span>
+										<select
+											value={consistency}
+											onChange={(e) => setConsistency(e.target.value as StoolConsistency)}
+											className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+										>
+											<option value="soft">Soft / Creamy (Normal)</option>
+											<option value="seedy">Seedy (Breastfed)</option>
+											<option value="normal">Formed / Normal</option>
+											<option value="watery">Watery / Loose</option>
+											<option value="hard">Hard / Pellets</option>
+										</select>
+									</label>
+
+									<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+										<span>Amount</span>
+										<select
+											value={amount}
+											onChange={(e) => setAmount(e.target.value as StoolAmount)}
+											className="h-10 w-full rounded-md border border-rose-200 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+										>
+											<option value="small">Small (Spotting / Smear)</option>
+											<option value="medium">Medium (Standard)</option>
+											<option value="large">Large (Full / Overflow)</option>
+										</select>
+									</label>
+								</div>
+							)}
+
+							{/* Date & Time */}
+							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+								<span>Change Time</span>
+								<Input
+									type="datetime-local"
+									name="loggedAt"
+									defaultValue={new Date().toISOString().slice(0, 16)}
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+								/>
+							</label>
+
+							{/* Notes */}
+							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+								<span>Notes & Observations</span>
+								<Input
+									name="notes"
+									placeholder="e.g. Diaper cream applied, fussy before change..."
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+								/>
+							</label>
+						</div>
+
+						<div className="palette-dialog-footer sticky bottom-0 flex flex-wrap justify-end gap-2 p-4 sm:px-6">
+							<Button
+								data-page-palette-secondary
+								type="button"
+								disabled={submitting}
+								variant="outline"
+								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
+								onClick={() => setDialogOpen(false)}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								variant="ghost"
+								disabled={submitting}
+								style={{ "--action-accent": paletteAccent } as CSSProperties}
+								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
+							>
+								{submitting ? (
+									<>
+										<Loader2 size={16} className="animate-spin shrink-0" />
+										<span>Saving...</span>
+									</>
+								) : (
+									<>
+										<CheckCircle size={16} className="shrink-0" />
+										<span>Save Diaper Log</span>
+									</>
+								)}
+							</Button>
+						</div>
+					</form>
+				</DialogContent>
+			</Dialog>
+
+			{/* Educational Stool Color Guide Modal */}
+			<Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+				<DialogContent
+					pagePalette={dialogPalette}
+					data-page-palette-surface
+					className="palette-dialog-panel max-h-[92vh] max-w-xl overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+				>
+					<PaletteDialogHeader
+						eyebrow="PEDIATRIC HEALTH REFERENCE"
+						title="Baby Stool Color & Health Guide"
+						description="A quick friendly guide on what baby poop colors mean and when to call your pediatrician."
+						icon={<HelpCircle size={18} />}
+						closeLabel="Close guide"
+					/>
+					<div className="max-h-[calc(92vh-85px)] overflow-y-auto p-5 sm:p-6 space-y-3.5 text-xs sm:text-sm">
+						{(Object.keys(stoolColorMetadata) as StoolColor[]).map((cKey) => {
+							const meta = stoolColorMetadata[cKey];
+							const isAlert = cKey === "black" || cKey === "clay";
+							return (
+								<div
+									key={cKey}
+									className={`flex items-start gap-3 rounded-2xl border p-3.5 transition-colors ${
+										isAlert
+											? "border-amber-200 bg-amber-50/60 dark:border-amber-900/70 dark:bg-amber-950/40"
+											: "border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900/80"
+									}`}
+								>
+									<span className={`size-6 shrink-0 rounded-full border border-black/15 shadow-xs ${meta.swatch}`} />
+									<div className="min-w-0">
+										<p className="font-bold text-slate-900 dark:text-white">
+											{meta.label}
+										</p>
+										<p className="mt-0.5 text-slate-600 dark:text-slate-300">
+											{meta.advice}
+										</p>
+									</div>
+								</div>
+							);
+						})}
+
+						<div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs text-rose-900 dark:border-rose-900 dark:bg-rose-950/70 dark:text-rose-200">
+							<p className="font-bold">⚠️ When to contact your pediatrician immediately:</p>
+							<ul className="mt-1.5 list-disc pl-4 space-y-0.5 text-rose-800 dark:text-rose-300">
+								<li>Stool containing bright red blood or dark coffee-ground specs</li>
+								<li>Chalky white or pale clay-colored stool</li>
+								<li>Watery stool more than 6–8 times in 24 hours (risk of dehydration)</li>
+								<li>Accompanied by high fever, lethargy, or refusal to feed</li>
+							</ul>
+						</div>
+					</div>
+				</DialogContent>
+			</Dialog>
+		</div>
+	);
+}

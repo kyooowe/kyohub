@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAppSettings } from "@/components/settings/settings-context";
 import { activeCutoffDayForDate, centsFromInput, cutoffDateRanges, cutoffDays, cutoffShortLabels, formatAmountInput, formatAmountInputChange, money, monthLabel } from "@/features/budget/lib/budget-utils";
 import { budgetCategories, budgetCategoryLabels, isBudgetCategory, type BillFrequency, type BudgetCategory, type CutoffDay } from "@/features/budget/types";
+import { BudgetAlert } from "./budget-alert";
 
 function ActionCard({ icon: Icon, title, description, buttonLabel, onClick }: {
 	icon: typeof CalendarDays;
@@ -59,6 +60,7 @@ export function BudgetForms({
 	onBudgetDialogOpenChange,
 	billDialogOpen,
 	onBillDialogOpenChange,
+	onClearError,
 }: {
 	budgetMode: "monthly" | "cutoff";
 	selectedMonth: string;
@@ -88,6 +90,7 @@ export function BudgetForms({
 	onBudgetDialogOpenChange: (open: boolean) => void;
 	billDialogOpen: boolean;
 	onBillDialogOpenChange: (open: boolean) => void;
+	onClearError?: () => void;
 }) {
 	const { settings } = useAppSettings();
 	const configuredPalette = settings.pagePalettes["/budget"];
@@ -124,7 +127,7 @@ export function BudgetForms({
 				{budgetMode === "cutoff" ? (
 					<form onSubmit={onSubmitCutoffBudget} className="flex flex-1 flex-col overflow-hidden">
 						<div className="flex-1 space-y-3.5 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
-							{error && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</p>}
+							<BudgetAlert message={error} onDismiss={onClearError} />
 							<p className="text-xs text-slate-500 dark:text-slate-400">
 								Enter budget amounts for each cutoff period (5th, 15th, 20th, and 30th).
 							</p>
@@ -168,21 +171,22 @@ export function BudgetForms({
 								</span>
 							</div>
 						</div>
-						<div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/40 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:px-6 sm:py-3.5">
+						<div className="palette-dialog-footer shrink-0 flex items-center justify-end gap-2 p-4 sm:px-6">
 							<Button
 								data-page-palette-secondary
 								type="button"
 								disabled={submitting}
 								variant="outline"
 								onClick={() => onBudgetDialogOpenChange(false)}
-								className="palette-dialog-footer-button border border-slate-200 bg-white font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
 							>
 								Cancel
 							</Button>
 							<Button
 								type="submit"
+								variant="ghost"
 								disabled={submitting}
-								className="palette-action-button palette-dialog-footer-button border font-medium text-white shadow-md hover:opacity-95 disabled:opacity-50"
+								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
 							>
 								{submitting && <Loader2 size={14} className="animate-spin" />}Save cutoffs
 							</Button>
@@ -191,7 +195,7 @@ export function BudgetForms({
 				) : (
 					<form onSubmit={onSubmitBudget} className="flex flex-1 flex-col overflow-hidden">
 						<div className="flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
-							{error && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</p>}
+							<BudgetAlert message={error} onDismiss={onClearError} />
 							<label className="block space-y-2 text-sm font-medium text-slate-900 dark:text-slate-100">
 								Amount
 								<Input required inputMode="decimal" type="text" value={budgetInput} onChange={(event) => {
@@ -204,21 +208,22 @@ export function BudgetForms({
 								}} onBlur={(event) => onBudgetInputChange(formatAmountInput(event.target.value))} placeholder="e.g. 2,500.00" className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500" />
 							</label>
 						</div>
-						<div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/40 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:px-6 sm:py-3.5">
+						<div className="palette-dialog-footer shrink-0 flex items-center justify-end gap-2 p-4 sm:px-6">
 							<Button
 								data-page-palette-secondary
 								type="button"
 								disabled={submitting}
 								variant="outline"
 								onClick={() => onBudgetDialogOpenChange(false)}
-								className="palette-dialog-footer-button border border-slate-200 bg-white font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
 							>
 								Cancel
 							</Button>
 							<Button
 								type="submit"
+								variant="ghost"
 								disabled={submitting}
-								className="palette-action-button palette-dialog-footer-button border font-medium text-white shadow-md hover:opacity-95 disabled:opacity-50"
+								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
 							>
 								{submitting && <Loader2 size={14} className="animate-spin" />}Save budget
 							</Button>
@@ -245,7 +250,7 @@ export function BudgetForms({
 				</div>
 				<form ref={billFormRef} onSubmit={onSubmitBill} className="flex flex-1 flex-col overflow-hidden">
 					<div className="flex-1 space-y-3.5 overflow-y-auto px-5 py-4 sm:px-6 sm:py-5">
-						{error && <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/60 dark:text-amber-200">{error}</p>}
+						<BudgetAlert message={error} onDismiss={onClearError} />
 						<div className="grid gap-3.5 sm:grid-cols-2 sm:gap-4">
 							<label className="space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
 								Bill name
@@ -329,7 +334,7 @@ export function BudgetForms({
 							)}
 						</div>
 					</div>
-					<div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50/40 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/40 sm:px-6 sm:py-3.5">
+					<div className="palette-dialog-footer shrink-0 flex items-center justify-end gap-2 p-4 sm:px-6">
 						<Button
 							data-page-palette-secondary
 							type="button"
@@ -339,14 +344,15 @@ export function BudgetForms({
 								onCancelBill();
 								onBillDialogOpenChange(false);
 							}}
-							className="palette-dialog-footer-button border border-slate-200 bg-white font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+							className="palette-dialog-footer-button border font-medium transition-colors duration-150"
 						>
 							Cancel
 						</Button>
 						<Button
 							type="submit"
+							variant="ghost"
 							disabled={submitting}
-							className="palette-action-button palette-dialog-footer-button border font-medium text-white shadow-md transition-colors hover:opacity-95 disabled:opacity-50"
+							className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
 						>
 							{submitting ? (
 								<>
