@@ -778,61 +778,93 @@ export function GrowthTracker({
 								<article
 									key={r.id}
 									data-page-palette-preserve
-									className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_480px] md:gap-x-4"
+									className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-x-4"
 								>
 									{/* Left Squircle Icon */}
 									<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-rose-50 to-rose-100/70 text-rose-600 shadow-xs sm:size-11 dark:from-rose-950/60 dark:to-rose-900/40 dark:text-rose-400">
 										<TrendingUp size={19} className="sm:size-[21px]" />
 									</span>
 
-									{/* Title and Subtitle Metadata */}
-									<div className="min-w-0">
-										<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-											<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
-												{r.monthAge === 0 ? "At Birth (0m)" : `${r.monthAge} months`}
-											</p>
-											<span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-												{r.monthAge === 0 ? "Birth Record" : "Checkup"}
-											</span>
+									{/* Title, Subtitle Metadata, and Mobile Action Pill */}
+									<div className="flex min-w-0 items-start justify-between gap-2">
+										<div className="min-w-0">
+											<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+												<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
+													{r.monthAge === 0 ? "At Birth (0m)" : `${r.monthAge} months`}
+												</p>
+												<span className="inline-flex shrink-0 items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+													{r.monthAge === 0 ? "Birth Record" : "Checkup"}
+												</span>
+											</div>
+
+											<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
+												<span className="inline-flex items-center gap-1">
+													<Calendar size={12} />
+													{r.recordedDate}
+												</span>
+												{r.headCircumferenceCm ? (
+													<>
+														<span aria-hidden="true">·</span>
+														<span className="inline-flex items-center gap-1">
+															<Ruler size={12} />
+															Head {r.headCircumferenceCm} cm
+														</span>
+													</>
+												) : null}
+												{r.notes ? (
+													<>
+														<span aria-hidden="true">·</span>
+														<span className="max-w-[200px] truncate italic sm:max-w-xs md:max-w-md">
+															&ldquo;{r.notes}&rdquo;
+														</span>
+													</>
+												) : null}
+											</div>
 										</div>
 
-										<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
-											<span className="inline-flex items-center gap-1">
-												<Calendar size={12} />
-												{r.recordedDate}
-											</span>
-											{r.headCircumferenceCm ? (
-												<>
-													<span aria-hidden="true">·</span>
-													<span className="inline-flex items-center gap-1">
-														<Ruler size={12} />
-														Head {r.headCircumferenceCm} cm
-													</span>
-												</>
-											) : null}
-											{r.notes ? (
-												<>
-													<span aria-hidden="true">·</span>
-													<span className="max-w-[200px] truncate italic sm:max-w-xs md:max-w-md">
-														&ldquo;{r.notes}&rdquo;
-													</span>
-												</>
-											) : null}
+										{/* Mobile Actions Pill Group (Edit & Delete) - visible only on mobile */}
+										<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5 md:hidden">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												disabled={submitting}
+												className="budget-bill-action budget-bill-action--edit size-7.5 rounded-xl text-slate-500 transition-colors sm:size-8 dark:text-slate-400"
+												aria-label={`Edit ${r.monthAge === 0 ? "birth" : `${r.monthAge} months`} record`}
+												title="Edit measurement"
+												onClick={() => {
+													setEditingRecord(r);
+													setDialogOpen(true);
+												}}
+											>
+												<Pencil size={14} className="sm:size-[15px]" />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												disabled={submitting}
+												className="budget-bill-action budget-bill-action--delete size-7.5 rounded-xl text-slate-400 transition-colors sm:size-8 dark:text-slate-400"
+												aria-label={`Delete ${r.monthAge === 0 ? "birth" : `${r.monthAge} months`} record`}
+												title="Delete measurement"
+												onClick={() => handleDelete(r.id)}
+											>
+												<Trash2 size={14} className="sm:size-[15px]" />
+											</Button>
 										</div>
 									</div>
 
-									{/* Right Side: Divider, Metrics, and Action Pill */}
-									<div className="col-span-full flex min-w-0 items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-800">
-										{/* Weight & Height Measurements */}
-										<div className="flex items-center gap-3.5 sm:gap-6">
-											<div className="flex items-center gap-1.5 w-[140px] sm:w-[165px] shrink-0">
+									{/* Measurements: Weight & Height + Desktop Action Pill */}
+									<div className="col-span-full flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-800">
+										<div className="flex flex-wrap items-center gap-3.5 sm:gap-6">
+											<div className="flex items-center gap-1.5 shrink-0 sm:w-[140px] md:w-[150px] lg:w-[165px]">
 												<span className="whitespace-nowrap text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
 													{r.weightKg} kg
 												</span>
 												<GrowthStatusBadge assessment={weightAssessment} />
 											</div>
 
-											<div className="flex items-center gap-1.5 w-[140px] sm:w-[165px] shrink-0">
+											<div className="flex items-center gap-1.5 shrink-0 sm:w-[140px] md:w-[150px] lg:w-[165px]">
 												<span className="whitespace-nowrap text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
 													{r.heightCm} cm
 												</span>
@@ -840,8 +872,8 @@ export function GrowthTracker({
 											</div>
 										</div>
 
-										{/* Actions Pill Group (Edit & Delete) */}
-										<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
+										{/* Desktop Actions Pill Group (Edit & Delete) - visible only on desktop */}
+										<div className="budget-bill-actions hidden shrink-0 items-center gap-0.5 rounded-2xl border p-0.5 md:flex">
 											<Button
 												type="button"
 												variant="ghost"
@@ -883,17 +915,19 @@ export function GrowthTracker({
 				<DialogContent
 					pagePalette={dialogPalette}
 					data-page-palette-surface
-					className="palette-dialog-panel max-h-[92vh] max-w-md overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+					className="palette-dialog-panel flex max-h-[min(90dvh,720px)] w-[calc(100%-1.5rem)] max-w-md flex-col overflow-hidden p-0 shadow-2xl sm:w-full sm:rounded-3xl"
 				>
-					<PaletteDialogHeader
-						eyebrow="GROWTH TRACKER"
-						title={editingRecord ? "Edit Measurement" : "Add Growth Record"}
-						description="Track height and weight progression for each month."
-						icon={<TrendingUp size={18} />}
-						closeLabel="Close dialog"
-					/>
-					<form onSubmit={handleSubmit} className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto">
-						<div className="space-y-3.5 p-5 sm:p-6 text-sm">
+					<div className="shrink-0">
+						<PaletteDialogHeader
+							eyebrow="GROWTH TRACKER"
+							title={editingRecord ? "Edit Measurement" : "Add Growth Record"}
+							description="Track height and weight progression for each month."
+							icon={<TrendingUp size={18} />}
+							closeLabel="Close dialog"
+						/>
+					</div>
+					<form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+						<div className="flex-1 min-h-0 space-y-3.5 overflow-y-auto p-5 text-sm sm:p-6">
 							<div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4">
 								<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
 									<span>Month / Age</span>
@@ -973,13 +1007,13 @@ export function GrowthTracker({
 							</label>
 						</div>
 
-						<div className="palette-dialog-footer sticky bottom-0 flex flex-wrap justify-end gap-2 p-4 sm:px-6">
+						<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
 							<Button
 								data-page-palette-secondary
 								type="button"
 								disabled={submitting}
 								variant="outline"
-								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
+								className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 								onClick={() => setDialogOpen(false)}
 							>
 								Cancel
@@ -989,7 +1023,7 @@ export function GrowthTracker({
 								variant="ghost"
 								disabled={submitting}
 								style={{ "--action-accent": paletteAccent } as CSSProperties}
-								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
+								className="palette-action-button palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 							>
 								{submitting ? (
 									<>
