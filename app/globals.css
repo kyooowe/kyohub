@@ -2274,4 +2274,13 @@ main[data-page-palette="teal"] [data-budget-outline="emerald"] {
 		background: #6d5aa8;
 		background-clip: content-box;
 	}
+
+	.scrollbar-none {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	.scrollbar-none::-webkit-scrollbar {
+		display: none;
+	}
 }

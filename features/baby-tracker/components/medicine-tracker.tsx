@@ -310,17 +310,19 @@ export function MedicineTracker({
 				<DialogContent
 					pagePalette={dialogPalette}
 					data-page-palette-surface
-					className="palette-dialog-panel max-h-[92vh] max-w-md overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
+					className="palette-dialog-panel flex max-h-[min(90dvh,720px)] w-[calc(100%-1.5rem)] max-w-md flex-col overflow-hidden p-0 shadow-2xl sm:w-full sm:rounded-3xl"
 				>
-					<PaletteDialogHeader
-						eyebrow="MEDICINE TRACKER"
-						title={editingMedicine ? "Edit Medication" : "Add Medicine"}
-						description="Track dosage, frequency instructions, and prescription dates."
-						icon={<Pill size={18} />}
-						closeLabel="Close dialog"
-					/>
-					<form onSubmit={handleSubmit} className="flex max-h-[calc(92vh-85px)] flex-col overflow-y-auto">
-						<div className="space-y-3.5 p-5 sm:p-6 text-sm">
+					<div className="shrink-0">
+						<PaletteDialogHeader
+							eyebrow="MEDICINE TRACKER"
+							title={editingMedicine ? "Edit Medication" : "Add Medicine"}
+							description="Track dosage, frequency instructions, and prescription dates."
+							icon={<Pill size={18} />}
+							closeLabel="Close dialog"
+						/>
+					</div>
+					<form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+						<div className="flex-1 min-h-0 space-y-3.5 overflow-y-auto p-5 text-sm sm:p-6">
 							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
 								<span>Medicine Name</span>
 								<Input
@@ -416,13 +418,13 @@ export function MedicineTracker({
 							</label>
 						</div>
 
-						<div className="palette-dialog-footer sticky bottom-0 flex flex-wrap justify-end gap-2 p-4 sm:px-6">
+						<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
 							<Button
 								data-page-palette-secondary
 								type="button"
 								disabled={submitting}
 								variant="outline"
-								className="palette-dialog-footer-button border font-medium transition-colors duration-150"
+								className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 								onClick={() => setDialogOpen(false)}
 							>
 								Cancel
@@ -432,7 +434,7 @@ export function MedicineTracker({
 								variant="ghost"
 								disabled={submitting}
 								style={{ "--action-accent": paletteAccent } as CSSProperties}
-								className="palette-action-button palette-dialog-footer-button border font-medium transition-colors duration-150"
+								className="palette-action-button palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 							>
 								{submitting ? (
 									<>
