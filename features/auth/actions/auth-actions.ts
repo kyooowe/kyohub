@@ -3,7 +3,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { createSession, destroySession, getSessionUser, isValidPin } from "@/features/auth/lib/session";
 
-export const APP_CACHE_TAGS = [
+const APP_CACHE_TAGS = [
 	"password-entries",
 	"budget-planner",
 	"grocery-items",
