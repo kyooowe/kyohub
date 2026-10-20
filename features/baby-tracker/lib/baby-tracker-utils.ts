@@ -1,4 +1,71 @@
-import type { BabyStoolLog, StoolColor, StoolConsistency, BabySleepLog, BabyMilkLog } from "../types";
+import type { BabyStoolLog, StoolColor, StoolConsistency, BabySleepLog, BabyMilkLog, SleepPeriod } from "../types";
+
+export interface DetectedSleepPeriod {
+	period: SleepPeriod;
+	label: string;
+	periodLabel: string;
+	timeRange: string;
+	isNight: boolean;
+}
+
+/**
+ * Automatically detects sleep session period based on start time:
+ * - Morning: 6:00 AM – 11:59 AM
+ * - Afternoon: 12:00 PM – 4:59 PM
+ * - Evening: 5:00 PM – 7:59 PM
+ * - Night: 8:00 PM – 5:59 AM
+ */
+export function detectSleepPeriod(dateInput: string | Date): DetectedSleepPeriod {
+	const d = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+	const hours = d.getHours();
+	const minutes = d.getMinutes();
+	const totalMinutes = hours * 60 + minutes;
+
+	// Morning: 6:00 AM (360) – 11:59 AM (719)
+	if (totalMinutes >= 6 * 60 && totalMinutes < 12 * 60) {
+		return {
+			period: "morning",
+			label: "Morning Nap",
+			periodLabel: "Morning",
+			timeRange: "6:00 AM – 11:59 AM",
+			isNight: false,
+		};
+	}
+	// Afternoon: 12:00 PM (720) – 4:59 PM (1019)
+	if (totalMinutes >= 12 * 60 && totalMinutes < 17 * 60) {
+		return {
+			period: "afternoon",
+			label: "Afternoon Nap",
+			periodLabel: "Afternoon",
+			timeRange: "12:00 PM – 4:59 PM",
+			isNight: false,
+		};
+	}
+	// Evening: 5:00 PM (1020) – 7:59 PM (1199)
+	if (totalMinutes >= 17 * 60 && totalMinutes < 20 * 60) {
+		return {
+			period: "evening",
+			label: "Evening Nap",
+			periodLabel: "Evening",
+			timeRange: "5:00 PM – 7:59 PM",
+			isNight: false,
+		};
+	}
+	// Night: 8:00 PM (1200) – 5:59 AM (359)
+	return {
+		period: "night",
+		label: "Night Sleep",
+		periodLabel: "Night",
+		timeRange: "8:00 PM – 5:59 AM",
+		isNight: true,
+	};
+}
+
+export function isNightSession(log: BabySleepLog): boolean {
+	if (log.sleepType === "night") return true;
+	if (log.sleepType === "morning" || log.sleepType === "afternoon" || log.sleepType === "evening" || log.sleepType === "nap") return false;
+	return detectSleepPeriod(log.startTime).isNight;
+}
 
 export function calculateBabyAge(birthDateString: string): {
 	formatted: string;
@@ -307,10 +374,10 @@ export function getSleepStats(logs: BabySleepLog[], babyMonthAge = 0) {
 			todayCompletedCount++;
 		}
 		todaySleepMinutes += mins;
-		if (log.sleepType === "nap") {
-			todayNapMinutes += mins;
-		} else {
+		if (isNightSession(log)) {
 			todayNightMinutes += mins;
+		} else {
+			todayNapMinutes += mins;
 		}
 	}
 
@@ -383,8 +450,8 @@ export function getSleepComparisonData(logs: BabySleepLog[], daysCount = 7, baby
 				m = Math.max(0, Math.round((Date.now() - new Date(l.startTime).getTime()) / 60000));
 			}
 			totalMinutes += m;
-			if (l.sleepType === "nap") napMinutes += m;
-			else nightMinutes += m;
+			if (isNightSession(l)) nightMinutes += m;
+			else napMinutes += m;
 		}
 
 		const hasLogs = dayLogs.length > 0;

@@ -22,6 +22,8 @@ import {
 	Baby,
 	AlertCircle,
 	Check,
+	CheckCircle,
+	Loader2,
 	ArrowRight,
 	Grid2X2,
 	Calendar,
@@ -96,7 +98,7 @@ export function MilkTracker({
 	const [submitting, setSubmitting] = useState(false);
 
 	// Filtering & chart states
-	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "completed" | "leftover">("all");
+	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "ongoing" | "completed" | "leftover">("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [chartDaysRange, setChartDaysRange] = useState<7 | 14>(7);
 	const [chartMetric, setChartMetric] = useState<"both" | "drank" | "leftover">("both");
@@ -135,6 +137,7 @@ export function MilkTracker({
 				const logged = new Date(log.loggedAt);
 				if (!isSameDay(logged, today)) return false;
 			}
+			if (activeFilter === "ongoing" && log.status !== "ongoing") return false;
 			if (activeFilter === "completed" && log.status !== "completed") return false;
 			if (activeFilter === "leftover" && log.status !== "leftover") return false;
 
@@ -186,7 +189,9 @@ export function MilkTracker({
 
 			showAlert(
 				"MILK FEED LOGGED",
-				quickStatus === "completed"
+				quickStatus === "ongoing"
+					? `Logged ${prepared} oz ${quickMilkType.replace("_", " ")} — bottle is currently ongoing 🍼`
+					: quickStatus === "completed"
 					? `Logged ${prepared} oz ${quickMilkType.replace("_", " ")} — baby drank it all! 🍼`
 					: `Logged ${prepared} oz (${drank} oz drank, ${leftover} oz leftover) ✨`,
 			);
@@ -246,7 +251,7 @@ export function MilkTracker({
 			}
 		}
 
-		const drank = Math.max(0, Math.round((prepared - leftover) * 10) / 10);
+		const drank = formStatus === "ongoing" ? 0 : Math.max(0, Math.round((prepared - leftover) * 10) / 10);
 
 		setSubmitting(true);
 		try {
@@ -271,7 +276,9 @@ export function MilkTracker({
 				});
 				showAlert(
 					"MILK RECORD SAVED",
-					`Recorded ${prepared} oz feeding (${drank} oz drank) successfully! 🍼`,
+					formStatus === "ongoing"
+						? `Recorded ${prepared} oz feeding as ongoing (bottle not completed yet) 🍼`
+						: `Recorded ${prepared} oz feeding (${drank} oz drank) successfully! 🍼`,
 				);
 			}
 			setDialogOpen(false);
@@ -360,12 +367,23 @@ export function MilkTracker({
 							</div>
 						</div>
 
-						{/* 2. Tag on Prepared Milk (Completed vs Leftover) */}
-						<div className="min-w-[190px]">
+						{/* 2. Tag on Prepared Milk (Ongoing vs Completed vs Leftover) */}
+						<div className="min-w-[240px]">
 							<label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
 								Status Tag
 							</label>
 							<div className="inline-flex h-9 w-full rounded-xl bg-white p-1 border border-slate-200 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
+								<button
+									type="button"
+									onClick={() => setQuickStatus("ongoing")}
+									className={`flex-1 rounded-lg text-xs font-bold transition-all ${
+										quickStatus === "ongoing"
+											? "bg-sky-600 text-white shadow-xs"
+											: "text-slate-600 hover:text-slate-900 dark:text-slate-400"
+									}`}
+								>
+									On going
+								</button>
 								<button
 									type="button"
 									onClick={() => setQuickStatus("completed")}
@@ -887,6 +905,7 @@ export function MilkTracker({
 								[
 									{ id: "all", label: "All", icon: Grid2X2 },
 									{ id: "today", label: `Today (${stats.todayCount})`, icon: Clock },
+									{ id: "ongoing", label: "On going", icon: Clock },
 									{ id: "completed", label: "Completed", icon: Check },
 									{ id: "leftover", label: "With Leftovers", icon: AlertCircle },
 								] as const
@@ -954,7 +973,6 @@ export function MilkTracker({
 					<div className="space-y-2.5">
 						{displayedLogs.map((log) => {
 							const logged = new Date(log.loggedAt);
-							const isCompleted = log.status === "completed";
 
 							return (
 								<article
@@ -963,13 +981,17 @@ export function MilkTracker({
 									className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-x-4"
 								>
 									{/* Left Squircle Icon */}
-									{isCompleted ? (
+									{log.status === "completed" ? (
 										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-blue-50 to-blue-100/70 text-blue-600 shadow-xs sm:size-11 dark:from-blue-950/60 dark:to-blue-900/40 dark:text-blue-400">
 											<Droplets size={19} className="sm:size-[21px]" />
 										</span>
+									) : log.status === "ongoing" ? (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-sky-50 to-sky-100/70 text-sky-600 shadow-xs sm:size-11 dark:from-sky-950/60 dark:to-sky-900/40 dark:text-sky-400">
+											<Clock size={19} className="sm:size-[21px]" />
+										</span>
 									) : (
 										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-amber-50 to-amber-100/70 text-amber-600 shadow-xs sm:size-11 dark:from-amber-950/60 dark:to-amber-900/40 dark:text-amber-400">
-											<Clock size={19} className="sm:size-[21px]" />
+											<AlertCircle size={19} className="sm:size-[21px]" />
 										</span>
 									)}
 
@@ -979,10 +1001,15 @@ export function MilkTracker({
 											<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
 												Bottle Feed ({log.preparedOz} oz)
 											</p>
-											{isCompleted ? (
+											{log.status === "completed" ? (
 												<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
 													<Check size={11} strokeWidth={2.5} />
 													Completed
+												</span>
+											) : log.status === "ongoing" ? (
+												<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-bold text-sky-700 animate-pulse dark:bg-sky-950/70 dark:text-sky-300">
+													<span className="size-1.5 rounded-full bg-sky-500 animate-ping" />
+													On going
 												</span>
 											) : (
 												<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
@@ -1020,18 +1047,55 @@ export function MilkTracker({
 									<div className="col-span-full flex min-w-0 flex-wrap items-center justify-between gap-3 border-t border-slate-100/80 pt-2.5 dark:border-slate-800/80 md:col-auto md:border-t-0 md:border-l md:border-slate-200 md:pl-4 md:pt-0 dark:md:border-slate-800">
 										{/* Details Pills */}
 										<div className="flex flex-wrap items-center gap-1.5">
-											<span className="inline-flex items-center rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-emerald-300">
-												{log.drankOz} oz drank
-											</span>
-											{log.leftoverOz > 0 && (
-												<span className="inline-flex items-center rounded-xl border border-amber-200/90 bg-amber-50/80 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/60 dark:text-amber-300">
-													{log.leftoverOz} oz left
+											{log.status === "ongoing" ? (
+												<span className="inline-flex items-center gap-1 rounded-xl border border-sky-200/90 bg-sky-50/80 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/60 dark:text-sky-300">
+													<Clock size={11} />
+													In progress ({log.preparedOz} oz)
 												</span>
+											) : (
+												<>
+													<span className="inline-flex items-center rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-slate-800 dark:bg-slate-900/80 dark:text-emerald-300">
+														{log.drankOz} oz drank
+													</span>
+													{log.leftoverOz > 0 && (
+														<span className="inline-flex items-center rounded-xl border border-amber-200/90 bg-amber-50/80 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/60 dark:text-amber-300">
+															{log.leftoverOz} oz left
+														</span>
+													)}
+												</>
 											)}
 										</div>
 
 										{/* Action Pill Group */}
-										<div className="budget-bill-actions flex shrink-0 items-center gap-0.5 rounded-2xl border p-0.5">
+										<div className="budget-bill-actions flex shrink-0 items-center gap-1 rounded-2xl border p-0.5">
+											{log.status === "ongoing" && (
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													disabled={submitting}
+													className="h-7.5 rounded-xl border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-bold text-emerald-700 shadow-2xs hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+													title="Mark bottle as completed"
+													onClick={async () => {
+														if (submitting) return;
+														setSubmitting(true);
+														try {
+															await onUpdateRecord(log.id, {
+																status: "completed",
+																leftoverOz: 0,
+															});
+															showAlert("BOTTLE COMPLETED", `Marked ${log.preparedOz} oz bottle as completed! 🍼`);
+														} catch (err) {
+															showAlert("ERROR", err instanceof Error ? err.message : "Failed to mark bottle completed");
+														} finally {
+															setSubmitting(false);
+														}
+													}}
+												>
+													<Check size={12} strokeWidth={2.5} />
+													<span>Done</span>
+												</Button>
+											)}
 											<Button
 												type="button"
 												variant="ghost"
@@ -1071,10 +1135,14 @@ export function MilkTracker({
 			{/* ==================================================================== */}
 			{/* DIALOG: Log / Edit Milk Feed                                         */}
 			{/* ==================================================================== */}
+			{/* ==================================================================== */}
+			{/* DIALOG: Log / Edit Milk Feed                                         */}
+			{/* ==================================================================== */}
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 				<DialogContent
 					pagePalette={dialogPalette}
-					className="max-w-md p-0 overflow-hidden rounded-3xl"
+					data-page-palette-surface
+					className="palette-dialog-panel flex max-h-[90dvh] max-w-lg flex-col overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
 				>
 					<PaletteDialogHeader
 						eyebrow="MILK TRACKER"
@@ -1089,179 +1157,219 @@ export function MilkTracker({
 						closeDisabled={submitting}
 					/>
 
-					<form onSubmit={handleSaveModalRecord} className="space-y-4 p-6">
-						{/* Date & Time */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Feeding Time
+					<form onSubmit={handleSaveModalRecord} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+						<div className="flex-1 min-h-0 space-y-4 overflow-y-auto p-5 text-sm sm:p-6">
+							{/* Date & Time */}
+							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+								<span>Feeding Time</span>
+								<Input
+									type="datetime-local"
+									value={formLoggedAt}
+									onChange={(e) => setFormLoggedAt(e.target.value)}
+									required
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+								/>
 							</label>
-							<Input
-								type="datetime-local"
-								value={formLoggedAt}
-								onChange={(e) => setFormLoggedAt(e.target.value)}
-								required
-								className="h-10 rounded-2xl text-xs"
-							/>
-						</div>
 
-						{/* Prepared Milk (oz) */}
-						<div>
-							<div className="flex items-center justify-between mb-1.5">
-								<label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
-									Prepared Milk (oz)
-								</label>
-								<div className="flex gap-1">
-									{PRESET_AMOUNTS.map((amt) => (
-										<button
-											key={amt}
-											type="button"
-											onClick={() => setFormPreparedOz(amt.toFixed(1))}
-											className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-										>
-											{amt}
-										</button>
-									))}
-								</div>
-							</div>
-							<Input
-								type="number"
-								step="0.5"
-								min="0.5"
-								max="20"
-								value={formPreparedOz}
-								onChange={(e) => setFormPreparedOz(e.target.value)}
-								required
-								placeholder="e.g. 5.0"
-								className="h-10 rounded-2xl text-xs font-bold"
-							/>
-						</div>
-
-						{/* Tag on Prepared Milk: Completed vs Left Over */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Feeding Tag / Result
-							</label>
-							<div className="grid grid-cols-2 gap-2">
-								<button
-									type="button"
-									onClick={() => {
-										setFormStatus("completed");
-										setFormLeftoverOz("0");
-									}}
-									className={`flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${
-										formStatus === "completed"
-											? "border-emerald-600 bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
-											: "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
-									}`}
-								>
-									<span className="flex items-center gap-1 font-bold text-xs">
-										<Check size={14} /> Completed
-									</span>
-									<span className="text-[10px] opacity-80 mt-0.5">Finished entire bottle</span>
-								</button>
-
-								<button
-									type="button"
-									onClick={() => {
-										setFormStatus("leftover");
-										if (parseFloat(formLeftoverOz) === 0) setFormLeftoverOz("1.0");
-									}}
-									className={`flex flex-col items-center justify-center rounded-2xl border p-3 text-center transition-all ${
-										formStatus === "leftover"
-											? "border-amber-500 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-											: "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
-									}`}
-								>
-									<span className="flex items-center gap-1 font-bold text-xs">
-										<AlertCircle size={14} /> Left Over
-									</span>
-									<span className="text-[10px] opacity-80 mt-0.5">Some milk left</span>
-								</button>
-							</div>
-						</div>
-
-						{/* Leftover Ounces (when tag is leftover) */}
-						{formStatus === "leftover" && (
-							<div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5 space-y-2 dark:border-amber-900/60 dark:bg-amber-950/40">
+							{/* Prepared Milk (oz) */}
+							<div className="space-y-1.5">
 								<div className="flex items-center justify-between">
-									<label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
-										Left Over Milk (oz)
-									</label>
-									<span className="text-xs font-bold text-amber-800 dark:text-amber-300">
-										Drank: {Math.max(0, (parseFloat(formPreparedOz) || 0) - (parseFloat(formLeftoverOz) || 0)).toFixed(1)} oz
-									</span>
+									<span className="text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">Prepared Milk (oz)</span>
+									<div className="flex gap-1">
+										{PRESET_AMOUNTS.map((amt) => (
+											<button
+												key={amt}
+												type="button"
+												onClick={() => setFormPreparedOz(amt.toFixed(1))}
+												className="rounded-lg border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700 transition-colors hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+											>
+												{amt}
+											</button>
+										))}
+									</div>
 								</div>
 								<Input
 									type="number"
 									step="0.5"
-									min="0.1"
-									max={parseFloat(formPreparedOz) || 20}
-									value={formLeftoverOz}
-									onChange={(e) => setFormLeftoverOz(e.target.value)}
+									min="0.5"
+									max="20"
+									value={formPreparedOz}
+									onChange={(e) => setFormPreparedOz(e.target.value)}
 									required
-									placeholder="e.g. 1.5"
-									className="h-10 rounded-2xl bg-white text-xs font-bold dark:bg-slate-900"
+									placeholder="e.g. 5.0"
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 								/>
-								<p className="text-[10px] text-amber-700 dark:text-amber-400">
-									Enter the remaining ounces left in the bottle. Drank volume is calculated automatically.
-								</p>
 							</div>
-						)}
 
-						{/* Milk Type */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Milk Type
-							</label>
-							<div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-								{MILK_TYPES.map((t) => (
+							{/* Tag on Prepared Milk: Ongoing vs Completed vs Left Over */}
+							<div>
+								<span className="block text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm mb-1.5">
+									Feeding Tag / Result
+								</span>
+								<div className="grid grid-cols-3 gap-1.5 sm:gap-2">
 									<button
-										key={t.id}
 										type="button"
-										onClick={() => setFormMilkType(t.id)}
-										className={`rounded-xl py-2 px-1 text-center text-xs font-bold transition-all border ${
-											formMilkType === t.id
-												? "border-rose-600 bg-rose-50 text-rose-800 dark:bg-rose-950 dark:text-rose-300 shadow-xs"
-												: "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
+										onClick={() => {
+											setFormStatus("ongoing");
+											setFormLeftoverOz("0");
+										}}
+										style={formStatus === "ongoing" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+										className={`flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 sm:p-3 text-center transition-all ${
+											formStatus === "ongoing"
+												? "palette-action-button border shadow-xs"
+												: "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
 										}`}
 									>
-										{t.label}
+										<span className="flex items-center gap-1 font-bold text-xs">
+											<Clock size={13} /> On going
+										</span>
+										<span className="text-[10px] opacity-80 mt-0.5 leading-tight">Bottle not yet completed</span>
 									</button>
-								))}
+
+									<button
+										type="button"
+										onClick={() => {
+											setFormStatus("completed");
+											setFormLeftoverOz("0");
+										}}
+										style={formStatus === "completed" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+										className={`flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 sm:p-3 text-center transition-all ${
+											formStatus === "completed"
+												? "palette-action-button border shadow-xs"
+												: "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+										}`}
+									>
+										<span className="flex items-center gap-1 font-bold text-xs">
+											<Check size={13} /> Completed
+										</span>
+										<span className="text-[10px] opacity-80 mt-0.5 leading-tight">Finished entire bottle</span>
+									</button>
+
+									<button
+										type="button"
+										onClick={() => {
+											setFormStatus("leftover");
+											if (parseFloat(formLeftoverOz) === 0) setFormLeftoverOz("1.0");
+										}}
+										style={formStatus === "leftover" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+										className={`flex flex-col items-center justify-center rounded-xl sm:rounded-2xl border p-2 sm:p-3 text-center transition-all ${
+											formStatus === "leftover"
+												? "palette-action-button border shadow-xs"
+												: "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+										}`}
+									>
+										<span className="flex items-center gap-1 font-bold text-xs">
+											<AlertCircle size={13} /> Left Over
+										</span>
+										<span className="text-[10px] opacity-80 mt-0.5 leading-tight">Some milk left</span>
+									</button>
+								</div>
+
+								{formStatus === "ongoing" && (
+									<div className="mt-2 rounded-xl border border-sky-200/80 bg-sky-50/70 p-2.5 text-xs text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-300">
+										<p className="flex items-center gap-1.5 font-semibold text-[11px] sm:text-xs">
+											<Clock size={13} className="shrink-0 text-sky-600 dark:text-sky-400" />
+											<span>Bottle is ongoing (not yet completed). You can update it once baby finishes drinking.</span>
+										</p>
+									</div>
+								)}
 							</div>
-						</div>
 
-						{/* Notes */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Notes (Optional)
+							{/* Leftover Ounces (when tag is leftover) */}
+							{formStatus === "leftover" && (
+								<div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5 space-y-2 dark:border-amber-900/60 dark:bg-amber-950/40">
+									<div className="flex items-center justify-between">
+										<label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
+											Left Over Milk (oz)
+										</label>
+										<span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+											Drank: {Math.max(0, (parseFloat(formPreparedOz) || 0) - (parseFloat(formLeftoverOz) || 0)).toFixed(1)} oz
+										</span>
+									</div>
+									<Input
+										type="number"
+										step="0.5"
+										min="0.1"
+										max={parseFloat(formPreparedOz) || 20}
+										value={formLeftoverOz}
+										onChange={(e) => setFormLeftoverOz(e.target.value)}
+										required
+										placeholder="e.g. 1.5"
+										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+									/>
+									<p className="text-[10px] text-amber-700 dark:text-amber-400">
+										Enter the remaining ounces left in the bottle. Drank volume is calculated automatically.
+									</p>
+								</div>
+							)}
+
+							{/* Milk Type */}
+							<div>
+								<span className="block text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm mb-1.5">
+									Milk Type
+								</span>
+								<div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+									{MILK_TYPES.map((t) => (
+										<button
+											key={t.id}
+											type="button"
+											onClick={() => setFormMilkType(t.id)}
+											style={formMilkType === t.id ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+											className={`rounded-xl py-2 px-1 text-center text-xs font-bold transition-all border ${
+												formMilkType === t.id
+													? "palette-action-button border shadow-xs"
+													: "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+											}`}
+										>
+											{t.label}
+										</button>
+									))}
+								</div>
+							</div>
+
+							{/* Notes */}
+							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+								<span>Notes (Optional)</span>
+								<Input
+									type="text"
+									placeholder="e.g. Fed comfortably, burped well"
+									value={formNotes}
+									onChange={(e) => setFormNotes(e.target.value)}
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+								/>
 							</label>
-							<Input
-								type="text"
-								placeholder="e.g. Fed comfortably, burped well"
-								value={formNotes}
-								onChange={(e) => setFormNotes(e.target.value)}
-								className="h-10 rounded-2xl text-xs"
-							/>
 						</div>
 
-						{/* Actions */}
-						<div className="flex items-center justify-end gap-2 pt-2">
+						{/* Card Footer */}
+						<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
 							<Button
+								data-page-palette-secondary
 								type="button"
-								variant="outline"
-								onClick={() => setDialogOpen(false)}
 								disabled={submitting}
-								className="h-10 rounded-2xl px-4 text-xs font-semibold"
+								variant="outline"
+								className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
+								onClick={() => setDialogOpen(false)}
 							>
 								Cancel
 							</Button>
 							<Button
 								type="submit"
+								variant="ghost"
 								disabled={submitting}
-								className="h-10 rounded-2xl bg-rose-600 px-5 text-xs font-bold text-white hover:bg-rose-700"
+								style={{ "--action-accent": paletteAccent } as CSSProperties}
+								className="palette-action-button palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 							>
-								{submitting ? "Saving..." : editingRecord ? "Save Changes" : "Save Record"}
+								{submitting ? (
+									<>
+										<Loader2 size={16} className="animate-spin shrink-0" />
+										<span>Saving...</span>
+									</>
+								) : (
+									<>
+										<CheckCircle size={16} className="shrink-0" />
+										<span>{editingRecord ? "Save Changes" : "Save Record"}</span>
+									</>
+								)}
 							</Button>
 						</div>
 					</form>
@@ -1274,7 +1382,8 @@ export function MilkTracker({
 			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<DialogContent
 					pagePalette={dialogPalette}
-					className="max-w-sm p-0 overflow-hidden rounded-3xl"
+					data-page-palette-surface
+					className="palette-dialog-panel max-w-sm p-0 overflow-hidden rounded-3xl border shadow-2xl"
 				>
 					<PaletteDialogHeader
 						tone="danger"
@@ -1286,30 +1395,41 @@ export function MilkTracker({
 						closeDisabled={submitting}
 					/>
 
-					<div className="p-6 space-y-4">
-						<p className="text-xs text-slate-600 dark:text-slate-400">
+					<div className="p-5 sm:p-6 space-y-3">
+						<p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
 							Are you sure you want to delete this milk feeding record?
 						</p>
+					</div>
 
-						<div className="flex items-center justify-end gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setDeleteDialogOpen(false)}
-								disabled={submitting}
-								className="h-9 rounded-2xl text-xs"
-							>
-								Cancel
-							</Button>
-							<Button
-								type="button"
-								onClick={handleConfirmDelete}
-								disabled={submitting}
-								className="h-9 rounded-2xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-700"
-							>
-								{submitting ? "Deleting..." : "Delete Log"}
-							</Button>
-						</div>
+					<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
+						<Button
+							data-page-palette-secondary
+							type="button"
+							variant="outline"
+							onClick={() => setDeleteDialogOpen(false)}
+							disabled={submitting}
+							className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							onClick={handleConfirmDelete}
+							disabled={submitting}
+							className="palette-dialog-footer-button flex-1 sm:flex-initial bg-rose-600 text-sm font-medium text-white shadow-sm transition-all hover:bg-rose-700"
+						>
+							{submitting ? (
+								<>
+									<Loader2 size={16} className="animate-spin shrink-0" />
+									<span>Deleting...</span>
+								</>
+							) : (
+								<>
+									<Trash2 size={15} className="shrink-0" />
+									<span>Delete Log</span>
+								</>
+							)}
+						</Button>
 					</div>
 				</DialogContent>
 			</Dialog>

@@ -87,7 +87,8 @@ export type BabyMedicalNote = {
 	createdAt?: string;
 };
 
-export type SleepType = "night" | "nap";
+export type SleepType = "night" | "nap" | "morning" | "afternoon" | "evening";
+export type SleepPeriod = "morning" | "afternoon" | "evening" | "night";
 export type SleepStatus = "sleeping" | "completed";
 
 export type BabySleepLog = {
@@ -101,7 +102,7 @@ export type BabySleepLog = {
 	createdAt?: string;
 };
 
-export type MilkStatus = "completed" | "leftover";
+export type MilkStatus = "completed" | "leftover" | "ongoing";
 export type MilkType = "formula" | "breast_milk" | "cow_milk" | "other";
 
 export type BabyMilkLog = {

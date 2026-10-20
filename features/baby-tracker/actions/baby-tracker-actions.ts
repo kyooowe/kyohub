@@ -7,8 +7,6 @@ import type {
 	BabyGender,
 	BabyProfile,
 	BabyTrackerData,
-	BabySleepLog,
-	BabyMilkLog,
 	SleepType,
 	SleepStatus,
 	MilkStatus,
@@ -22,6 +20,7 @@ import type {
 	VaccineStatus,
 } from "../types";
 import { standardChildhoodVaccines, BLOOD_TYPES } from "../types";
+import { detectSleepPeriod } from "../lib/baby-tracker-utils";
 
 const getCachedBabyTrackerData = unstable_cache(
 	async (): Promise<BabyTrackerData> => {
@@ -600,9 +599,12 @@ export async function startBabySleep(data?: {
 		throw new Error("Baby is already sleeping! Tap 'Wake Up' to complete the current session.");
 	}
 
+	const startIso = data?.startTime ? new Date(data.startTime).toISOString() : new Date().toISOString();
+	const detected = detectSleepPeriod(startIso);
+
 	await db.orm.public.BabySleepLog.create({
-		startTime: data?.startTime ? new Date(data.startTime).toISOString() : new Date().toISOString(),
-		sleepType: data?.sleepType ?? "night",
+		startTime: startIso,
+		sleepType: data?.sleepType ?? detected.period,
 		status: "sleeping",
 		notes: (data?.notes ?? "").trim(),
 	});
@@ -651,7 +653,7 @@ export async function createSleepLog(data: {
 	if (!data.startTime) throw new Error("Start time is required.");
 
 	const start = new Date(data.startTime);
-	let end: Date | null = data.endTime ? new Date(data.endTime) : null;
+	const end: Date | null = data.endTime ? new Date(data.endTime) : null;
 	let durationMinutes: number | null = null;
 	let status: SleepStatus = "completed";
 
@@ -664,11 +666,13 @@ export async function createSleepLog(data: {
 		status = "sleeping";
 	}
 
+	const detected = detectSleepPeriod(start);
+
 	await db.orm.public.BabySleepLog.create({
 		startTime: start.toISOString(),
 		endTime: end ? end.toISOString() : null,
 		durationMinutes,
-		sleepType: data.sleepType ?? "night",
+		sleepType: data.sleepType ?? detected.period,
 		status,
 		notes: (data.notes ?? "").trim(),
 	});
@@ -710,11 +714,13 @@ export async function updateSleepLog(
 		status = "sleeping";
 	}
 
+	const detected = data.startTime ? detectSleepPeriod(data.startTime) : null;
+
 	await db.orm.public.BabySleepLog.where({ id }).update({
 		startTime: start.toISOString(),
 		endTime: end ? end.toISOString() : null,
 		durationMinutes,
-		sleepType: data.sleepType ?? (existing.sleepType as SleepType),
+		sleepType: data.sleepType ?? (detected ? detected.period : (existing.sleepType as SleepType)),
 		status,
 		notes: data.notes !== undefined ? data.notes.trim() : existing.notes,
 	});
@@ -746,11 +752,11 @@ export async function createMilkLog(data: {
 	}
 
 	const status = data.status ?? "completed";
-	const leftoverOz = status === "completed" ? 0 : Math.max(0, data.leftoverOz ?? 0);
+	const leftoverOz = status === "completed" || status === "ongoing" ? 0 : Math.max(0, data.leftoverOz ?? 0);
 	if (leftoverOz > data.preparedOz) {
 		throw new Error("Leftover milk cannot be more than prepared milk.");
 	}
-	const drankOz = Math.max(0, Math.round((data.preparedOz - leftoverOz) * 10) / 10);
+	const drankOz = status === "ongoing" ? 0 : Math.max(0, Math.round((data.preparedOz - leftoverOz) * 10) / 10);
 
 	await db.orm.public.BabyMilkLog.create({
 		loggedAt: data.loggedAt ? new Date(data.loggedAt).toISOString() : new Date().toISOString(),
@@ -785,11 +791,11 @@ export async function updateMilkLog(
 		throw new Error("Prepared milk (oz) must be greater than 0.");
 	}
 	const status = data.status ?? (existing.status as MilkStatus);
-	const leftoverOz = status === "completed" ? 0 : Math.max(0, data.leftoverOz ?? existing.leftoverOz);
+	const leftoverOz = status === "completed" || status === "ongoing" ? 0 : Math.max(0, data.leftoverOz ?? existing.leftoverOz);
 	if (leftoverOz > preparedOz) {
 		throw new Error("Leftover milk cannot be more than prepared milk.");
 	}
-	const drankOz = Math.max(0, Math.round((preparedOz - leftoverOz) * 10) / 10);
+	const drankOz = status === "ongoing" ? 0 : Math.max(0, Math.round((preparedOz - leftoverOz) * 10) / 10);
 
 	await db.orm.public.BabyMilkLog.where({ id }).update({
 		loggedAt: data.loggedAt ? new Date(data.loggedAt).toISOString() : existing.loggedAt,
