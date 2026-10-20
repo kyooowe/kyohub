@@ -13,12 +13,17 @@ import {
 import {
 	Moon,
 	Sun,
+	Sunrise,
+	Sunset,
 	Clock,
 	Plus,
 	Trash2,
 	Pencil,
 	Sparkles,
 	CheckCircle2,
+	CheckCircle,
+	Check,
+	Loader2,
 	Search,
 	Play,
 	Bed,
@@ -46,6 +51,7 @@ import {
 	getSleepStats,
 	getSleepComparisonData,
 	isSameDay,
+	detectSleepPeriod,
 } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
 
@@ -106,9 +112,14 @@ export function SleepTracker({
 	// Manual modal form states
 	const [formStartTime, setFormStartTime] = useState("");
 	const [formEndTime, setFormEndTime] = useState("");
-	const [formSleepType, setFormSleepType] = useState<SleepType>("night");
 	const [formNotes, setFormNotes] = useState("");
 	const [formIsStillSleeping, setFormIsStillSleeping] = useState(false);
+
+	// Auto-detected sleep session period based on start time
+	const detectedPeriod = useMemo(
+		() => detectSleepPeriod(formStartTime ? new Date(formStartTime) : new Date()),
+		[formStartTime],
+	);
 
 	// Stats
 	const stats = useMemo(() => getSleepStats(logs, babyMonthAge), [logs, babyMonthAge]);
@@ -154,13 +165,17 @@ export function SleepTracker({
 				const start = new Date(log.startTime);
 				if (!isSameDay(start, today)) return false;
 			}
-			if (activeFilter === "night" && log.sleepType !== "night") return false;
-			if (activeFilter === "nap" && log.sleepType !== "nap") return false;
+			const period = detectSleepPeriod(log.startTime);
+			if (activeFilter === "night" && !period.isNight) return false;
+			if (activeFilter === "nap" && period.isNight) return false;
 
 			if (searchQuery.trim()) {
 				const q = searchQuery.toLowerCase().trim();
 				const matchesNotes = log.notes?.toLowerCase().includes(q);
-				const matchesType = log.sleepType.toLowerCase().includes(q);
+				const matchesType =
+					log.sleepType.toLowerCase().includes(q) ||
+					period.label.toLowerCase().includes(q) ||
+					period.period.toLowerCase().includes(q);
 				if (!matchesNotes && !matchesType) return false;
 			}
 			return true;
@@ -223,7 +238,6 @@ export function SleepTracker({
 		setEditingRecord(null);
 		setFormStartTime(toLocalIso(oneHourAgo));
 		setFormEndTime(toLocalIso(now));
-		setFormSleepType("night");
 		setFormNotes("");
 		setFormIsStillSleeping(false);
 		setDialogOpen(true);
@@ -239,7 +253,6 @@ export function SleepTracker({
 		setEditingRecord(record);
 		setFormStartTime(toLocalIso(record.startTime));
 		setFormEndTime(record.endTime ? toLocalIso(record.endTime) : "");
-		setFormSleepType(record.sleepType);
 		setFormNotes(record.notes || "");
 		setFormIsStillSleeping(record.status === "sleeping" || !record.endTime);
 		setDialogOpen(true);
@@ -264,12 +277,13 @@ export function SleepTracker({
 		}
 
 		setSubmitting(true);
+		const autoSleepType = detectSleepPeriod(formStartTime).period;
 		try {
 			if (editingRecord) {
 				await onUpdateRecord(editingRecord.id, {
 					startTime: new Date(formStartTime).toISOString(),
 					endTime: formIsStillSleeping ? null : formEndTime ? new Date(formEndTime).toISOString() : null,
-					sleepType: formSleepType,
+					sleepType: autoSleepType,
 					notes: formNotes.trim(),
 					status: formIsStillSleeping ? "sleeping" : "completed",
 				});
@@ -278,7 +292,7 @@ export function SleepTracker({
 				await onCreateRecord({
 					startTime: new Date(formStartTime).toISOString(),
 					endTime: formIsStillSleeping ? null : formEndTime ? new Date(formEndTime).toISOString() : null,
-					sleepType: formSleepType,
+					sleepType: autoSleepType,
 					notes: formNotes.trim(),
 				});
 				showAlert("RECORD SAVED", "Sleep session recorded successfully! 🌙");
@@ -945,6 +959,7 @@ export function SleepTracker({
 								: isSleeping
 								? formattedLiveStopwatch
 								: "—";
+							const detected = detectSleepPeriod(log.startTime);
 
 							return (
 								<article
@@ -953,13 +968,21 @@ export function SleepTracker({
 									className="budget-bill-card group relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 overflow-hidden rounded-2xl border p-3 transition-all hover:-translate-y-0.5 sm:rounded-3xl sm:p-4 md:grid-cols-[auto_minmax(0,1fr)_auto] md:gap-x-4"
 								>
 									{/* Left Squircle Icon */}
-									{log.sleepType === "night" ? (
+									{detected.period === "night" ? (
 										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-indigo-50 to-indigo-100/70 text-indigo-600 shadow-xs sm:size-11 dark:from-indigo-950/60 dark:to-indigo-900/40 dark:text-indigo-400">
 											<Moon size={19} className="sm:size-[21px]" />
 										</span>
+									) : detected.period === "evening" ? (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-purple-50 to-purple-100/70 text-purple-600 shadow-xs sm:size-11 dark:from-purple-950/60 dark:to-purple-900/40 dark:text-purple-400">
+											<Sunset size={19} className="sm:size-[21px]" />
+										</span>
+									) : detected.period === "afternoon" ? (
+										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-orange-50 to-orange-100/70 text-orange-600 shadow-xs sm:size-11 dark:from-orange-950/60 dark:to-orange-900/40 dark:text-orange-400">
+											<Sun size={19} className="sm:size-[21px]" />
+										</span>
 									) : (
 										<span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-amber-50 to-amber-100/70 text-amber-600 shadow-xs sm:size-11 dark:from-amber-950/60 dark:to-amber-900/40 dark:text-amber-400">
-											<Sun size={19} className="sm:size-[21px]" />
+											<Sunrise size={19} className="sm:size-[21px]" />
 										</span>
 									)}
 
@@ -967,7 +990,7 @@ export function SleepTracker({
 									<div className="min-w-0">
 										<div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
 											<p className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-slate-100">
-												{log.sleepType === "night" ? "Night Sleep" : "Daytime Nap"}
+												{detected.label}
 											</p>
 											{isSleeping ? (
 												<span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 animate-pulse dark:bg-emerald-950/60 dark:text-emerald-300">
@@ -977,12 +1000,16 @@ export function SleepTracker({
 											) : (
 												<span
 													className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
-														log.sleepType === "night"
+														detected.period === "night"
 															? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+															: detected.period === "evening"
+															? "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300"
+															: detected.period === "afternoon"
+															? "bg-orange-50 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300"
 															: "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
 													}`}
 												>
-													{log.sleepType === "night" ? "Night Sleep" : "Nap"}
+													{detected.periodLabel}
 												</span>
 											)}
 										</div>
@@ -1070,10 +1097,14 @@ export function SleepTracker({
 			{/* ==================================================================== */}
 			{/* DIALOG: Add / Edit Sleep Record                                      */}
 			{/* ==================================================================== */}
+			{/* ==================================================================== */}
+			{/* DIALOG: Add / Edit Sleep Record                                      */}
+			{/* ==================================================================== */}
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 				<DialogContent
 					pagePalette={dialogPalette}
-					className="max-w-md p-0 overflow-hidden rounded-3xl"
+					data-page-palette-surface
+					className="palette-dialog-panel flex max-h-[90dvh] max-w-lg flex-col overflow-hidden p-0 shadow-2xl sm:rounded-3xl"
 				>
 					<PaletteDialogHeader
 						eyebrow="SLEEP TRACKER"
@@ -1083,137 +1114,145 @@ export function SleepTracker({
 								? "Adjust bedtime, wake up time, or session notes."
 								: "Record a completed or ongoing sleep session for your baby."
 						}
-						icon={<Moon size={22} className="text-indigo-600 dark:text-indigo-400" />}
+						icon={<Moon size={22} className="text-violet-600 dark:text-violet-400" />}
 						closeLabel="Close"
 						closeDisabled={submitting}
 					/>
 
-					<form onSubmit={handleSaveManualRecord} className="space-y-4 p-6">
-						{/* Sleep Type Toggle */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Sleep Session Type
-							</label>
-							<div className="grid grid-cols-2 gap-2">
-								<button
-									type="button"
-									onClick={() => setFormSleepType("night")}
-									className={`flex items-center justify-center gap-2 rounded-2xl border p-2.5 text-xs font-bold transition-all ${
-										formSleepType === "night"
-											? "border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
-											: "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
-									}`}
-								>
-									<Moon size={15} />
-									<span>Night Sleep</span>
-								</button>
-								<button
-									type="button"
-									onClick={() => setFormSleepType("nap")}
-									className={`flex items-center justify-center gap-2 rounded-2xl border p-2.5 text-xs font-bold transition-all ${
-										formSleepType === "nap"
-											? "border-amber-500 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-											: "border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400"
-									}`}
-								>
-									<Sun size={15} />
-									<span>Daytime Nap</span>
-								</button>
-							</div>
-						</div>
-
-						{/* Start Time */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Sleep Start Time (Fell Asleep)
-							</label>
-							<Input
-								type="datetime-local"
-								value={formStartTime}
-								onChange={(e) => setFormStartTime(e.target.value)}
-								required
-								className="h-10 rounded-2xl text-xs"
-							/>
-						</div>
-
-						{/* Still Sleeping Checkbox */}
-						<div className="flex items-center gap-2">
-							<input
-								id="still-sleeping"
-								type="checkbox"
-								checked={formIsStillSleeping}
-								onChange={(e) => setFormIsStillSleeping(e.target.checked)}
-								className="size-4 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500"
-							/>
-							<label
-								htmlFor="still-sleeping"
-								className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-							>
-								Baby is currently still sleeping (ongoing session)
-							</label>
-						</div>
-
-						{/* End Time (if not still sleeping) */}
-						{!formIsStillSleeping && (
-							<div>
-								<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-									Wake Up Time
+					<form onSubmit={handleSaveManualRecord} className="flex min-h-0 flex-1 flex-col overflow-hidden">
+						<div className="flex-1 min-h-0 space-y-4 overflow-y-auto p-5 text-sm sm:p-6">
+							{/* Start Time with Auto-Detected Period */}
+							<div className="space-y-1.5">
+								<label htmlFor="sleep-start-time" className="block text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									Sleep Start Time (Fell Asleep)
 								</label>
 								<Input
+									id="sleep-start-time"
 									type="datetime-local"
-									value={formEndTime}
-									onChange={(e) => setFormEndTime(e.target.value)}
-									required={!formIsStillSleeping}
-									className="h-10 rounded-2xl text-xs"
+									value={formStartTime}
+									onChange={(e) => setFormStartTime(e.target.value)}
+									required
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 								/>
+								<div className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-xs dark:border-slate-800/80 dark:bg-slate-900/60">
+									<span className="inline-flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+										{detectedPeriod.period === "night" ? (
+											<Moon size={14} className="text-indigo-600 dark:text-indigo-400" />
+										) : detectedPeriod.period === "evening" ? (
+											<Sunset size={14} className="text-purple-600 dark:text-purple-400" />
+										) : detectedPeriod.period === "afternoon" ? (
+											<Sun size={14} className="text-orange-600 dark:text-orange-400" />
+										) : (
+											<Sunrise size={14} className="text-amber-600 dark:text-amber-400" />
+										)}
+										<span>
+											Auto-detected: <strong className="font-semibold text-slate-900 dark:text-slate-100">{detectedPeriod.label}</strong>
+										</span>
+									</span>
+									<span className="text-[11px] text-slate-500 dark:text-slate-400">
+										{detectedPeriod.timeRange}
+									</span>
+								</div>
 							</div>
-						)}
 
-						{/* Calculated duration preview */}
-						{!formIsStillSleeping && formStartTime && formEndTime && (
-							<div className="rounded-2xl bg-indigo-50 p-3 text-xs text-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-200 flex items-center justify-between">
-								<span className="font-semibold">Calculated Sleep Duration:</span>
-								<span className="font-bold text-sm">
-									{(() => {
-										const diff = new Date(formEndTime).getTime() - new Date(formStartTime).getTime();
-										if (diff <= 0) return "Invalid times";
-										return formatDurationMinutes(Math.round(diff / 60000));
-									})()}
+							{/* Still Sleeping Checkbox */}
+							<label
+								htmlFor="still-sleeping"
+								className="inline-flex cursor-pointer items-center gap-2.5 select-none"
+							>
+								<div
+									className={`grid size-5 place-items-center rounded-md border transition-all ${
+										formIsStillSleeping
+											? "border-transparent text-white shadow-2xs"
+											: "border-slate-300 bg-white hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900"
+									}`}
+									style={formIsStillSleeping ? { backgroundColor: paletteAccent || "var(--page-accent-base, #e11d48)" } : undefined}
+								>
+									<input
+										id="still-sleeping"
+										type="checkbox"
+										checked={formIsStillSleeping}
+										onChange={(e) => setFormIsStillSleeping(e.target.checked)}
+										className="sr-only"
+									/>
+									{formIsStillSleeping && <Check size={13} strokeWidth={3} className="text-white" />}
+								</div>
+								<span className="text-xs font-semibold text-slate-700 dark:text-slate-300 sm:text-sm">
+									Baby is currently still sleeping (ongoing session)
 								</span>
-							</div>
-						)}
-
-						{/* Notes */}
-						<div>
-							<label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-								Notes / Observations (Optional)
 							</label>
-							<Input
-								type="text"
-								placeholder="e.g. Woke up once for pacifier, calm sleep"
-								value={formNotes}
-								onChange={(e) => setFormNotes(e.target.value)}
-								className="h-10 rounded-2xl text-xs"
-							/>
+
+							{/* End Time (if not still sleeping) */}
+							{!formIsStillSleeping && (
+								<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+									<span>Wake Up Time</span>
+									<Input
+										type="datetime-local"
+										value={formEndTime}
+										onChange={(e) => setFormEndTime(e.target.value)}
+										required={!formIsStillSleeping}
+										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+									/>
+								</label>
+							)}
+
+							{/* Calculated duration preview */}
+							{!formIsStillSleeping && formStartTime && formEndTime && (
+								<div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-200 flex items-center justify-between">
+									<span className="font-semibold">Calculated Sleep Duration:</span>
+									<span className="font-bold text-sm">
+										{(() => {
+											const diff = new Date(formEndTime).getTime() - new Date(formStartTime).getTime();
+											if (diff <= 0) return "Invalid times";
+											return formatDurationMinutes(Math.round(diff / 60000));
+										})()}
+									</span>
+								</div>
+							)}
+
+							{/* Notes */}
+							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
+								<span>Notes / Observations (Optional)</span>
+								<Input
+									type="text"
+									placeholder="e.g. Woke up once for pacifier, calm sleep"
+									value={formNotes}
+									onChange={(e) => setFormNotes(e.target.value)}
+									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
+								/>
+							</label>
 						</div>
 
-						{/* Actions */}
-						<div className="flex items-center justify-end gap-2 pt-2">
+						{/* Card Footer */}
+						<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
 							<Button
+								data-page-palette-secondary
 								type="button"
-								variant="outline"
-								onClick={() => setDialogOpen(false)}
 								disabled={submitting}
-								className="h-10 rounded-2xl px-4 text-xs font-semibold"
+								variant="outline"
+								className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
+								onClick={() => setDialogOpen(false)}
 							>
 								Cancel
 							</Button>
 							<Button
 								type="submit"
+								variant="ghost"
 								disabled={submitting}
-								className="h-10 rounded-2xl bg-indigo-600 px-5 text-xs font-bold text-white hover:bg-indigo-700"
+								style={{ "--action-accent": paletteAccent } as CSSProperties}
+								className="palette-action-button palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
 							>
-								{submitting ? "Saving..." : editingRecord ? "Save Changes" : "Save Record"}
+								{submitting ? (
+									<>
+										<Loader2 size={16} className="animate-spin shrink-0" />
+										<span>Saving...</span>
+									</>
+								) : (
+									<>
+										<CheckCircle size={16} className="shrink-0" />
+										<span>{editingRecord ? "Save Changes" : "Save Record"}</span>
+									</>
+								)}
 							</Button>
 						</div>
 					</form>
@@ -1226,7 +1265,8 @@ export function SleepTracker({
 			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<DialogContent
 					pagePalette={dialogPalette}
-					className="max-w-sm p-0 overflow-hidden rounded-3xl"
+					data-page-palette-surface
+					className="palette-dialog-panel max-w-sm p-0 overflow-hidden rounded-3xl border shadow-2xl"
 				>
 					<PaletteDialogHeader
 						tone="danger"
@@ -1238,30 +1278,41 @@ export function SleepTracker({
 						closeDisabled={submitting}
 					/>
 
-					<div className="p-6 space-y-4">
-						<p className="text-xs text-slate-600 dark:text-slate-400">
+					<div className="p-5 sm:p-6 space-y-3">
+						<p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
 							Are you sure you want to delete this sleep log? This action cannot be undone.
 						</p>
+					</div>
 
-						<div className="flex items-center justify-end gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setDeleteDialogOpen(false)}
-								disabled={submitting}
-								className="h-9 rounded-2xl text-xs"
-							>
-								Cancel
-							</Button>
-							<Button
-								type="button"
-								onClick={handleConfirmDelete}
-								disabled={submitting}
-								className="h-9 rounded-2xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-700"
-							>
-								{submitting ? "Deleting..." : "Delete Log"}
-							</Button>
-						</div>
+					<div className="palette-dialog-footer shrink-0 flex flex-wrap justify-end gap-2 p-3.5 sm:p-4 sm:px-6">
+						<Button
+							data-page-palette-secondary
+							type="button"
+							variant="outline"
+							onClick={() => setDeleteDialogOpen(false)}
+							disabled={submitting}
+							className="palette-dialog-footer-button flex-1 sm:flex-initial border font-medium transition-colors duration-150"
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							onClick={handleConfirmDelete}
+							disabled={submitting}
+							className="palette-dialog-footer-button flex-1 sm:flex-initial bg-rose-600 text-sm font-medium text-white shadow-sm transition-all hover:bg-rose-700"
+						>
+							{submitting ? (
+								<>
+									<Loader2 size={16} className="animate-spin shrink-0" />
+									<span>Deleting...</span>
+								</>
+							) : (
+								<>
+									<Trash2 size={15} className="shrink-0" />
+									<span>Delete Log</span>
+								</>
+							)}
+						</Button>
 					</div>
 				</DialogContent>
 			</Dialog>
