@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, type FormEvent, type CSSProperties } from "react";
+import { useState, useEffect, useMemo, type FormEvent, type CSSProperties } from "react";
 import {
 	Clock,
 	Plus,
@@ -49,6 +49,7 @@ import type { PagePalette } from "@/components/settings/page-palettes";
 import type { BabyStoolLog, DiaperType, StoolAmount, StoolColor, StoolConsistency } from "../types";
 import {
 	getDiaperStats,
+	getLocalDatetimeString,
 	isSameDay,
 	stoolColorMetadata,
 	stoolConsistencyMetadata,
@@ -83,6 +84,13 @@ export function StoolCounter({
 	const [consistency, setConsistency] = useState<StoolConsistency>("soft");
 	const [selectedColor, setSelectedColor] = useState<StoolColor>("yellow");
 	const [amount, setAmount] = useState<StoolAmount>("medium");
+	const [changeTime, setChangeTime] = useState(getLocalDatetimeString);
+
+	useEffect(() => {
+		if (dialogOpen) {
+			setChangeTime(getLocalDatetimeString());
+		}
+	}, [dialogOpen]);
 
 	const stats = getDiaperStats(logs);
 
@@ -230,7 +238,10 @@ export function StoolCounter({
 						{/* Detailed Log Modal CTA */}
 						<button
 							type="button"
-							onClick={() => setDialogOpen(true)}
+							onClick={() => {
+								setChangeTime(getLocalDatetimeString());
+								setDialogOpen(true);
+							}}
 							style={{ "--action-accent": paletteAccent } as CSSProperties}
 							className="palette-action-button inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all active:scale-95"
 						>
@@ -718,7 +729,8 @@ export function StoolCounter({
 								<Input
 									type="datetime-local"
 									name="loggedAt"
-									defaultValue={new Date().toISOString().slice(0, 16)}
+									value={changeTime}
+									onChange={(e) => setChangeTime(e.target.value)}
 									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 								/>
 							</label>

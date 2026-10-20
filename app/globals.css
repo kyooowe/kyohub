@@ -904,6 +904,74 @@
 	--color-yellow-950: var(--page-accent-950);
 }
 
+[data-page-palette="black"] {
+	--page-accent-50: #f4f4f5;
+	--page-accent-100: #e4e4e7;
+	--page-accent-200: #d4d4d8;
+	--page-accent-300: #a1a1aa;
+	--page-accent-400: #52525b;
+	--page-accent-500: #000000;
+	--page-accent-600: #000000;
+	--page-accent-700: #000000;
+	--page-accent-800: #000000;
+	--page-accent-900: #000000;
+	--page-accent-950: #000000;
+}
+
+:root.dark [data-page-palette="black"],
+.dark [data-page-palette="black"] {
+	--page-accent-50: #18181b;
+	--page-accent-100: #27272a;
+	--page-accent-200: #3f3f46;
+	--page-accent-300: #52525b;
+	--page-accent-400: #a1a1aa;
+	--page-accent-500: #ffffff;
+	--page-accent-600: #ffffff;
+	--page-accent-700: #e4e4e7;
+	--page-accent-800: #d4d4d8;
+	--page-accent-900: #a1a1aa;
+	--page-accent-950: #52525b;
+}
+
+[data-page-palette="black"] .palette-action-button,
+.palette-action-button[style*="#000000"] {
+	border-color: #000000;
+	background-color: #000000;
+	background-image: none;
+	color: #ffffff;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+[data-page-palette="black"] .palette-action-button:hover:not(:disabled),
+.palette-action-button[style*="#000000"]:hover:not(:disabled) {
+	border-color: #27272a;
+	background-color: #27272a;
+	background-image: none;
+	color: #ffffff;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+:root.dark [data-page-palette="black"] .palette-action-button,
+.dark [data-page-palette="black"] .palette-action-button,
+:root.dark .palette-action-button[style*="#000000"],
+.dark .palette-action-button[style*="#000000"] {
+	border-color: #3f3f46;
+	background-color: #000000;
+	background-image: none;
+	color: #ffffff;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+:root.dark [data-page-palette="black"] .palette-action-button:hover:not(:disabled),
+.dark [data-page-palette="black"] .palette-action-button:hover:not(:disabled),
+:root.dark .palette-action-button[style*="#000000"]:hover:not(:disabled),
+.dark .palette-action-button[style*="#000000"]:hover:not(:disabled) {
+	border-color: #52525b;
+	background-color: #18181b;
+	background-image: none;
+	color: #ffffff;
+}
+
 [data-page-palette] [role="alert"] {
 	--color-amber-50: #fffbeb;
 	--color-amber-100: #fef3c7;

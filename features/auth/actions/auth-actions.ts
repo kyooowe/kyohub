@@ -1,6 +1,15 @@
 "use server";
 
+import { revalidatePath, updateTag } from "next/cache";
 import { createSession, destroySession, getSessionUser, isValidPin } from "@/features/auth/lib/session";
+
+export const APP_CACHE_TAGS = [
+	"password-entries",
+	"budget-planner",
+	"grocery-items",
+	"family-calendar",
+	"baby-tracker",
+] as const;
 
 export async function login(pin: string): Promise<{ error?: string }> {
 	if (typeof pin !== "string" || !/^\d{6}$/.test(pin)) return { error: "Enter your 6-digit PIN." };
@@ -18,4 +27,26 @@ export async function getCurrentUser() {
 
 export async function logout() {
 	await destroySession();
+
+	// Invalidate all feature data cache tags
+	for (const tag of APP_CACHE_TAGS) {
+		try {
+			updateTag(tag);
+		} catch {
+			// ignore if outside action context
+		}
+	}
+
+	// Purge all component caches and layouts across all routes
+	try {
+		revalidatePath("/", "layout");
+		revalidatePath("/", "page");
+		revalidatePath("/baby-tracker", "page");
+		revalidatePath("/budget", "page");
+		revalidatePath("/grocery", "page");
+		revalidatePath("/passwords", "page");
+		revalidatePath("/family-calendar", "page");
+	} catch {
+		// ignore
+	}
 }

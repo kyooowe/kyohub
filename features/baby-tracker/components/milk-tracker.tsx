@@ -44,6 +44,7 @@ import type { BabyMilkLog, MilkStatus, MilkType } from "../types";
 import {
 	getMilkStats,
 	getMilkComparisonData,
+	getLocalDatetimeString,
 	isSameDay,
 } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
@@ -108,7 +109,7 @@ export function MilkTracker({
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(4000);
 
 	// Modal form states
-	const [formLoggedAt, setFormLoggedAt] = useState("");
+	const [formLoggedAt, setFormLoggedAt] = useState(getLocalDatetimeString);
 	const [formPreparedOz, setFormPreparedOz] = useState<string>("4.0");
 	const [formStatus, setFormStatus] = useState<MilkStatus>("completed");
 	const [formLeftoverOz, setFormLeftoverOz] = useState<string>("0");
@@ -203,12 +204,8 @@ export function MilkTracker({
 	}
 
 	function openCreateModal() {
-		const now = new Date();
-		const pad = (n: number) => n.toString().padStart(2, "0");
-		const localIso = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
 		setEditingRecord(null);
-		setFormLoggedAt(localIso);
+		setFormLoggedAt(getLocalDatetimeString());
 		setFormPreparedOz("4.0");
 		setFormStatus("completed");
 		setFormLeftoverOz("0");
@@ -330,13 +327,15 @@ export function MilkTracker({
 
 					<div className="flex flex-wrap items-center gap-2">
 						{/* Detailed Log Modal CTA */}
-						<Button
+						<button
 							type="button"
 							onClick={openCreateModal}
-							className="h-10 rounded-2xl bg-rose-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-rose-700"
+							style={{ "--action-accent": paletteAccent } as CSSProperties}
+							className="palette-action-button inline-flex flex-1 sm:flex-initial h-10 items-center justify-center gap-1.5 rounded-2xl border px-3.5 text-xs font-bold transition-all active:scale-95"
 						>
-							<Plus size={15} className="mr-1" /> Detailed Log
-						</Button>
+							<Plus size={15} />
+							<span>Detailed Log</span>
+						</button>
 					</div>
 				</div>
 
@@ -355,10 +354,11 @@ export function MilkTracker({
 										key={amt}
 										type="button"
 										onClick={() => setQuickPreparedOz(amt)}
-										className={`h-9 shrink-0 rounded-xl px-3 text-xs font-bold transition-all ${
+										style={quickPreparedOz === amt ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+										className={`h-9 shrink-0 rounded-full px-3.5 text-xs font-bold transition-all ${
 											quickPreparedOz === amt
-												? "bg-rose-600 text-white shadow-xs ring-2 ring-rose-600/20"
-												: "bg-white text-slate-700 border border-slate-200 hover:border-rose-300 hover:bg-rose-50/50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
+												? "palette-action-button border shadow-xs"
+												: "bg-white text-slate-700 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
 										}`}
 									>
 										{amt} oz
@@ -372,13 +372,14 @@ export function MilkTracker({
 							<label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
 								Status Tag
 							</label>
-							<div className="inline-flex h-9 w-full rounded-xl bg-white p-1 border border-slate-200 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
+							<div className="inline-flex h-9 w-full rounded-full bg-white p-1 border border-slate-200 shadow-2xs dark:bg-slate-800 dark:border-slate-700">
 								<button
 									type="button"
 									onClick={() => setQuickStatus("ongoing")}
-									className={`flex-1 rounded-lg text-xs font-bold transition-all ${
+									style={quickStatus === "ongoing" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+									className={`flex-1 rounded-full text-xs font-bold transition-all ${
 										quickStatus === "ongoing"
-											? "bg-sky-600 text-white shadow-xs"
+											? "palette-action-button border shadow-xs"
 											: "text-slate-600 hover:text-slate-900 dark:text-slate-400"
 									}`}
 								>
@@ -387,9 +388,10 @@ export function MilkTracker({
 								<button
 									type="button"
 									onClick={() => setQuickStatus("completed")}
-									className={`flex-1 rounded-lg text-xs font-bold transition-all ${
+									style={quickStatus === "completed" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+									className={`flex-1 rounded-full text-xs font-bold transition-all ${
 										quickStatus === "completed"
-											? "bg-emerald-600 text-white shadow-xs"
+											? "palette-action-button border shadow-xs"
 											: "text-slate-600 hover:text-slate-900 dark:text-slate-400"
 									}`}
 								>
@@ -398,9 +400,10 @@ export function MilkTracker({
 								<button
 									type="button"
 									onClick={() => setQuickStatus("leftover")}
-									className={`flex-1 rounded-lg text-xs font-bold transition-all ${
+									style={quickStatus === "leftover" ? ({ "--action-accent": paletteAccent } as CSSProperties) : undefined}
+									className={`flex-1 rounded-full text-xs font-bold transition-all ${
 										quickStatus === "leftover"
-											? "bg-amber-500 text-slate-950 shadow-xs"
+											? "palette-action-button border shadow-xs"
 											: "text-slate-600 hover:text-slate-900 dark:text-slate-400"
 									}`}
 								>
@@ -455,10 +458,11 @@ export function MilkTracker({
 							type="button"
 							onClick={handleQuickLog}
 							disabled={submitting}
-							className="h-10 w-full xl:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-rose-500 via-pink-500 to-rose-600 px-6 font-bold text-white shadow-sm shadow-rose-500/20 transition-all hover:scale-102 hover:shadow-rose-500/30 active:scale-98 disabled:opacity-50"
+							style={{ "--action-accent": paletteAccent } as CSSProperties}
+							className="palette-action-button inline-flex h-10 w-full xl:w-auto items-center justify-center gap-2 rounded-2xl border px-6 text-xs font-bold shadow-xs transition-all active:scale-95 disabled:opacity-50"
 						>
 							<Plus size={16} />
-							<span className="text-xs tracking-wide">
+							<span className="tracking-wide">
 								Log {quickPreparedOz} oz ({quickStatus === "completed" ? "Completed" : `${quickLeftoverOz || 0} oz left`})
 							</span>
 						</button>

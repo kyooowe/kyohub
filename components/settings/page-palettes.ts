@@ -981,6 +981,21 @@ const pagePaletteStyles = {
       glow: "bg-[#FDE0EA]/25",
     },
   },
+  black: {
+    label: "Solid Black",
+    swatch: "bg-black",
+    accent: "#000000",
+    iconGradient: "from-black via-black to-black",
+    pageHeading:
+      "from-black via-black to-black dark:from-white dark:via-white dark:to-white",
+    featureHeader: {
+      gradient: "from-black via-black to-black",
+      shadow: "shadow-black/25",
+      darkShadow: "dark:shadow-black/50",
+      description: "text-white/85",
+      glow: "bg-transparent",
+    },
+  },
 };
 
 export type NamedPagePalette = keyof typeof pagePaletteStyles;
