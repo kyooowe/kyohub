@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'16d48236170993c5ba33c36b495b72a3b85bc0be12c45abab8dd7f7187446b6e'>;
+  StorageHashBase<'65be09aeeb7ff513a715a5aa9ebca9421d25e0f96e9ce8c73856b602918baa3b'>;
 export type ExecutionHash =
-  ExecutionHashBase<'dcf8b676c6537c9c286e7f963d226e145da7c11b3ee48f47b04d5fb84bd82441'>;
+  ExecutionHashBase<'e5c73284420c54ca017b688dce754bca0cea82f200632a586e1ee7b60e4af5e1'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -287,6 +287,17 @@ export type FieldOutputTypes = {
       readonly startDate: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
     };
+    readonly BabyMilkLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly drankOz: CodecTypes['pg/float8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly leftoverOz: CodecTypes['pg/float8@1']['output'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly milkType: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly preparedOz: CodecTypes['pg/float8@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -309,6 +320,16 @@ export type FieldOutputTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'];
       readonly pediatrician: CodecTypes['pg/text@1']['output'];
       readonly pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabySleepLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly endTime: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly sleepType: CodecTypes['pg/text@1']['output'];
+      readonly startTime: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
     };
     readonly BabyStoolLog: {
       readonly amount: CodecTypes['pg/text@1']['output'];
@@ -412,6 +433,17 @@ export type FieldInputTypes = {
       readonly startDate: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
     };
+    readonly BabyMilkLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly drankOz: CodecTypes['pg/float8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly leftoverOz: CodecTypes['pg/float8@1']['input'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly milkType: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly preparedOz: CodecTypes['pg/float8@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -434,6 +466,16 @@ export type FieldInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'];
       readonly pediatrician: CodecTypes['pg/text@1']['input'];
       readonly pediatricianPhone: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabySleepLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly endTime: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly sleepType: CodecTypes['pg/text@1']['input'];
+      readonly startTime: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
     };
     readonly BabyStoolLog: {
       readonly amount: CodecTypes['pg/text@1']['input'];
@@ -537,6 +579,17 @@ export type StorageColumnTypes = {
       readonly startDate: CodecTypes['pg/text@1']['output'];
       readonly status: CodecTypes['pg/text@1']['output'];
     };
+    readonly BabyMilkLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly drankOz: CodecTypes['pg/float8@1']['output'];
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly leftoverOz: CodecTypes['pg/float8@1']['output'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly milkType: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly preparedOz: CodecTypes['pg/float8@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly dateKey: CodecTypes['pg/text@1']['output'];
@@ -559,6 +612,16 @@ export type StorageColumnTypes = {
       readonly notes: CodecTypes['pg/text@1']['output'];
       readonly pediatrician: CodecTypes['pg/text@1']['output'];
       readonly pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    };
+    readonly BabySleepLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
+      readonly endTime: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+      readonly id: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
+      readonly sleepType: CodecTypes['pg/text@1']['output'];
+      readonly startTime: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly status: CodecTypes['pg/text@1']['output'];
     };
     readonly BabyStoolLog: {
       readonly amount: CodecTypes['pg/text@1']['output'];
@@ -662,6 +725,17 @@ export type StorageColumnInputTypes = {
       readonly startDate: CodecTypes['pg/text@1']['input'];
       readonly status: CodecTypes['pg/text@1']['input'];
     };
+    readonly BabyMilkLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly drankOz: CodecTypes['pg/float8@1']['input'];
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly leftoverOz: CodecTypes['pg/float8@1']['input'];
+      readonly loggedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly milkType: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly preparedOz: CodecTypes['pg/float8@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
+    };
     readonly BabyNeed: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly dateKey: CodecTypes['pg/text@1']['input'];
@@ -684,6 +758,16 @@ export type StorageColumnInputTypes = {
       readonly notes: CodecTypes['pg/text@1']['input'];
       readonly pediatrician: CodecTypes['pg/text@1']['input'];
       readonly pediatricianPhone: CodecTypes['pg/text@1']['input'];
+    };
+    readonly BabySleepLog: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly durationMinutes: CodecTypes['pg/int4@1']['input'] | null;
+      readonly endTime: CodecTypes['pg/timestamptz-string@1']['input'] | null;
+      readonly id: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
+      readonly sleepType: CodecTypes['pg/text@1']['input'];
+      readonly startTime: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly status: CodecTypes['pg/text@1']['input'];
     };
     readonly BabyStoolLog: {
       readonly amount: CodecTypes['pg/text@1']['input'];
@@ -791,6 +875,18 @@ export namespace Models {
     status: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
+  export type public_BabyMilkLog = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    drankOz: CodecTypes['pg/float8@1']['output'];
+    id: CodecTypes['pg/text@1']['output'];
+    leftoverOz: CodecTypes['pg/float8@1']['output'];
+    loggedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    milkType: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    preparedOz: CodecTypes['pg/float8@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_BabyNeed = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     dateKey: CodecTypes['pg/text@1']['output'];
@@ -814,6 +910,17 @@ export namespace Models {
     notes: CodecTypes['pg/text@1']['output'];
     pediatrician: CodecTypes['pg/text@1']['output'];
     pediatricianPhone: CodecTypes['pg/text@1']['output'];
+    readonly [RelationKeys]?: never;
+  };
+  export type public_BabySleepLog = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    durationMinutes: CodecTypes['pg/int4@1']['output'] | null;
+    endTime: CodecTypes['pg/timestamptz-string@1']['output'] | null;
+    id: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
+    sleepType: CodecTypes['pg/text@1']['output'];
+    startTime: CodecTypes['pg/timestamptz-string@1']['output'];
+    status: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
   };
   export type public_BabyStoolLog = {
@@ -892,8 +999,10 @@ export declare const models: {
     BabyGrowth: Models.public_BabyGrowth;
     BabyMedicalNote: Models.public_BabyMedicalNote;
     BabyMedicine: Models.public_BabyMedicine;
+    BabyMilkLog: Models.public_BabyMilkLog;
     BabyNeed: Models.public_BabyNeed;
     BabyProfile: Models.public_BabyProfile;
+    BabySleepLog: Models.public_BabySleepLog;
     BabyStoolLog: Models.public_BabyStoolLog;
     BabyVaccine: Models.public_BabyVaccine;
     BudgetBill: Models.public_BudgetBill;
@@ -1165,6 +1274,90 @@ type ContractBase = Omit<
               ];
               foreignKeys: readonly [];
             };
+            readonly BabyMilkLog: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly drankOz: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly leftoverOz: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/float8@1', 0>;
+                  };
+                };
+                readonly loggedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly milkType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'formula'>;
+                  };
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly preparedOz: {
+                  readonly nativeType: 'float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: false;
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'completed'>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabyMilkLog_loggedAt_idx_f4f050f7';
+                  readonly prefix: 'BabyMilkLog_loggedAt_idx';
+                  readonly columns: readonly ['loggedAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BabyMilkLog_status_idx_e98638ab';
+                  readonly prefix: 'BabyMilkLog_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [];
+            };
             readonly BabyNeed: {
               columns: {
                 readonly createdAt: {
@@ -1323,6 +1516,81 @@ type ContractBase = Omit<
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [];
               indexes: readonly [];
+              foreignKeys: readonly [];
+            };
+            readonly BabySleepLog: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly durationMinutes: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
+                readonly endTime: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                };
+                readonly id: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly sleepType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'night'>;
+                  };
+                };
+                readonly startTime: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+                readonly status: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'completed'>;
+                  };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'BabySleepLog_startTime_idx_d78b7987';
+                  readonly prefix: 'BabySleepLog_startTime_idx';
+                  readonly columns: readonly ['startTime'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'BabySleepLog_status_idx_e98638ab';
+                  readonly prefix: 'BabySleepLog_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+              ];
               foreignKeys: readonly [];
             };
             readonly BabyStoolLog: {
@@ -1743,10 +2011,18 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BabyMedicine';
     };
+    readonly BabyMilkLog: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabyMilkLog';
+    };
     readonly BabyNeed: { readonly namespace: 'public' & NamespaceId; readonly model: 'BabyNeed' };
     readonly BabyProfile: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'BabyProfile';
+    };
+    readonly BabySleepLog: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'BabySleepLog';
     };
     readonly BabyStoolLog: {
       readonly namespace: 'public' & NamespaceId;
@@ -1979,6 +2255,68 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly BabyMilkLog: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly drankOz: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly leftoverOz: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly loggedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly milkType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly preparedOz: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabyMilkLog';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly drankOz: { readonly column: 'drankOz' };
+                readonly id: { readonly column: 'id' };
+                readonly leftoverOz: { readonly column: 'leftoverOz' };
+                readonly loggedAt: { readonly column: 'loggedAt' };
+                readonly milkType: { readonly column: 'milkType' };
+                readonly notes: { readonly column: 'notes' };
+                readonly preparedOz: { readonly column: 'preparedOz' };
+                readonly status: { readonly column: 'status' };
+              };
+            };
+          };
           readonly BabyNeed: {
             readonly fields: {
               readonly createdAt: {
@@ -2099,6 +2437,66 @@ type ContractBase = Omit<
                 readonly notes: { readonly column: 'notes' };
                 readonly pediatrician: { readonly column: 'pediatrician' };
                 readonly pediatricianPhone: { readonly column: 'pediatricianPhone' };
+              };
+            };
+          };
+          readonly BabySleepLog: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly durationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly endTime: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sleepType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly startTime: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'BabySleepLog';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly durationMinutes: { readonly column: 'durationMinutes' };
+                readonly endTime: { readonly column: 'endTime' };
+                readonly id: { readonly column: 'id' };
+                readonly notes: { readonly column: 'notes' };
+                readonly sleepType: { readonly column: 'sleepType' };
+                readonly startTime: { readonly column: 'startTime' };
+                readonly status: { readonly column: 'status' };
               };
             };
           };
@@ -2495,6 +2893,14 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'BabyMilkLog';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'BabyNeed';
             readonly field: 'id';
             readonly namespace: 'public';
@@ -2504,6 +2910,14 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'BabyProfile';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'BabySleepLog';
             readonly field: 'id';
             readonly namespace: 'public';
           };

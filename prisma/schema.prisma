@@ -153,3 +153,32 @@ model BabyMedicalNote {
   @@index([noteDate])
 }
 
+model BabySleepLog {
+  id              String            @id @default(uuid())
+  startTime       TimestamptzString @default(now())
+  endTime         TimestamptzString?
+  durationMinutes Int?
+  sleepType       String            @default("night")
+  status          String            @default("completed")
+  notes           String            @default("")
+  createdAt       TimestamptzString @default(now())
+
+  @@index([startTime])
+  @@index([status])
+}
+
+model BabyMilkLog {
+  id          String            @id @default(uuid())
+  loggedAt    TimestamptzString @default(now())
+  preparedOz  Float
+  status      String            @default("completed")
+  leftoverOz  Float             @default(0)
+  drankOz     Float
+  milkType    String            @default("formula")
+  notes       String            @default("")
+  createdAt   TimestamptzString @default(now())
+
+  @@index([loggedAt])
+  @@index([status])
+}
+

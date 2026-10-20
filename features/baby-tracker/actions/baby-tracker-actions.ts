@@ -7,6 +7,12 @@ import type {
 	BabyGender,
 	BabyProfile,
 	BabyTrackerData,
+	BabySleepLog,
+	BabyMilkLog,
+	SleepType,
+	SleepStatus,
+	MilkStatus,
+	MilkType,
 	DiaperType,
 	MedicalNoteCategory,
 	MedicineStatus,
@@ -19,7 +25,7 @@ import { standardChildhoodVaccines, BLOOD_TYPES } from "../types";
 
 const getCachedBabyTrackerData = unstable_cache(
 	async (): Promise<BabyTrackerData> => {
-		const [profiles, stoolLogs, vaccines, medicines, growthRecords, medicalNotes] = await Promise.all([
+		const [profiles, stoolLogs, vaccines, medicines, growthRecords, medicalNotes, sleepLogs, milkLogs] = await Promise.all([
 			db.orm.public.BabyProfile
 				.select("id", "name", "birthDate", "gender", "bloodType", "birthWeight", "birthHeight", "pediatrician", "pediatricianPhone", "allergies", "notes", "createdAt")
 				.orderBy([(p) => p.createdAt.asc()])
@@ -44,6 +50,16 @@ const getCachedBabyTrackerData = unstable_cache(
 			db.orm.public.BabyMedicalNote
 				.select("id", "noteDate", "title", "symptoms", "doctorAdvice", "doctorName", "clinicName", "category", "createdAt")
 				.orderBy([(n) => n.noteDate.desc(), (n) => n.id.desc()])
+				.all(),
+			db.orm.public.BabySleepLog
+				.select("id", "startTime", "endTime", "durationMinutes", "sleepType", "status", "notes", "createdAt")
+				.orderBy([(s) => s.startTime.desc(), (s) => s.id.desc()])
+				.limit(100)
+				.all(),
+			db.orm.public.BabyMilkLog
+				.select("id", "loggedAt", "preparedOz", "status", "leftoverOz", "drankOz", "milkType", "notes", "createdAt")
+				.orderBy([(m) => m.loggedAt.desc(), (m) => m.id.desc()])
+				.limit(100)
 				.all(),
 		]);
 
@@ -116,6 +132,27 @@ const getCachedBabyTrackerData = unstable_cache(
 				clinicName: n.clinicName,
 				category: n.category as MedicalNoteCategory,
 				createdAt: n.createdAt,
+			})),
+			sleepLogs: sleepLogs.map((s) => ({
+				id: s.id,
+				startTime: s.startTime,
+				endTime: s.endTime ?? null,
+				durationMinutes: s.durationMinutes ?? null,
+				sleepType: (s.sleepType as SleepType) || "night",
+				status: (s.status as SleepStatus) || "completed",
+				notes: s.notes,
+				createdAt: s.createdAt,
+			})),
+			milkLogs: milkLogs.map((m) => ({
+				id: m.id,
+				loggedAt: m.loggedAt,
+				preparedOz: m.preparedOz,
+				status: (m.status as MilkStatus) || "completed",
+				leftoverOz: m.leftoverOz,
+				drankOz: m.drankOz,
+				milkType: (m.milkType as MilkType) || "formula",
+				notes: m.notes,
+				createdAt: m.createdAt,
 			})),
 		};
 	},
@@ -545,5 +582,230 @@ export async function updateMedicalNote(
 export async function deleteMedicalNote(id: string): Promise<void> {
 	await requireAuth();
 	await db.orm.public.BabyMedicalNote.where({ id }).delete();
+	updateTag("baby-tracker");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Sleep Tracker                               */
+/* -------------------------------------------------------------------------- */
+
+export async function startBabySleep(data?: {
+	sleepType?: SleepType;
+	startTime?: string;
+	notes?: string;
+}): Promise<void> {
+	await requireAuth();
+	const active = await db.orm.public.BabySleepLog.first({ status: "sleeping" });
+	if (active) {
+		throw new Error("Baby is already sleeping! Tap 'Wake Up' to complete the current session.");
+	}
+
+	await db.orm.public.BabySleepLog.create({
+		startTime: data?.startTime ? new Date(data.startTime).toISOString() : new Date().toISOString(),
+		sleepType: data?.sleepType ?? "night",
+		status: "sleeping",
+		notes: (data?.notes ?? "").trim(),
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function wakeUpBaby(data?: {
+	id?: string;
+	endTime?: string;
+	notes?: string;
+}): Promise<void> {
+	await requireAuth();
+	let target;
+	if (data?.id) {
+		target = await db.orm.public.BabySleepLog.first({ id: data.id });
+	} else {
+		target = await db.orm.public.BabySleepLog.first({ status: "sleeping" });
+	}
+
+	if (!target) {
+		throw new Error("No active sleep session found.");
+	}
+
+	const end = data?.endTime ? new Date(data.endTime) : new Date();
+	const start = new Date(target.startTime);
+	const durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+
+	await db.orm.public.BabySleepLog.where({ id: target.id }).update({
+		endTime: end.toISOString(),
+		durationMinutes,
+		status: "completed",
+		notes: data?.notes !== undefined ? data.notes.trim() : target.notes,
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function createSleepLog(data: {
+	startTime: string;
+	endTime?: string | null;
+	sleepType?: SleepType;
+	notes?: string;
+}): Promise<void> {
+	await requireAuth();
+	if (!data.startTime) throw new Error("Start time is required.");
+
+	const start = new Date(data.startTime);
+	let end: Date | null = data.endTime ? new Date(data.endTime) : null;
+	let durationMinutes: number | null = null;
+	let status: SleepStatus = "completed";
+
+	if (end) {
+		if (end.getTime() < start.getTime()) {
+			throw new Error("Wake-up time cannot be before sleep start time.");
+		}
+		durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+	} else {
+		status = "sleeping";
+	}
+
+	await db.orm.public.BabySleepLog.create({
+		startTime: start.toISOString(),
+		endTime: end ? end.toISOString() : null,
+		durationMinutes,
+		sleepType: data.sleepType ?? "night",
+		status,
+		notes: (data.notes ?? "").trim(),
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function updateSleepLog(
+	id: string,
+	data: {
+		startTime?: string;
+		endTime?: string | null;
+		sleepType?: SleepType;
+		notes?: string;
+		status?: SleepStatus;
+	},
+): Promise<void> {
+	await requireAuth();
+	const existing = await db.orm.public.BabySleepLog.first({ id });
+	if (!existing) throw new Error("Sleep record not found.");
+
+	const start = data.startTime ? new Date(data.startTime) : new Date(existing.startTime);
+	let end: Date | null = null;
+	if (data.endTime !== undefined) {
+		end = data.endTime ? new Date(data.endTime) : null;
+	} else if (existing.endTime) {
+		end = new Date(existing.endTime);
+	}
+
+	let durationMinutes: number | null = null;
+	let status = data.status ?? existing.status;
+	if (end) {
+		if (end.getTime() < start.getTime()) {
+			throw new Error("Wake-up time cannot be before sleep start time.");
+		}
+		durationMinutes = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+		status = "completed";
+	} else {
+		status = "sleeping";
+	}
+
+	await db.orm.public.BabySleepLog.where({ id }).update({
+		startTime: start.toISOString(),
+		endTime: end ? end.toISOString() : null,
+		durationMinutes,
+		sleepType: data.sleepType ?? (existing.sleepType as SleepType),
+		status,
+		notes: data.notes !== undefined ? data.notes.trim() : existing.notes,
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function deleteSleepLog(id: string): Promise<void> {
+	await requireAuth();
+	await db.orm.public.BabySleepLog.where({ id }).delete();
+	updateTag("baby-tracker");
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Milk Tracker                                */
+/* -------------------------------------------------------------------------- */
+
+export async function createMilkLog(data: {
+	preparedOz: number;
+	status: MilkStatus;
+	leftoverOz?: number;
+	milkType?: MilkType;
+	loggedAt?: string;
+	notes?: string;
+}): Promise<void> {
+	await requireAuth();
+	if (typeof data.preparedOz !== "number" || isNaN(data.preparedOz) || data.preparedOz <= 0) {
+		throw new Error("Prepared milk (oz) must be greater than 0.");
+	}
+
+	const status = data.status ?? "completed";
+	const leftoverOz = status === "completed" ? 0 : Math.max(0, data.leftoverOz ?? 0);
+	if (leftoverOz > data.preparedOz) {
+		throw new Error("Leftover milk cannot be more than prepared milk.");
+	}
+	const drankOz = Math.max(0, Math.round((data.preparedOz - leftoverOz) * 10) / 10);
+
+	await db.orm.public.BabyMilkLog.create({
+		loggedAt: data.loggedAt ? new Date(data.loggedAt).toISOString() : new Date().toISOString(),
+		preparedOz: data.preparedOz,
+		status,
+		leftoverOz,
+		drankOz,
+		milkType: data.milkType ?? "formula",
+		notes: (data.notes ?? "").trim(),
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function updateMilkLog(
+	id: string,
+	data: {
+		preparedOz?: number;
+		status?: MilkStatus;
+		leftoverOz?: number;
+		milkType?: MilkType;
+		loggedAt?: string;
+		notes?: string;
+	},
+): Promise<void> {
+	await requireAuth();
+	const existing = await db.orm.public.BabyMilkLog.first({ id });
+	if (!existing) throw new Error("Milk record not found.");
+
+	const preparedOz = data.preparedOz ?? existing.preparedOz;
+	if (preparedOz <= 0) {
+		throw new Error("Prepared milk (oz) must be greater than 0.");
+	}
+	const status = data.status ?? (existing.status as MilkStatus);
+	const leftoverOz = status === "completed" ? 0 : Math.max(0, data.leftoverOz ?? existing.leftoverOz);
+	if (leftoverOz > preparedOz) {
+		throw new Error("Leftover milk cannot be more than prepared milk.");
+	}
+	const drankOz = Math.max(0, Math.round((preparedOz - leftoverOz) * 10) / 10);
+
+	await db.orm.public.BabyMilkLog.where({ id }).update({
+		loggedAt: data.loggedAt ? new Date(data.loggedAt).toISOString() : existing.loggedAt,
+		preparedOz,
+		status,
+		leftoverOz,
+		drankOz,
+		milkType: data.milkType ?? (existing.milkType as MilkType),
+		notes: data.notes !== undefined ? data.notes.trim() : existing.notes,
+	});
+
+	updateTag("baby-tracker");
+}
+
+export async function deleteMilkLog(id: string): Promise<void> {
+	await requireAuth();
+	await db.orm.public.BabyMilkLog.where({ id }).delete();
 	updateTag("baby-tracker");
 }

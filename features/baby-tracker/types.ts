@@ -87,6 +87,35 @@ export type BabyMedicalNote = {
 	createdAt?: string;
 };
 
+export type SleepType = "night" | "nap";
+export type SleepStatus = "sleeping" | "completed";
+
+export type BabySleepLog = {
+	id: string;
+	startTime: string; // ISO string
+	endTime: string | null; // ISO string or null if currently sleeping
+	durationMinutes: number | null;
+	sleepType: SleepType;
+	status: SleepStatus;
+	notes: string;
+	createdAt?: string;
+};
+
+export type MilkStatus = "completed" | "leftover";
+export type MilkType = "formula" | "breast_milk" | "cow_milk" | "other";
+
+export type BabyMilkLog = {
+	id: string;
+	loggedAt: string; // ISO string
+	preparedOz: number;
+	status: MilkStatus;
+	leftoverOz: number;
+	drankOz: number;
+	milkType: MilkType;
+	notes: string;
+	createdAt?: string;
+};
+
 export type BabyTrackerData = {
 	profile: BabyProfile | null;
 	stoolLogs: BabyStoolLog[];
@@ -94,6 +123,8 @@ export type BabyTrackerData = {
 	medicines: BabyMedicine[];
 	growthRecords: BabyGrowthRecord[];
 	medicalNotes: BabyMedicalNote[];
+	sleepLogs: BabySleepLog[];
+	milkLogs: BabyMilkLog[];
 };
 
 export const standardChildhoodVaccines: Array<{

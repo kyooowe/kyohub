@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useState, useRef, useEffect, useCallback, type CSSProperties } from "react";
 import {
 	Baby,
 	Droplets,
@@ -8,8 +8,10 @@ import {
 	Stethoscope,
 	Syringe,
 	TrendingUp,
-	HeartHandshake,
 	Sparkles,
+	Moon,
+	ChevronLeft,
+	ChevronRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { FeatureSectionHeader } from "@/components/feature-section-header";
@@ -17,6 +19,10 @@ import { useAppSettings } from "@/components/settings/settings-context";
 import { getPagePaletteStyles } from "@/components/settings/page-palettes";
 import type {
 	BabyTrackerData,
+	SleepType,
+	SleepStatus,
+	MilkStatus,
+	MilkType,
 	DiaperType,
 	MedicineStatus,
 	VaccineStatus,
@@ -27,12 +33,22 @@ import { GrowthTracker } from "./growth-tracker";
 import { VaccineTracker } from "./vaccine-tracker";
 import { MedicineTracker } from "./medicine-tracker";
 import { MedicalNotes } from "./medical-notes";
+import { SleepTracker } from "./sleep-tracker";
+import { MilkTracker } from "./milk-tracker";
 import {
 	createGrowthRecord,
 	createMedicalNote,
 	createMedicine,
 	createStoolLog,
 	createVaccine,
+	createSleepLog,
+	updateSleepLog,
+	deleteSleepLog,
+	startBabySleep,
+	wakeUpBaby,
+	createMilkLog,
+	updateMilkLog,
+	deleteMilkLog,
 	deleteGrowthRecord,
 	deleteMedicalNote,
 	deleteMedicine,
@@ -49,9 +65,14 @@ import {
 	updateMedicine,
 	updateVaccine,
 } from "../actions/baby-tracker-actions";
-import { getDiaperStats, calculateBabyAge } from "../lib/baby-tracker-utils";
+import {
+	getDiaperStats,
+	getSleepStats,
+	getMilkStats,
+	calculateBabyAge,
+} from "../lib/baby-tracker-utils";
 
-type ActiveTab = "stool" | "growth" | "vaccines" | "medicines" | "medical-notes";
+type ActiveTab = "sleep" | "milk" | "stool" | "growth" | "vaccines" | "medicines" | "medical-notes";
 
 export function BabyTracker({
 	initialData,
@@ -63,11 +84,129 @@ export function BabyTracker({
 	const { settings } = useAppSettings();
 	const [data, setData] = useState<BabyTrackerData>(initialData);
 	const [error, setError] = useState(initialError);
-	const [activeTab, setActiveTab] = useState<ActiveTab>("stool");
+	const [activeTab, setActiveTab] = useState<ActiveTab>("sleep");
 
 	const pagePaletteName = settings.pagePalettes["/baby-tracker"] || "rose";
 	const dialogPalette = pagePaletteName === "default" ? "rose" : pagePaletteName;
 	const pagePalette = getPagePaletteStyles(dialogPalette);
+
+	// Tabs bar interactive navigation (hold-and-drag desktop & mobile, chevron controls, wheel panning)
+	const tabsContainerRef = useRef<HTMLDivElement>(null);
+	const [canScrollLeft, setCanScrollLeft] = useState(false);
+	const [canScrollRight, setCanScrollRight] = useState(false);
+	const [isDragging, setIsDragging] = useState(false);
+	const isDraggingRef = useRef(false);
+	const startXRef = useRef(0);
+	const scrollLeftRef = useRef(0);
+	const hasDraggedRef = useRef(false);
+
+	const updateScrollButtons = useCallback(() => {
+		const el = tabsContainerRef.current;
+		if (!el) return;
+		const canLeft = el.scrollLeft > 6;
+		const canRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 6;
+		setCanScrollLeft(canLeft);
+		setCanScrollRight(canRight);
+	}, []);
+
+	// Keep tabs scroll indicators updated on resize & mount
+	useEffect(() => {
+		updateScrollButtons();
+		const handleResize = () => updateScrollButtons();
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, [updateScrollButtons]);
+
+	// Auto-scroll active tab into view smoothly
+	useEffect(() => {
+		const container = tabsContainerRef.current;
+		if (!container) return;
+		const activeEl = container.querySelector<HTMLElement>(`[data-tab-id="${activeTab}"]`);
+		if (activeEl) {
+			activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+			const timer = setTimeout(updateScrollButtons, 320);
+			return () => clearTimeout(timer);
+		}
+	}, [activeTab, updateScrollButtons]);
+
+	// Global mouseup release so dragging never gets stuck if mouse leaves window
+	useEffect(() => {
+		const handleGlobalMouseUp = () => {
+			if (isDraggingRef.current) {
+				isDraggingRef.current = false;
+				setIsDragging(false);
+				setTimeout(() => {
+					hasDraggedRef.current = false;
+				}, 60);
+			}
+		};
+		window.addEventListener("mouseup", handleGlobalMouseUp);
+		return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+	}, []);
+
+	// Mouse wheel horizontal panning
+	useEffect(() => {
+		const container = tabsContainerRef.current;
+		if (!container) return;
+
+		const onWheel = (e: WheelEvent) => {
+			if (container.scrollWidth > container.clientWidth) {
+				if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+					e.preventDefault();
+					container.scrollLeft += e.deltaY;
+					updateScrollButtons();
+				}
+			}
+		};
+
+		container.addEventListener("wheel", onWheel, { passive: false });
+		return () => container.removeEventListener("wheel", onWheel);
+	}, [updateScrollButtons]);
+
+	const scrollByDirection = (direction: "left" | "right") => {
+		const container = tabsContainerRef.current;
+		if (!container) return;
+		const scrollAmount = Math.max(container.clientWidth * 0.65, 240);
+		container.scrollBy({
+			left: direction === "left" ? -scrollAmount : scrollAmount,
+			behavior: "smooth",
+		});
+		setTimeout(updateScrollButtons, 320);
+	};
+
+	const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.button !== 0) return;
+		const container = tabsContainerRef.current;
+		if (!container) return;
+		isDraggingRef.current = true;
+		hasDraggedRef.current = false;
+		startXRef.current = e.pageX - container.offsetLeft;
+		scrollLeftRef.current = container.scrollLeft;
+		setIsDragging(true);
+	};
+
+	const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (!isDraggingRef.current) return;
+		const container = tabsContainerRef.current;
+		if (!container) return;
+		const x = e.pageX - container.offsetLeft;
+		const walk = x - startXRef.current;
+		if (Math.abs(walk) > 4) {
+			hasDraggedRef.current = true;
+		}
+		container.scrollLeft = scrollLeftRef.current - walk;
+		updateScrollButtons();
+	};
+
+	const handleMouseUpOrLeave = () => {
+		if (isDraggingRef.current) {
+			isDraggingRef.current = false;
+			setIsDragging(false);
+			setTimeout(() => {
+				hasDraggedRef.current = false;
+			}, 60);
+		}
+	};
 
 	async function refreshData() {
 		try {
@@ -199,14 +338,89 @@ export function BabyTracker({
 		await refreshData();
 	}
 
+	/* --------------------------- Sleep Tracker Handlers --------------------------- */
+	async function handleStartSleep(payload?: { sleepType?: SleepType; notes?: string }) {
+		await startBabySleep(payload);
+		await refreshData();
+	}
+
+	async function handleWakeUp(payload?: { id?: string; notes?: string }) {
+		await wakeUpBaby(payload);
+		await refreshData();
+	}
+
+	async function handleCreateSleep(payload: {
+		startTime: string;
+		endTime?: string | null;
+		sleepType?: SleepType;
+		notes?: string;
+	}) {
+		await createSleepLog(payload);
+		await refreshData();
+	}
+
+	async function handleUpdateSleep(
+		id: string,
+		payload: {
+			startTime?: string;
+			endTime?: string | null;
+			sleepType?: SleepType;
+			notes?: string;
+			status?: SleepStatus;
+		},
+	) {
+		await updateSleepLog(id, payload);
+		await refreshData();
+	}
+
+	async function handleDeleteSleep(id: string) {
+		await deleteSleepLog(id);
+		await refreshData();
+	}
+
+	/* --------------------------- Milk Tracker Handlers ---------------------------- */
+	async function handleCreateMilk(payload: {
+		preparedOz: number;
+		status: MilkStatus;
+		leftoverOz?: number;
+		milkType?: MilkType;
+		loggedAt?: string;
+		notes?: string;
+	}) {
+		await createMilkLog(payload);
+		await refreshData();
+	}
+
+	async function handleUpdateMilk(
+		id: string,
+		payload: {
+			preparedOz?: number;
+			status?: MilkStatus;
+			leftoverOz?: number;
+			milkType?: MilkType;
+			loggedAt?: string;
+			notes?: string;
+		},
+	) {
+		await updateMilkLog(id, payload);
+		await refreshData();
+	}
+
+	async function handleDeleteMilk(id: string) {
+		await deleteMilkLog(id);
+		await refreshData();
+	}
+
 	// Overview helpers
+	const ageInfo = data.profile?.birthDate ? calculateBabyAge(data.profile.birthDate) : null;
 	const diaperStats = getDiaperStats(data.stoolLogs);
+	const sleepStats = getSleepStats(data.sleepLogs, ageInfo?.totalMonths ?? 0);
+	const milkStats = getMilkStats(data.milkLogs);
 	const latestGrowth = data.growthRecords.length > 0 ? data.growthRecords[data.growthRecords.length - 1] : null;
 	const activeMedicines = data.medicines.filter((m) => m.status === "active");
 	const todayStr = new Date().toISOString().split("T")[0];
 	const upcomingVaccines = data.vaccines.filter((v) => v.status === "upcoming" && v.vaccineDate >= todayStr);
 	const overdueVaccines = data.vaccines.filter((v) => v.status === "overdue" || (v.status === "upcoming" && v.vaccineDate < todayStr));
-	const ageInfo = data.profile?.birthDate ? calculateBabyAge(data.profile.birthDate) : null;
 
 	const tabs: Array<{
 		id: ActiveTab;
@@ -216,9 +430,29 @@ export function BabyTracker({
 		badgeColor?: string;
 	}> = [
 		{
+			id: "sleep",
+			label: "Sleep Tracker",
+			icon: Moon,
+			badge: sleepStats.activeSession
+				? "Sleeping 🌙"
+				: sleepStats.todaySleepMinutes > 0
+				? sleepStats.todaySleepFormatted
+				: undefined,
+			badgeColor: sleepStats.activeSession
+				? "bg-indigo-600 text-white animate-pulse"
+				: "bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300",
+		},
+		{
+			id: "milk",
+			label: "Milk Tracker",
+			icon: Droplets,
+			badge: milkStats.todayDrankOz > 0 ? `${milkStats.todayDrankOz} oz` : undefined,
+			badgeColor: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+		},
+		{
 			id: "stool",
 			label: "Diaper & Stool",
-			icon: Droplets,
+			icon: Baby,
 			badge: diaperStats.todayTotal > 0 ? `${diaperStats.todayTotal} today` : undefined,
 			badgeColor: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
 		},
@@ -227,7 +461,7 @@ export function BabyTracker({
 			label: "Growth Curves",
 			icon: TrendingUp,
 			badge: latestGrowth ? `${latestGrowth.weightKg}kg` : undefined,
-			badgeColor: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+			badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
 		},
 		{
 			id: "vaccines",
@@ -302,44 +536,160 @@ export function BabyTracker({
 				dialogPalette={dialogPalette}
 			/>
 
-			{/* Navigation Tabs Bar (Scrollable on mobile, touch-friendly) */}
-			<div className="w-full min-w-0 max-w-full overflow-x-auto scrollbar-none rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white p-1.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80">
-				<div className="flex w-max min-w-full gap-1 sm:gap-1.5">
-					{tabs.map((tab) => {
-						const Icon = tab.icon;
-						const isActive = activeTab === tab.id;
-						return (
-							<button
-								key={tab.id}
-								type="button"
-								onClick={() => setActiveTab(tab.id)}
-								style={isActive ? ({ "--action-accent": pagePalette.accent } as CSSProperties) : undefined}
-								className={`flex shrink-0 items-center gap-2 rounded-xl sm:rounded-2xl px-3.5 py-2 text-xs font-bold transition-all ${
-									isActive
-										? "palette-action-button border shadow-xs"
-										: "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"
-								}`}
-							>
-								<Icon size={15} />
-								<span>{tab.label}</span>
-								{tab.badge !== undefined && (
-									<span
-										className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-											isActive
-												? "bg-black/10 text-slate-800 dark:bg-white/15 dark:text-slate-100"
-												: tab.badgeColor || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-										}`}
-									>
-										{tab.badge}
-									</span>
-								)}
-							</button>
-						);
-					})}
+			{/* Navigation Tabs Bar (Desktop hold-and-drag, smooth scroll chevrons, gradient masks) */}
+			<div className="relative group/tabs w-full min-w-0 max-w-full">
+				{/* Left Scroll Chevron & Gradient Fade Mask */}
+				{canScrollLeft && (
+					<>
+						<div
+							aria-hidden="true"
+							className="pointer-events-none absolute left-0 inset-y-0 z-10 w-12 sm:w-16 rounded-l-2xl sm:rounded-l-3xl bg-linear-to-r from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80"
+						/>
+						<button
+							type="button"
+							onClick={() => scrollByDirection("left")}
+							aria-label="Scroll tabs left"
+							className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 flex size-7 sm:size-8 items-center justify-center rounded-full border border-slate-200/90 bg-white/95 text-slate-700 shadow-md backdrop-blur-md transition-all hover:scale-105 hover:bg-white hover:text-slate-950 active:scale-95 dark:border-slate-700/80 dark:bg-slate-800/95 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+						>
+							<ChevronLeft size={16} />
+						</button>
+					</>
+				)}
+
+				{/* Right Scroll Chevron & Gradient Fade Mask */}
+				{canScrollRight && (
+					<>
+						<div
+							aria-hidden="true"
+							className="pointer-events-none absolute right-0 inset-y-0 z-10 w-12 sm:w-16 rounded-r-2xl sm:rounded-r-3xl bg-linear-to-l from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80"
+						/>
+						<button
+							type="button"
+							onClick={() => scrollByDirection("right")}
+							aria-label="Scroll tabs right"
+							className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 flex size-7 sm:size-8 items-center justify-center rounded-full border border-slate-200/90 bg-white/95 text-slate-700 shadow-md backdrop-blur-md transition-all hover:scale-105 hover:bg-white hover:text-slate-950 active:scale-95 dark:border-slate-700/80 dark:bg-slate-800/95 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+						>
+							<ChevronRight size={16} />
+						</button>
+					</>
+				)}
+
+				<div
+					ref={tabsContainerRef}
+					onScroll={updateScrollButtons}
+					onMouseDown={handleMouseDown}
+					onMouseMove={handleMouseMove}
+					onMouseUp={handleMouseUpOrLeave}
+					onMouseLeave={handleMouseUpOrLeave}
+					className={`w-full min-w-0 max-w-full overflow-x-auto scrollbar-none rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white p-1.5 shadow-2xs backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80 transition-colors ${
+						isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+					}`}
+				>
+					<div className="flex w-max min-w-full gap-1 sm:gap-1.5 px-0.5">
+						{tabs.map((tab) => {
+							const Icon = tab.icon;
+							const isActive = activeTab === tab.id;
+							return (
+								<button
+									key={tab.id}
+									data-tab-id={tab.id}
+									type="button"
+									onClick={(e) => {
+										if (hasDraggedRef.current) {
+											e.preventDefault();
+											return;
+										}
+										setActiveTab(tab.id);
+									}}
+									style={isActive ? ({ "--action-accent": pagePalette.accent } as CSSProperties) : undefined}
+									className={`flex shrink-0 select-none items-center gap-2 rounded-xl sm:rounded-2xl px-3.5 py-2 text-xs font-bold transition-all ${
+										isActive
+											? "palette-action-button border shadow-xs"
+											: "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100"
+									}`}
+								>
+									<Icon size={15} />
+									<span>{tab.label}</span>
+									{tab.badge !== undefined && (
+										<span
+											className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
+												isActive
+													? "bg-black/10 text-slate-800 dark:bg-white/15 dark:text-slate-100"
+													: tab.badgeColor || "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+											}`}
+										>
+											{tab.badge}
+										</span>
+									)}
+								</button>
+							);
+						})}
+					</div>
 				</div>
 			</div>
 
 			{/* Tab Contents */}
+			{activeTab === "sleep" && (
+				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
+					<FeatureSectionHeader
+						theme="violet"
+						icon={Moon}
+						title="Daily Sleep & Nap Time Tracker"
+						description="Count daily sleep, one-tap live sleep mode stopwatch, and sleep vs wake-up trends"
+						appearance="soft"
+						className="min-h-[96px]"
+					>
+						<span className="password-library-badge inline-flex min-h-9 w-fit items-center rounded-full px-3.5 py-1 text-xs font-bold">
+							{sleepStats.activeSession
+								? "🌙 Baby is currently sleeping"
+								: `${sleepStats.todaySessionCount} sleep${sleepStats.todaySessionCount === 1 ? "" : "s"} today · ${sleepStats.todaySleepFormatted}`}
+						</span>
+					</FeatureSectionHeader>
+					<CardContent className="p-0">
+						<SleepTracker
+							logs={data.sleepLogs}
+							babyMonthAge={ageInfo?.totalMonths ?? 0}
+							onStartSleep={handleStartSleep}
+							onWakeUp={handleWakeUp}
+							onCreateRecord={handleCreateSleep}
+							onUpdateRecord={handleUpdateSleep}
+							onDeleteRecord={handleDeleteSleep}
+							paletteAccent={pagePalette.accent}
+							dialogPalette={dialogPalette}
+						/>
+					</CardContent>
+				</Card>
+			)}
+
+			{activeTab === "milk" && (
+				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
+					<FeatureSectionHeader
+						theme="rose"
+						icon={Droplets}
+						title="Prepared Milk & Intake Tracker"
+						description="Track bottle ounces prepared, completed vs leftover tags, and daily milk comparisons"
+						appearance="soft"
+						className="min-h-[96px]"
+					>
+						<span className="password-library-badge inline-flex min-h-9 w-fit items-center rounded-full px-3.5 py-1 text-xs font-bold">
+							{milkStats.todayDrankOz > 0
+								? `🍼 ${milkStats.todayDrankOz} oz drank today (${milkStats.todayCount} ${milkStats.todayCount === 1 ? "feed" : "feeds"})`
+								: "No feeds logged yet today"}
+						</span>
+					</FeatureSectionHeader>
+					<CardContent className="p-0">
+						<MilkTracker
+							logs={data.milkLogs}
+							onCreateRecord={handleCreateMilk}
+							onUpdateRecord={handleUpdateMilk}
+							onDeleteRecord={handleDeleteMilk}
+							paletteAccent={pagePalette.accent}
+							dialogPalette={dialogPalette}
+						/>
+					</CardContent>
+				</Card>
+			)}
+
 			{activeTab === "stool" && (
 				<Card className="gap-3 overflow-visible border-0 bg-transparent py-0 shadow-none ring-0">
 					<FeatureSectionHeader
