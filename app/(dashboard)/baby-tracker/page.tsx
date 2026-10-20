@@ -13,6 +13,8 @@ const emptyData: BabyTrackerData = {
 	medicines: [],
 	growthRecords: [],
 	medicalNotes: [],
+	sleepLogs: [],
+	milkLogs: [],
 };
 
 async function BabyTrackerContent() {
