@@ -574,3 +574,21 @@ export function getMilkComparisonData(logs: BabyMilkLog[], daysCount = 7) {
 
 	return result;
 }
+
+/**
+ * Returns the current (or given) date/time in local YYYY-MM-DDTHH:mm format for datetime-local inputs.
+ * Ensures the default date is today and default time is now in the user's local timezone.
+ */
+export function getLocalDatetimeString(date: Date = new Date()): string {
+	const pad = (n: number) => n.toString().padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/**
+ * Returns the current (or given) date in local YYYY-MM-DD format for date inputs.
+ * Ensures the default date is today in the user's local timezone.
+ */
+export function getLocalDateString(date: Date = new Date()): string {
+	const pad = (n: number) => n.toString().padStart(2, "0");
+	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}

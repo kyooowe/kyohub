@@ -43,6 +43,7 @@ import {
 	whoGrowthBenchmarks,
 	getWeightAssessment,
 	getHeightAssessment,
+	getLocalDateString,
 	type GrowthAssessment,
 } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
@@ -950,7 +951,7 @@ export function GrowthTracker({
 									<Input
 										type="date"
 										name="recordedDate"
-										defaultValue={editingRecord?.recordedDate ?? new Date().toISOString().split("T")[0]}
+										defaultValue={editingRecord?.recordedDate ?? getLocalDateString()}
 										required
 										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>

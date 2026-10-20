@@ -52,6 +52,7 @@ const paletteOptionDetails: Partial<Record<NamedPagePalette, { icon: LucideIcon;
 	pastelDawn: { icon: Sunrise, description: "Warm peach dawn, petal rose, and misty lavender.", tone: "Pastel dawn", iconColor: "text-[#9B536E]" },
 	pastelMist: { icon: Cloud, description: "Powdery periwinkle and soft morning mountain mist.", tone: "Pastel mist", iconColor: "text-[#5F568C]" },
 	blushPeriwinkle: { icon: Layers, description: "Translucent rose quartz, mauve, and soft periwinkle.", tone: "Blush periwinkle", iconColor: "text-[#964264]" },
+	black: { icon: Moon, description: "Minimalist, flat solid black without gradients.", tone: "Solid black", iconColor: "text-white" },
 };
 
 function SectionHeading({

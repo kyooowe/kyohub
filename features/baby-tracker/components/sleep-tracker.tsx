@@ -716,9 +716,9 @@ export function SleepTracker({
 							</div>
 						</div>
 
-						<div className="flex flex-wrap items-center gap-2">
+						<div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5">
 							{/* Avg Sleep badge */}
-							<div className="flex items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-indigo-900/60 dark:bg-slate-900">
+							<div className="flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-indigo-900/60 dark:bg-slate-900">
 								<Moon size={13} className="text-indigo-600 dark:text-indigo-400" />
 								<span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
 									Daily Sleep Avg: <strong className="text-slate-900 dark:text-white">{stats.estimatedSleepHoursPerDay} hrs</strong>
@@ -726,7 +726,7 @@ export function SleepTracker({
 							</div>
 
 							{/* Target Status badge */}
-							<div className="flex items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-emerald-900/60 dark:bg-slate-900">
+							<div className="flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-emerald-900/60 dark:bg-slate-900">
 								<CheckCircle2 size={13} className="text-emerald-500" />
 								<span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
 									Target: <strong className="text-emerald-700 dark:text-emerald-400">{stats.estimatedSleepHoursPerDay >= stats.benchmark.minHours ? "On Track" : "Building Rhythm"}</strong>

@@ -21,6 +21,7 @@ import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { Input } from "@/components/ui/input";
 import type { PagePalette } from "@/components/settings/page-palettes";
 import type { BabyMedicalNote, MedicalNoteCategory } from "../types";
+import { getLocalDateString } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
 import { toast } from "sonner";
 
@@ -46,7 +47,7 @@ export function MedicalNotes({
 	const [categoryFilter, setCategoryFilter] = useState<string>("all");
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(3000);
 
-	const todayStr = new Date().toISOString().split("T")[0];
+	const todayStr = getLocalDateString();
 
 	const categories: Array<{ key: MedicalNoteCategory | "all"; label: string }> = [
 		{ key: "all", label: "All Notes" },

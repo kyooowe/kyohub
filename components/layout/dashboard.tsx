@@ -118,8 +118,24 @@ function DashboardShell({
     setLocking(true);
     try {
       await logout();
-      router.replace("/");
-      router.refresh();
+
+      // Clear browser CacheStorage if present
+      if (typeof window !== "undefined" && "caches" in window) {
+        try {
+          const cacheNames = await window.caches.keys();
+          await Promise.all(cacheNames.map((name) => window.caches.delete(name)));
+        } catch {
+          // ignore cache deletion errors
+        }
+      }
+
+      // Hard redirect to root to flush all in-memory client component trees and router caches
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      } else {
+        router.replace("/");
+        router.refresh();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? `Could not lock the app: ${error.message}` : "Could not lock the app.");
       setLocking(false);

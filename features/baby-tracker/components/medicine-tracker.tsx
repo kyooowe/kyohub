@@ -8,6 +8,7 @@ import { PaletteDialogHeader } from "@/components/ui/palette-dialog-header";
 import { Input } from "@/components/ui/input";
 import type { PagePalette } from "@/components/settings/page-palettes";
 import type { BabyMedicine, MedicineStatus } from "../types";
+import { getLocalDateString } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
 import { toast } from "sonner";
 
@@ -364,7 +365,7 @@ export function MedicineTracker({
 									<Input
 										type="date"
 										name="startDate"
-										defaultValue={editingMedicine?.startDate ?? new Date().toISOString().split("T")[0]}
+										defaultValue={editingMedicine?.startDate ?? getLocalDateString()}
 										required
 										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>

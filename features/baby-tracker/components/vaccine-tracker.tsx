@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import type { PagePalette } from "@/components/settings/page-palettes";
 import type { BabyVaccine, VaccineStatus } from "../types";
 import { standardChildhoodVaccines } from "../types";
+import { getLocalDateString } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
 import { toast } from "sonner";
 
@@ -955,7 +956,7 @@ export function VaccineTracker({
 										type="date"
 										name="vaccineDate"
 										required
-										defaultValue={editingVaccine?.vaccineDate ?? new Date().toISOString().split("T")[0]}
+										defaultValue={editingVaccine?.vaccineDate ?? getLocalDateString()}
 										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>
 								</label>
