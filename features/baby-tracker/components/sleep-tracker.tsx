@@ -9,6 +9,7 @@ import {
 	YAxis,
 	CartesianGrid,
 	Tooltip,
+	Legend,
 } from "recharts";
 import {
 	Moon,
@@ -79,6 +80,45 @@ interface SleepTrackerProps {
 	onDeleteRecord: (id: string) => Promise<void>;
 	paletteAccent?: string;
 	dialogPalette?: PagePalette;
+}
+
+function CustomSleepLegend(props: {
+	payload?: Array<{
+		value: string;
+		color: string;
+		dataKey: string;
+	}>;
+}) {
+	const { payload } = props;
+	if (!payload || payload.length === 0) return null;
+
+	return (
+		<div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pt-3 text-xs">
+			{payload.map((entry) => {
+				const isDashed = String(entry.dataKey).toLowerCase().includes("target");
+				return (
+					<div key={entry.value} className="inline-flex items-center gap-1.5">
+						{isDashed ? (
+							<span
+								className="inline-block h-0 w-4 border-t-2 border-dashed"
+								style={{ borderColor: entry.color }}
+								aria-hidden="true"
+							/>
+						) : (
+							<span
+								className="inline-block size-2.5 rounded-full"
+								style={{ backgroundColor: entry.color }}
+								aria-hidden="true"
+							/>
+						)}
+						<span className="font-semibold text-slate-700 dark:text-slate-200">
+							{entry.value}
+						</span>
+					</div>
+				);
+			})}
+		</div>
+	);
 }
 
 export function SleepTracker({
@@ -798,6 +838,7 @@ export function SleepTracker({
 										);
 									}}
 								/>
+								<Legend content={<CustomSleepLegend />} />
 
 								{/* Sleep Hours Line */}
 								{(chartMetric === "both" || chartMetric === "sleep") && (
@@ -832,7 +873,7 @@ export function SleepTracker({
 									<Line
 										type="monotone"
 										dataKey="targetHours"
-										name="Target Sleep"
+										name="Target Sleep (hrs)"
 										stroke="#10B981"
 										strokeWidth={2}
 										strokeDasharray="4 4"

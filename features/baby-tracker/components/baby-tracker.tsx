@@ -59,6 +59,7 @@ import {
 	saveBabyProfile,
 	seedStandardVaccines,
 	toggleMedicineStatus,
+	toggleMedicineDailyDose,
 	toggleVaccineStatus,
 	updateGrowthRecord,
 	updateMedicalNote,
@@ -295,6 +296,11 @@ export function BabyTracker({
 
 	async function handleDeleteMedicine(id: string) {
 		await deleteMedicine(id);
+		await refreshData();
+	}
+
+	async function handleToggleMedicineDailyDose(medicineId: string, doseNumber: number) {
+		await toggleMedicineDailyDose(medicineId, doseNumber);
 		await refreshData();
 	}
 
@@ -790,6 +796,8 @@ export function BabyTracker({
 					<CardContent className="p-0">
 						<MedicineTracker
 							medicines={data.medicines}
+							todayDosesRecord={data.medicineDosesRecord || {}}
+							onToggleDailyDose={handleToggleMedicineDailyDose}
 							onCreateMedicine={handleCreateMedicine}
 							onUpdateMedicine={handleUpdateMedicine}
 							onToggleStatus={handleToggleMedicine}

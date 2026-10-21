@@ -49,6 +49,15 @@ export type BabyVaccine = {
 
 export type MedicineStatus = "active" | "completed" | "paused";
 
+export const MEDICINE_FREQUENCIES = [
+	"once a day",
+	"twice a day",
+	"thrice a day",
+	"four times a day",
+] as const;
+
+export type MedicineFrequency = (typeof MEDICINE_FREQUENCIES)[number] | (string & {});
+
 export type BabyMedicine = {
 	id: string;
 	name: string;
@@ -56,7 +65,7 @@ export type BabyMedicine = {
 	instructions: string;
 	startDate: string; // YYYY-MM-DD
 	endDate: string; // YYYY-MM-DD or empty
-	frequency: string;
+	frequency: MedicineFrequency;
 	status: MedicineStatus;
 	notes: string;
 	createdAt?: string;
@@ -126,6 +135,7 @@ export type BabyTrackerData = {
 	medicalNotes: BabyMedicalNote[];
 	sleepLogs: BabySleepLog[];
 	milkLogs: BabyMilkLog[];
+	medicineDosesRecord?: Record<string, number[]>;
 };
 
 export const standardChildhoodVaccines: Array<{

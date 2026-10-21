@@ -9,6 +9,7 @@ import {
 	YAxis,
 	CartesianGrid,
 	Tooltip,
+	Legend,
 } from "recharts";
 import {
 	Droplets,
@@ -83,6 +84,48 @@ const MILK_TYPES: Array<{ id: MilkType; label: string; color: string }> = [
 ];
 
 const PRESET_AMOUNTS = [2, 3, 4, 5, 6, 8];
+
+function CustomMilkLegend(props: {
+	payload?: Array<{
+		value: string;
+		color: string;
+		dataKey: string;
+	}>;
+}) {
+	const { payload } = props;
+	if (!payload || payload.length === 0) return null;
+
+	return (
+		<div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 pt-3 text-xs">
+			{payload.map((entry) => {
+				const isDashed =
+					String(entry.dataKey).toLowerCase().includes("estimate") ||
+					String(entry.dataKey).toLowerCase().includes("target") ||
+					String(entry.dataKey).toLowerCase().includes("avg");
+				return (
+					<div key={entry.value} className="inline-flex items-center gap-1.5">
+						{isDashed ? (
+							<span
+								className="inline-block h-0 w-4 border-t-2 border-dashed"
+								style={{ borderColor: entry.color }}
+								aria-hidden="true"
+							/>
+						) : (
+							<span
+								className="inline-block size-2.5 rounded-full"
+								style={{ backgroundColor: entry.color }}
+								aria-hidden="true"
+							/>
+						)}
+						<span className="font-semibold text-slate-700 dark:text-slate-200">
+							{entry.value}
+						</span>
+					</div>
+				);
+			})}
+		</div>
+	);
+}
 
 export function MilkTracker({
 	logs,
@@ -414,15 +457,25 @@ export function MilkTracker({
 
 						{/* 3. Leftover oz (if Left Over selected) or Milk Type */}
 						{quickStatus === "leftover" ? (
-							<div className="min-w-[160px]">
-								<label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-									Left Over (oz)
-								</label>
+							<div className="min-w-[170px]">
+								<div className="flex items-center justify-between mb-1.5">
+									<label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+										Left Over (oz)
+									</label>
+									<button
+										type="button"
+										onClick={() => setQuickLeftoverOz(quickPreparedOz.toString())}
+										className="rounded px-1.5 py-0.5 text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 transition-colors dark:bg-amber-900/60 dark:text-amber-200"
+										title="Set all prepared milk as leftover"
+									>
+										All ({quickPreparedOz} oz)
+									</button>
+								</div>
 								<div className="flex items-center gap-2">
 									<Input
 										type="number"
-										step="0.5"
-										min="0.1"
+										step="any"
+										min="0"
 										max={quickPreparedOz}
 										value={quickLeftoverOz}
 										onChange={(e) => setQuickLeftoverOz(e.target.value)}
@@ -822,6 +875,7 @@ export function MilkTracker({
 										);
 									}}
 								/>
+								<Legend content={<CustomMilkLegend />} />
 
 								{/* Drank Milk Line */}
 								{(chartMetric === "both" || chartMetric === "drank") && (
@@ -856,7 +910,7 @@ export function MilkTracker({
 									<Line
 										type="monotone"
 										dataKey="estimatedDrankOz"
-										name="Est. Avg Intake"
+										name="Est. Avg Intake (oz)"
 										stroke="#F43F5E"
 										strokeWidth={2}
 										strokeDasharray="4 4"
@@ -1281,19 +1335,32 @@ export function MilkTracker({
 
 							{/* Leftover Ounces (when tag is leftover) */}
 							{formStatus === "leftover" && (
-								<div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5 space-y-2 dark:border-amber-900/60 dark:bg-amber-950/40">
-									<div className="flex items-center justify-between">
+								<div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5 space-y-2.5 dark:border-amber-900/60 dark:bg-amber-950/40">
+									<div className="flex flex-wrap items-center justify-between gap-1.5">
 										<label className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-300">
 											Left Over Milk (oz)
 										</label>
-										<span className="text-xs font-bold text-amber-800 dark:text-amber-300">
-											Drank: {Math.max(0, (parseFloat(formPreparedOz) || 0) - (parseFloat(formLeftoverOz) || 0)).toFixed(1)} oz
-										</span>
+										<div className="flex items-center gap-2">
+											{formPreparedOz && (
+												<button
+													type="button"
+													onClick={() => setFormLeftoverOz(formPreparedOz)}
+													className="inline-flex items-center gap-1 rounded-lg border border-amber-300/80 bg-amber-100/90 px-2 py-0.5 text-xs font-bold text-amber-900 hover:bg-amber-200 transition-colors shadow-2xs dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-200"
+													title="Put all prepared milk as leftover"
+												>
+													Put all prepared ({formPreparedOz} oz)
+												</button>
+											)}
+											<span className="text-xs font-bold text-amber-800 dark:text-amber-300">
+												Drank: {Math.max(0, (parseFloat(formPreparedOz) || 0) - (parseFloat(formLeftoverOz) || 0)).toFixed(1)} oz
+											</span>
+										</div>
 									</div>
+
 									<Input
 										type="number"
-										step="0.5"
-										min="0.1"
+										step="any"
+										min="0"
 										max={parseFloat(formPreparedOz) || 20}
 										value={formLeftoverOz}
 										onChange={(e) => setFormLeftoverOz(e.target.value)}
@@ -1301,6 +1368,41 @@ export function MilkTracker({
 										placeholder="e.g. 1.5"
 										className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
 									/>
+
+									{/* Quick Leftover Presets */}
+									<div className="flex flex-wrap items-center gap-1 pt-0.5">
+										<span className="text-[10px] font-semibold text-amber-800/70 dark:text-amber-300/70">Quick:</span>
+										{["0.5", "1", "1.5", "2", "2.5", "3", "4"]
+											.filter((amt) => parseFloat(amt) < (parseFloat(formPreparedOz) || 20))
+											.map((amt) => (
+												<button
+													key={amt}
+													type="button"
+													onClick={() => setFormLeftoverOz(amt)}
+													className={`rounded-md px-1.5 py-0.5 text-[11px] font-semibold transition-all border ${
+														formLeftoverOz === amt
+															? "border-amber-400 bg-amber-200/90 text-amber-950 font-bold dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-200"
+															: "border-amber-200/80 bg-white/80 text-amber-900 hover:bg-amber-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+													}`}
+												>
+													{amt} oz
+												</button>
+											))}
+										{formPreparedOz && (
+											<button
+												type="button"
+												onClick={() => setFormLeftoverOz(formPreparedOz)}
+												className={`rounded-md px-2 py-0.5 text-[11px] font-bold transition-all border ${
+													formLeftoverOz === formPreparedOz
+														? "border-amber-500 bg-amber-500 text-white shadow-2xs"
+														: "border-amber-300 bg-amber-100/90 text-amber-900 hover:bg-amber-200 dark:border-amber-700 dark:bg-amber-900/60 dark:text-amber-200"
+												}`}
+											>
+												All ({formPreparedOz} oz)
+											</button>
+										)}
+									</div>
+
 									<p className="text-[10px] text-amber-700 dark:text-amber-400">
 										Enter the remaining ounces left in the bottle. Drank volume is calculated automatically.
 									</p>

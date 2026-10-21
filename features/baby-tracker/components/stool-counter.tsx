@@ -86,12 +86,6 @@ export function StoolCounter({
 	const [amount, setAmount] = useState<StoolAmount>("medium");
 	const [changeTime, setChangeTime] = useState(getLocalDatetimeString);
 
-	useEffect(() => {
-		if (dialogOpen) {
-			setChangeTime(getLocalDatetimeString());
-		}
-	}, [dialogOpen]);
-
 	const stats = getDiaperStats(logs);
 
 	async function handleQuick(type: DiaperType) {
