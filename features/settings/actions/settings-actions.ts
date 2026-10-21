@@ -7,7 +7,6 @@ import { defaultSettings, normalizeAppSettings, parseAppSettings, type AppSettin
 const sharedSettingsId = "shared";
 
 export async function fetchAppSettings(): Promise<{ settings: AppSettings; isStored: boolean }> {
-	await requireAuth();
 	const row = await db.orm.public.AppSetting.first({ id: sharedSettingsId });
 	if (!row) return { settings: defaultSettings, isStored: false };
 

@@ -81,6 +81,7 @@ function DashboardShell({
     const item = navigationItems.find((entry) => entry.href === href)!;
     return { ...item, icon: icons[href] };
   });
+  const defaultHref = navigation[0]?.href ?? "/passwords";
   const activeIndex = Math.max(
     0,
     navigation.findIndex((item) => displayedPathname.startsWith(item.href)),
@@ -171,8 +172,8 @@ function DashboardShell({
         className={`${settings.desktopNavigation === "sidebar" ? "md:flex" : "md:hidden"} hidden flex-col border-b border-violet-950/40 bg-linear-to-b from-[#211a3e] via-[#241d43] to-[#18152e] px-2 py-3 text-white md:static md:min-h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-5`}
       >
         <Link
-          href="/"
-          onClick={(event) => handleNavigationClick(event, "/")}
+          href={defaultHref}
+          onClick={(event) => handleNavigationClick(event, defaultHref)}
           className="mb-5 flex items-center gap-3 px-2 text-xl font-bold tracking-tight text-white md:mb-12"
         >
           <span className="grid size-8 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-lg shadow-emerald-500/20">
@@ -231,8 +232,8 @@ function DashboardShell({
           <div className="flex min-w-0 items-center gap-4">
             <Link
               data-page-palette-preserve
-              href="/"
-              onClick={(event) => handleNavigationClick(event, "/")}
+              href={defaultHref}
+              onClick={(event) => handleNavigationClick(event, defaultHref)}
               className="flex shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:hidden dark:text-white"
             >
               <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-md shadow-emerald-500/20">
@@ -246,8 +247,8 @@ function DashboardShell({
             {settings.desktopNavigation === "floating" && (
               <Link
                 data-page-palette-preserve
-                href="/"
-                onClick={(event) => handleNavigationClick(event, "/")}
+                href={defaultHref}
+                onClick={(event) => handleNavigationClick(event, defaultHref)}
                 className="hidden shrink-0 items-center gap-2 text-base font-bold tracking-tight text-slate-900 sm:flex dark:text-white"
               >
                 <span className="grid size-7 grid-cols-2 gap-1 rounded-lg bg-linear-to-br from-emerald-400 via-teal-500 to-emerald-600 p-1.5 shadow-md shadow-emerald-500/20">
