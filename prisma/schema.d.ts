@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'65be09aeeb7ff513a715a5aa9ebca9421d25e0f96e9ce8c73856b602918baa3b'>;
+  StorageHashBase<'46a4e17fcde7ae9561b32518e49269089765d4ddd74a32f5e8d43c00429e6a24'>;
 export type ExecutionHash =
   ExecutionHashBase<'e5c73284420c54ca017b688dce754bca0cea82f200632a586e1ee7b60e4af5e1'>;
 export type ProfileHash =
@@ -271,7 +271,11 @@ export type FieldOutputTypes = {
       readonly doctorAdvice: CodecTypes['pg/text@1']['output'];
       readonly doctorName: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imagePathname: CodecTypes['pg/text@1']['output'];
+      readonly imageSize: CodecTypes['pg/int4@1']['output'];
+      readonly imageUrl: CodecTypes['pg/text@1']['output'];
       readonly noteDate: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
       readonly symptoms: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
     };
@@ -417,7 +421,11 @@ export type FieldInputTypes = {
       readonly doctorAdvice: CodecTypes['pg/text@1']['input'];
       readonly doctorName: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imagePathname: CodecTypes['pg/text@1']['input'];
+      readonly imageSize: CodecTypes['pg/int4@1']['input'];
+      readonly imageUrl: CodecTypes['pg/text@1']['input'];
       readonly noteDate: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
       readonly symptoms: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
     };
@@ -563,7 +571,11 @@ export type StorageColumnTypes = {
       readonly doctorAdvice: CodecTypes['pg/text@1']['output'];
       readonly doctorName: CodecTypes['pg/text@1']['output'];
       readonly id: CodecTypes['pg/text@1']['output'];
+      readonly imagePathname: CodecTypes['pg/text@1']['output'];
+      readonly imageSize: CodecTypes['pg/int4@1']['output'];
+      readonly imageUrl: CodecTypes['pg/text@1']['output'];
       readonly noteDate: CodecTypes['pg/text@1']['output'];
+      readonly notes: CodecTypes['pg/text@1']['output'];
       readonly symptoms: CodecTypes['pg/text@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
     };
@@ -709,7 +721,11 @@ export type StorageColumnInputTypes = {
       readonly doctorAdvice: CodecTypes['pg/text@1']['input'];
       readonly doctorName: CodecTypes['pg/text@1']['input'];
       readonly id: CodecTypes['pg/text@1']['input'];
+      readonly imagePathname: CodecTypes['pg/text@1']['input'];
+      readonly imageSize: CodecTypes['pg/int4@1']['input'];
+      readonly imageUrl: CodecTypes['pg/text@1']['input'];
       readonly noteDate: CodecTypes['pg/text@1']['input'];
+      readonly notes: CodecTypes['pg/text@1']['input'];
       readonly symptoms: CodecTypes['pg/text@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
     };
@@ -857,7 +873,11 @@ export namespace Models {
     doctorAdvice: CodecTypes['pg/text@1']['output'];
     doctorName: CodecTypes['pg/text@1']['output'];
     id: CodecTypes['pg/text@1']['output'];
+    imagePathname: CodecTypes['pg/text@1']['output'];
+    imageSize: CodecTypes['pg/int4@1']['output'];
+    imageUrl: CodecTypes['pg/text@1']['output'];
     noteDate: CodecTypes['pg/text@1']['output'];
+    notes: CodecTypes['pg/text@1']['output'];
     symptoms: CodecTypes['pg/text@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
     readonly [RelationKeys]?: never;
@@ -1145,6 +1165,10 @@ type ContractBase = Omit<
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
                 };
                 readonly doctorName: {
                   readonly nativeType: 'text';
@@ -1160,15 +1184,55 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly imagePathname: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
+                readonly imageSize: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly imageUrl: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
                 readonly noteDate: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                 };
+                readonly notes: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
+                };
                 readonly symptoms: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', ''>;
+                  };
                 };
                 readonly title: {
                   readonly nativeType: 'text';
@@ -2161,7 +2225,23 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly imagePathname: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly imageSize: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly imageUrl: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly noteDate: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -2185,7 +2265,11 @@ type ContractBase = Omit<
                 readonly doctorAdvice: { readonly column: 'doctorAdvice' };
                 readonly doctorName: { readonly column: 'doctorName' };
                 readonly id: { readonly column: 'id' };
+                readonly imagePathname: { readonly column: 'imagePathname' };
+                readonly imageSize: { readonly column: 'imageSize' };
+                readonly imageUrl: { readonly column: 'imageUrl' };
                 readonly noteDate: { readonly column: 'noteDate' };
+                readonly notes: { readonly column: 'notes' };
                 readonly symptoms: { readonly column: 'symptoms' };
                 readonly title: { readonly column: 'title' };
               };

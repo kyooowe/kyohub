@@ -235,7 +235,35 @@
                   "kind": "scalar"
                 }
               },
+              "imagePathname": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "imageSize": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "imageUrl": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "noteDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "notes": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -278,8 +306,20 @@
                 "id": {
                   "column": "id"
                 },
+                "imagePathname": {
+                  "column": "imagePathname"
+                },
+                "imageSize": {
+                  "column": "imageSize"
+                },
+                "imageUrl": {
+                  "column": "imageUrl"
+                },
                 "noteDate": {
                   "column": "noteDate"
+                },
+                "notes": {
+                  "column": "notes"
                 },
                 "symptoms": {
                   "column": "symptoms"
@@ -1494,6 +1534,10 @@
                 },
                 "doctorAdvice": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -1511,13 +1555,53 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "imagePathname": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "imageSize": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "imageUrl": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "noteDate": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
                 },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
+                  "nativeType": "text",
+                  "nullable": false
+                },
                 "symptoms": {
                   "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": ""
+                  },
                   "nativeType": "text",
                   "nullable": false
                 },
@@ -2484,7 +2568,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "65be09aeeb7ff513a715a5aa9ebca9421d25e0f96e9ce8c73856b602918baa3b"
+    "storageHash": "46a4e17fcde7ae9561b32518e49269089765d4ddd74a32f5e8d43c00429e6a24"
   },
   "execution": {
     "executionHash": "e5c73284420c54ca017b688dce754bca0cea82f200632a586e1ee7b60e4af5e1",

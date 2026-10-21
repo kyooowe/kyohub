@@ -88,11 +88,15 @@ export type BabyMedicalNote = {
 	id: string;
 	noteDate: string; // YYYY-MM-DD
 	title: string;
-	symptoms: string;
-	doctorAdvice: string;
+	imageUrl: string;
+	imagePathname: string;
+	imageSize: number;
+	notes: string;
 	doctorName: string;
-	clinicName: string;
-	category: MedicalNoteCategory;
+	clinicName?: string;
+	category?: string;
+	symptoms?: string;
+	doctorAdvice?: string;
 	createdAt?: string;
 };
 

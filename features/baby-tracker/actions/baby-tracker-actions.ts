@@ -12,7 +12,6 @@ import type {
 	MilkStatus,
 	MilkType,
 	DiaperType,
-	MedicalNoteCategory,
 	MedicineStatus,
 	StoolAmount,
 	StoolColor,
@@ -47,7 +46,7 @@ const getCachedBabyTrackerData = unstable_cache(
 				.orderBy([(g) => g.monthAge.asc(), (g) => g.recordedDate.asc()])
 				.all(),
 			db.orm.public.BabyMedicalNote
-				.select("id", "noteDate", "title", "symptoms", "doctorAdvice", "doctorName", "clinicName", "category", "createdAt")
+				.select("id", "noteDate", "title", "imageUrl", "imagePathname", "imageSize", "notes", "doctorName", "clinicName", "category", "symptoms", "doctorAdvice", "createdAt")
 				.orderBy([(n) => n.noteDate.desc(), (n) => n.id.desc()])
 				.all(),
 			db.orm.public.BabySleepLog
@@ -139,11 +138,15 @@ const getCachedBabyTrackerData = unstable_cache(
 				id: n.id,
 				noteDate: n.noteDate,
 				title: n.title,
-				symptoms: n.symptoms,
-				doctorAdvice: n.doctorAdvice,
+				imageUrl: n.imageUrl,
+				imagePathname: n.imagePathname,
+				imageSize: n.imageSize,
+				notes: n.notes,
 				doctorName: n.doctorName,
 				clinicName: n.clinicName,
-				category: n.category as MedicalNoteCategory,
+				category: n.category,
+				symptoms: n.symptoms,
+				doctorAdvice: n.doctorAdvice,
 				createdAt: n.createdAt,
 			})),
 			sleepLogs: sleepLogs.map((s) => ({
@@ -594,25 +597,31 @@ export async function deleteGrowthRecord(id: string): Promise<void> {
 export async function createMedicalNote(data: {
 	noteDate: string;
 	title?: string;
-	symptoms: string;
-	doctorAdvice: string;
+	imageUrl?: string;
+	imagePathname?: string;
+	imageSize?: number;
+	notes?: string;
 	doctorName?: string;
 	clinicName?: string;
-	category?: MedicalNoteCategory;
+	category?: string;
+	symptoms?: string;
+	doctorAdvice?: string;
 }): Promise<void> {
 	await requireAuth();
 	if (!data.noteDate?.trim()) throw new Error("Date is required.");
-	if (!data.symptoms?.trim()) throw new Error("Symptoms are required.");
-	if (!data.doctorAdvice?.trim()) throw new Error("Doctor advice is required.");
 
 	await db.orm.public.BabyMedicalNote.create({
 		noteDate: data.noteDate.trim(),
 		title: (data.title ?? "").trim(),
-		symptoms: data.symptoms.trim(),
-		doctorAdvice: data.doctorAdvice.trim(),
+		imageUrl: (data.imageUrl ?? "").trim(),
+		imagePathname: (data.imagePathname ?? "").trim(),
+		imageSize: data.imageSize ?? 0,
+		notes: (data.notes ?? "").trim(),
 		doctorName: (data.doctorName ?? "").trim(),
 		clinicName: (data.clinicName ?? "").trim(),
 		category: data.category ?? "general",
+		symptoms: (data.symptoms ?? "").trim(),
+		doctorAdvice: (data.doctorAdvice ?? "").trim(),
 	});
 
 	updateTag("baby-tracker");
@@ -623,11 +632,15 @@ export async function updateMedicalNote(
 	data: {
 		noteDate?: string;
 		title?: string;
-		symptoms?: string;
-		doctorAdvice?: string;
+		imageUrl?: string;
+		imagePathname?: string;
+		imageSize?: number;
+		notes?: string;
 		doctorName?: string;
 		clinicName?: string;
-		category?: MedicalNoteCategory;
+		category?: string;
+		symptoms?: string;
+		doctorAdvice?: string;
 	},
 ): Promise<void> {
 	await requireAuth();
@@ -637,11 +650,15 @@ export async function updateMedicalNote(
 	await db.orm.public.BabyMedicalNote.where({ id }).update({
 		noteDate: (data.noteDate ?? existing.noteDate).trim(),
 		title: (data.title ?? existing.title).trim(),
-		symptoms: (data.symptoms ?? existing.symptoms).trim(),
-		doctorAdvice: (data.doctorAdvice ?? existing.doctorAdvice).trim(),
+		imageUrl: (data.imageUrl ?? existing.imageUrl).trim(),
+		imagePathname: (data.imagePathname ?? existing.imagePathname).trim(),
+		imageSize: data.imageSize ?? existing.imageSize,
+		notes: (data.notes ?? existing.notes).trim(),
 		doctorName: (data.doctorName ?? existing.doctorName).trim(),
 		clinicName: (data.clinicName ?? existing.clinicName).trim(),
 		category: data.category ?? existing.category,
+		symptoms: (data.symptoms ?? existing.symptoms).trim(),
+		doctorAdvice: (data.doctorAdvice ?? existing.doctorAdvice).trim(),
 	});
 
 	updateTag("baby-tracker");
@@ -649,6 +666,17 @@ export async function updateMedicalNote(
 
 export async function deleteMedicalNote(id: string): Promise<void> {
 	await requireAuth();
+	const existing = await db.orm.public.BabyMedicalNote.first({ id });
+	if (existing?.imagePathname) {
+		try {
+			const { del } = await import("@vercel/blob");
+			await del(existing.imagePathname, {
+				token: process.env.BLOB_READ_WRITE_TOKEN,
+			});
+		} catch (err) {
+			console.error("Failed to delete blob from Vercel Blob:", err);
+		}
+	}
 	await db.orm.public.BabyMedicalNote.where({ id }).delete();
 	updateTag("baby-tracker");
 }

@@ -140,15 +140,19 @@ model BabyGrowth {
 }
 
 model BabyMedicalNote {
-  id           String           @id @default(uuid())
-  noteDate     String
-  title        String           @default("")
-  symptoms     String
-  doctorAdvice String
-  doctorName   String           @default("")
-  clinicName   String           @default("")
-  category     String           @default("general")
-  createdAt    TimestamptzString @default(now())
+  id            String            @id @default(uuid())
+  noteDate      String
+  title         String            @default("")
+  imageUrl      String            @default("")
+  imagePathname String            @default("")
+  imageSize     Int               @default(0)
+  notes         String            @default("")
+  doctorName    String            @default("")
+  clinicName    String            @default("")
+  category      String            @default("general")
+  symptoms      String            @default("")
+  doctorAdvice  String            @default("")
+  createdAt     TimestamptzString @default(now())
 
   @@index([noteDate])
 }

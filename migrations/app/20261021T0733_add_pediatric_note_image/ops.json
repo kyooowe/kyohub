@@ -1,0 +1,254 @@
+[
+  {
+    "id": "column.public.BabyMedicalNote.imagePathname",
+    "label": "Add column \"imagePathname\" to \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imagePathname",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imagePathname\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imagePathname"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imagePathname\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ADD COLUMN \"imagePathname\" text DEFAULT '' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imagePathname\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imagePathname"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.BabyMedicalNote.imageSize",
+    "label": "Add column \"imageSize\" to \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imageSize",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imageSize\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imageSize"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imageSize\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ADD COLUMN \"imageSize\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageSize\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imageSize"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.BabyMedicalNote.imageUrl",
+    "label": "Add column \"imageUrl\" to \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "imageUrl",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"imageUrl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imageUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"imageUrl\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ADD COLUMN \"imageUrl\" text DEFAULT '' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"imageUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "imageUrl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.BabyMedicalNote.notes",
+    "label": "Add column \"notes\" to \"BabyMedicalNote\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "notes",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"notes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "notes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"notes\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ADD COLUMN \"notes\" text DEFAULT '' NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"notes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "notes"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setDefault.BabyMedicalNote.doctorAdvice",
+    "label": "Set default on \"BabyMedicalNote\".\"doctorAdvice\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "doctorAdvice",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"doctorAdvice\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "doctorAdvice"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"doctorAdvice\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ALTER COLUMN \"doctorAdvice\" SET DEFAULT ''"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"doctorAdvice\" has a default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "doctorAdvice"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "setDefault.BabyMedicalNote.symptoms",
+    "label": "Set default on \"BabyMedicalNote\".\"symptoms\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "symptoms",
+        "table": "BabyMedicalNote"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"symptoms\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "symptoms"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "set default on \"symptoms\"",
+        "sql": "ALTER TABLE \"public\".\"BabyMedicalNote\" ALTER COLUMN \"symptoms\" SET DEFAULT ''"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"symptoms\" has a default",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"column_default\" IS NOT NULL)) AS \"result\"",
+        "params": [
+          "public",
+          "BabyMedicalNote",
+          "symptoms"
+        ]
+      }
+    ]
+  }
+]
