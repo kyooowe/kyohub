@@ -504,8 +504,8 @@ export function VaccineTracker({
 					</div>
 					<div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
 						<div
-							className="h-full rounded-full bg-linear-to-r from-rose-500 to-emerald-500 transition-all duration-500"
-							style={{ width: `${stats.completionRate}%` }}
+							className="h-full rounded-full transition-all duration-500"
+							style={{ backgroundColor: paletteAccent, width: `${stats.completionRate}%` }}
 						/>
 					</div>
 				</div>

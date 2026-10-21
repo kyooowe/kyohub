@@ -20,11 +20,11 @@ import type {
 	VaccineStatus,
 } from "../types";
 import { standardChildhoodVaccines, BLOOD_TYPES } from "../types";
-import { detectSleepPeriod } from "../lib/baby-tracker-utils";
+import { detectSleepPeriod, getLocalDateString } from "../lib/baby-tracker-utils";
 
 const getCachedBabyTrackerData = unstable_cache(
 	async (): Promise<BabyTrackerData> => {
-		const [profiles, stoolLogs, vaccines, medicines, growthRecords, medicalNotes, sleepLogs, milkLogs] = await Promise.all([
+		const [profiles, stoolLogs, vaccines, medicines, growthRecords, medicalNotes, sleepLogs, milkLogs, dosesSetting] = await Promise.all([
 			db.orm.public.BabyProfile
 				.select("id", "name", "birthDate", "gender", "bloodType", "birthWeight", "birthHeight", "pediatrician", "pediatricianPhone", "allergies", "notes", "createdAt")
 				.orderBy([(p) => p.createdAt.asc()])
@@ -60,7 +60,21 @@ const getCachedBabyTrackerData = unstable_cache(
 				.orderBy([(m) => m.loggedAt.desc(), (m) => m.id.desc()])
 				.limit(100)
 				.all(),
+			db.orm.public.AppSetting.first({ id: "baby_medicine_daily_doses" }),
 		]);
+
+		let medicineDosesRecord: Record<string, number[]> = {};
+		if (dosesSetting?.value) {
+			try {
+				const parsed = JSON.parse(dosesSetting.value);
+				const todayKey = getLocalDateString();
+				if (parsed && typeof parsed === "object" && parsed[todayKey] && typeof parsed[todayKey] === "object") {
+					medicineDosesRecord = parsed[todayKey];
+				}
+			} catch {
+				medicineDosesRecord = {};
+			}
+		}
 
 		const profile: BabyProfile | null = profiles.length > 0 ? {
 			id: profiles[0].id,
@@ -153,6 +167,7 @@ const getCachedBabyTrackerData = unstable_cache(
 				notes: m.notes,
 				createdAt: m.createdAt,
 			})),
+			medicineDosesRecord,
 		};
 	},
 	["baby-tracker"],
@@ -386,7 +401,7 @@ export async function seedStandardVaccines(): Promise<void> {
 export async function createMedicine(data: {
 	name: string;
 	dosage: string;
-	instructions: string;
+	instructions?: string;
 	startDate: string;
 	endDate?: string;
 	frequency?: string;
@@ -396,16 +411,20 @@ export async function createMedicine(data: {
 	await requireAuth();
 	if (!data.name?.trim()) throw new Error("Medicine name is required.");
 	if (!data.dosage?.trim()) throw new Error("Dosage is required.");
-	if (!data.instructions?.trim()) throw new Error("Instructions are required.");
 	if (!data.startDate?.trim()) throw new Error("Start date is required.");
+
+	let dosage = data.dosage.trim();
+	if (/^[0-9]+(?:\.[0-9]+)?$/.test(dosage)) {
+		dosage = `${dosage} ml`;
+	}
 
 	await db.orm.public.BabyMedicine.create({
 		name: data.name.trim(),
-		dosage: data.dosage.trim(),
-		instructions: data.instructions.trim(),
+		dosage,
+		instructions: (data.instructions ?? "").trim(),
 		startDate: data.startDate.trim(),
 		endDate: (data.endDate ?? "").trim(),
-		frequency: (data.frequency ?? "").trim(),
+		frequency: (data.frequency ?? "once a day").trim(),
 		status: data.status ?? "active",
 		notes: (data.notes ?? "").trim(),
 	});
@@ -430,10 +449,15 @@ export async function updateMedicine(
 	const existing = await db.orm.public.BabyMedicine.first({ id });
 	if (!existing) throw new Error("Medicine record not found.");
 
+	let updatedDosage = data.dosage !== undefined ? data.dosage.trim() : existing.dosage;
+	if (updatedDosage && /^[0-9]+(?:\.[0-9]+)?$/.test(updatedDosage)) {
+		updatedDosage = `${updatedDosage} ml`;
+	}
+
 	await db.orm.public.BabyMedicine.where({ id }).update({
 		name: (data.name ?? existing.name).trim(),
-		dosage: (data.dosage ?? existing.dosage).trim(),
-		instructions: (data.instructions ?? existing.instructions).trim(),
+		dosage: updatedDosage,
+		instructions: (data.instructions !== undefined ? data.instructions : existing.instructions).trim(),
 		startDate: (data.startDate ?? existing.startDate).trim(),
 		endDate: (data.endDate ?? existing.endDate).trim(),
 		frequency: (data.frequency ?? existing.frequency).trim(),
@@ -454,6 +478,51 @@ export async function deleteMedicine(id: string): Promise<void> {
 	await requireAuth();
 	await db.orm.public.BabyMedicine.where({ id }).delete();
 	updateTag("baby-tracker");
+}
+
+export async function toggleMedicineDailyDose(
+	medicineId: string,
+	doseNumber: number,
+	dateKey?: string,
+): Promise<{ success: boolean; completedDoses: number[] }> {
+	await requireAuth();
+	if (!medicineId) throw new Error("Medicine ID is required.");
+	if (typeof doseNumber !== "number" || doseNumber < 1) throw new Error("Invalid dose number.");
+
+	const targetDate = dateKey || getLocalDateString();
+	const existingRow = await db.orm.public.AppSetting.first({ id: "baby_medicine_daily_doses" });
+
+	let allData: Record<string, Record<string, number[]>> = {};
+	if (existingRow?.value) {
+		try {
+			allData = JSON.parse(existingRow.value);
+			if (typeof allData !== "object" || allData === null) allData = {};
+		} catch {
+			allData = {};
+		}
+	}
+
+	const dayRecord: Record<string, number[]> = { ...(allData[targetDate] || {}) };
+	const medDoses = Array.isArray(dayRecord[medicineId]) ? [...dayRecord[medicineId]] : [];
+
+	let nextDoses: number[];
+	if (medDoses.includes(doseNumber)) {
+		nextDoses = medDoses.filter((d) => d !== doseNumber);
+	} else {
+		nextDoses = [...medDoses, doseNumber].sort((a, b) => a - b);
+	}
+
+	dayRecord[medicineId] = nextDoses;
+	allData[targetDate] = dayRecord;
+
+	const serialized = JSON.stringify(allData);
+	await db.orm.public.AppSetting.upsert({
+		create: { id: "baby_medicine_daily_doses", value: serialized },
+		update: { value: serialized },
+	});
+
+	updateTag("baby-tracker");
+	return { success: true, completedDoses: nextDoses };
 }
 
 /* -------------------------------------------------------------------------- */
