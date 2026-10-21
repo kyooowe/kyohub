@@ -77,8 +77,7 @@ export async function isAuthenticated() {
 	return (await getSessionUser()) !== null;
 }
 
-export async function getSessionUser(): Promise<AuthUser | null> {
-	const token = (await cookies()).get(SESSION_COOKIE)?.value;
+export function verifySessionToken(token: string | undefined): AuthUser | null {
 	if (!token) return null;
 	const [payload, signature] = token.split(".");
 	if (!payload || !signature || !safeEqual(signature, sign(payload))) return null;
@@ -87,6 +86,11 @@ export async function getSessionUser(): Promise<AuthUser | null> {
 	const name = decodeURIComponent(encodedName);
 	const initials = name.split(/\s+/).filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 	return { name, initials };
+}
+
+export async function getSessionUser(): Promise<AuthUser | null> {
+	const token = (await cookies()).get(SESSION_COOKIE)?.value;
+	return verifySessionToken(token);
 }
 
 export async function requireAuth() {

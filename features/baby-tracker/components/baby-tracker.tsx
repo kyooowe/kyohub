@@ -814,13 +814,13 @@ export function BabyTracker({
 					<FeatureSectionHeader
 						theme="rose"
 						icon={Stethoscope}
-						title="Pediatrician Notes & Symptoms"
-						description="Log doctor visit notes, advice, and symptom observations"
+						title="Pediatrician Paper Notes & Prescriptions"
+						description="Snap, compress (&le;500 KB), and archive handwritten paper notes from your pediatrician"
 						appearance="soft"
 						className="min-h-[96px]"
 					>
 						<span className="password-library-badge inline-flex min-h-9 w-fit items-center rounded-full px-3.5 py-1 text-xs font-bold">
-							{data.medicalNotes.length} medical note{data.medicalNotes.length === 1 ? "" : "s"}
+							{data.medicalNotes.length} paper note{data.medicalNotes.length === 1 ? "" : "s"}
 						</span>
 					</FeatureSectionHeader>
 					<CardContent className="p-0">
@@ -829,6 +829,8 @@ export function BabyTracker({
 							onCreateNote={handleCreateMedicalNote}
 							onUpdateNote={handleUpdateMedicalNote}
 							onDeleteNote={handleDeleteMedicalNote}
+							onRefresh={refreshData}
+							defaultDoctor={data.profile?.pediatrician || ""}
 							paletteAccent={pagePalette.accent}
 							dialogPalette={dialogPalette}
 						/>
