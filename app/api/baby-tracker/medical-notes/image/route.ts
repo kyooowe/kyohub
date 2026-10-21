@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, connection } from "next/server";
 import { get } from "@vercel/blob";
 import { verifySessionToken, SESSION_COOKIE } from "@/features/auth/lib/session";
 
 export async function GET(request: NextRequest) {
+	await connection();
 	try {
 		const token = request.cookies.get(SESSION_COOKIE)?.value;
 		const user = verifySessionToken(token);
