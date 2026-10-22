@@ -51,6 +51,8 @@ import {
 	formatRelativeTime,
 	getSleepStats,
 	getSleepComparisonData,
+	getSleepMinutesOnDate,
+	isSleepSessionOnDate,
 	isSameDay,
 	detectSleepPeriod,
 } from "../lib/baby-tracker-utils";
@@ -202,8 +204,7 @@ export function SleepTracker({
 	const displayedLogs = useMemo(() => {
 		return logs.filter((log) => {
 			if (activeFilter === "today") {
-				const start = new Date(log.startTime);
-				if (!isSameDay(start, today)) return false;
+				if (!isSleepSessionOnDate(log, today)) return false;
 			}
 			const period = detectSleepPeriod(log.startTime);
 			if (activeFilter === "night" && !period.isNight) return false;
@@ -481,9 +482,9 @@ export function SleepTracker({
 			</div>
 
 			{/* ==================================================================== */}
-			{/* METRIC COUNTERS GRID: Count Sleep & Estimated Hours Per Day          */}
+			{/* METRIC COUNTERS GRID: Count Sleep & Awake Hours Today                */}
 			{/* ==================================================================== */}
-			<div data-page-palette-preserve className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+			<div data-page-palette-preserve className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
 				{/* Card 1: Today's Total Sleep (Sky) */}
 				<Card className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-blue-200 bg-[#f5f8ff] py-0 shadow-sm shadow-blue-950/5 ring-0 transition-shadow hover:shadow-md dark:border-blue-900/70 dark:bg-[#151b2b]">
 					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] gap-x-2.5 gap-y-2.5 p-3.5">
@@ -556,43 +557,7 @@ export function SleepTracker({
 					</CardContent>
 				</Card>
 
-				{/* Card 3: Estimated Hours Sleep Per Day (Violet) */}
-				<Card className="metric-summary-card metric-summary-card--violet relative gap-0 overflow-hidden rounded-3xl border border-violet-200 bg-[#f8f6ff] py-0 shadow-sm shadow-violet-950/5 ring-0 transition-shadow hover:shadow-md dark:border-violet-900/70 dark:bg-[#151b2b]">
-					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] gap-x-2.5 gap-y-2.5 p-3.5">
-						<div className="flex min-w-0 items-center gap-2">
-							<span className="grid size-8 sm:size-9 shrink-0 place-items-center rounded-xl bg-violet-500 text-white shadow-2xs">
-								<Activity size={16} strokeWidth={2} />
-							</span>
-							<p title="Estimated Sleep" className="truncate text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
-								Estimated Sleep
-							</p>
-						</div>
-						<div className="flex shrink-0 items-center justify-end">
-							<span className="inline-flex h-6.5 items-center justify-center gap-1 rounded-full bg-emerald-100/80 px-2 text-[9px] font-semibold tracking-wider text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300">
-								<CheckCircle2 size={10} /> {stats.estimatedSleepHoursPerDay >= stats.benchmark.minHours ? "TARGET" : "EST."}
-							</span>
-						</div>
-						<div className="self-end">
-							<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
-								{stats.estimatedSleepHoursFormatted}
-							</p>
-							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-								{stats.benchmark.label}
-							</p>
-						</div>
-						<div className="flex shrink-0 self-end">
-							<button
-								type="button"
-								onClick={() => setActiveFilter("all")}
-								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-violet-500/10 px-3 text-[11px] font-medium text-violet-700 transition-colors hover:bg-violet-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:text-violet-300"
-							>
-								<ArrowRight size={12} /> View all
-							</button>
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* Card 4: Last Sleep Status (Teal) */}
+				{/* Card 3: Last Sleep Status (Teal) */}
 				<Card className="metric-summary-card metric-summary-card--teal relative gap-0 overflow-hidden rounded-3xl border border-teal-200 bg-[#eafbf6] py-0 shadow-sm shadow-teal-950/5 ring-0 transition-shadow hover:shadow-md dark:border-teal-900/70 dark:bg-[#151b2b]">
 					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] gap-x-2.5 gap-y-2.5 p-3.5">
 						<div className="flex min-w-0 items-center gap-2">
@@ -757,19 +722,11 @@ export function SleepTracker({
 						</div>
 
 						<div className="flex flex-nowrap items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none py-0.5">
-							{/* Avg Sleep badge */}
-							<div className="flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-indigo-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-indigo-900/60 dark:bg-slate-900">
-								<Moon size={13} className="text-indigo-600 dark:text-indigo-400" />
-								<span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-									Daily Sleep Avg: <strong className="text-slate-900 dark:text-white">{stats.estimatedSleepHoursPerDay} hrs</strong>
-								</span>
-							</div>
-
-							{/* Target Status badge */}
+							{/* Target Recommendation badge */}
 							<div className="flex shrink-0 whitespace-nowrap items-center gap-1.5 rounded-xl border border-emerald-200/80 bg-white px-2.5 py-1 text-xs shadow-2xs dark:border-emerald-900/60 dark:bg-slate-900">
 								<CheckCircle2 size={13} className="text-emerald-500" />
 								<span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-									Target: <strong className="text-emerald-700 dark:text-emerald-400">{stats.estimatedSleepHoursPerDay >= stats.benchmark.minHours ? "On Track" : "Building Rhythm"}</strong>
+									Age Target: <strong className="text-emerald-700 dark:text-emerald-400">{stats.benchmark.minHours}–{stats.benchmark.maxHours} hrs/day</strong>
 								</span>
 							</div>
 						</div>
@@ -1001,6 +958,8 @@ export function SleepTracker({
 								? formattedLiveStopwatch
 								: "—";
 							const detected = detectSleepPeriod(log.startTime);
+							const isCrossDay = Boolean(endDate && !isSameDay(startDate, endDate));
+							const todayOverlapMinutes = getSleepMinutesOnDate(log, today);
 
 							return (
 								<article
@@ -1064,7 +1023,9 @@ export function SleepTracker({
 											<span aria-hidden="true">·</span>
 											<span className="inline-flex items-center gap-1">
 												<Calendar size={12} className="text-slate-400" />
-												{startDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+												{isCrossDay && endDate
+													? `${startDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })} → ${endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
+													: startDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
 											</span>
 											{log.notes ? (
 												<>
@@ -1084,6 +1045,14 @@ export function SleepTracker({
 											<span className="inline-flex items-center rounded-xl border border-slate-200/90 bg-white/80 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200">
 												{duration}
 											</span>
+											{isCrossDay && todayOverlapMinutes > 0 && todayOverlapMinutes < (log.durationMinutes || 0) && (
+												<span
+													title={`Session spans midnight: ${formatDurationMinutes(todayOverlapMinutes)} counted toward today starting from 12:00 AM`}
+													className="inline-flex items-center rounded-lg bg-blue-100/90 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/70 dark:text-blue-300"
+												>
+													{formatDurationMinutes(todayOverlapMinutes)} today
+												</span>
+											)}
 											{isSleeping && (
 												<Button
 													type="button"
@@ -1239,15 +1208,32 @@ export function SleepTracker({
 
 							{/* Calculated duration preview */}
 							{!formIsStillSleeping && formStartTime && formEndTime && (
-								<div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-200 flex items-center justify-between">
-									<span className="font-semibold">Calculated Sleep Duration:</span>
-									<span className="font-bold text-sm">
-										{(() => {
-											const diff = new Date(formEndTime).getTime() - new Date(formStartTime).getTime();
-											if (diff <= 0) return "Invalid times";
-											return formatDurationMinutes(Math.round(diff / 60000));
-										})()}
-									</span>
+								<div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/70 p-3 text-xs text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/60 dark:text-indigo-200">
+									<div className="flex items-center justify-between">
+										<span className="font-semibold">Calculated Sleep Duration:</span>
+										<span className="font-bold text-sm">
+											{(() => {
+												const diff = new Date(formEndTime).getTime() - new Date(formStartTime).getTime();
+												if (diff <= 0) return "Invalid times";
+												return formatDurationMinutes(Math.round(diff / 60000));
+											})()}
+										</span>
+									</div>
+									{(() => {
+										const s = new Date(formStartTime);
+										const e = new Date(formEndTime);
+										if (s.getTime() < e.getTime() && !isSameDay(s, e)) {
+											const midnight = new Date(e.getFullYear(), e.getMonth(), e.getDate(), 0, 0, 0, 0);
+											const prevMins = Math.max(0, Math.round((midnight.getTime() - s.getTime()) / 60000));
+											const todayMins = Math.max(0, Math.round((e.getTime() - midnight.getTime()) / 60000));
+											return (
+												<p className="mt-1.5 border-t border-indigo-200/60 pt-1.5 text-[11px] text-indigo-700 dark:border-indigo-900/40 dark:text-indigo-300">
+													Crosses midnight: {formatDurationMinutes(prevMins)} counted on {s.toLocaleDateString(undefined, { month: "short", day: "numeric" })}, and {formatDurationMinutes(todayMins)} counted on {e.toLocaleDateString(undefined, { month: "short", day: "numeric" })} (starting from 12:00 AM).
+												</p>
+											);
+										}
+										return null;
+									})()}
 								</div>
 							)}
 

@@ -352,14 +352,88 @@ export function getSleepAgeBenchmark(monthAge: number): {
 	return { minHours: 10, maxHours: 13, recommendedHours: 11.5, label: "2+ yrs: 10-13 hrs/day" };
 }
 
+/**
+ * Calculates the number of sleep minutes for a specific sleep log that occurred within a given calendar date.
+ * If the session spans midnight (e.g. 11:01 PM yesterday to 9:29 AM today):
+ * - For yesterday: counts from 11:01 PM to 12:00 AM midnight (59 mins)
+ * - For today: counts starting from 12:00 AM midnight to 9:29 AM (569 mins / 9h 29m)
+ */
+export function getSleepMinutesOnDate(
+	log: BabySleepLog,
+	targetDate: Date,
+	now: Date = new Date(),
+): number {
+	const sStart = new Date(log.startTime).getTime();
+	if (isNaN(sStart)) return 0;
+
+	let sEnd: number;
+	if (log.endTime) {
+		sEnd = new Date(log.endTime).getTime();
+	} else if (log.status === "sleeping" || !log.durationMinutes) {
+		sEnd = now.getTime();
+	} else {
+		sEnd = sStart + log.durationMinutes * 60000;
+	}
+
+	if (isNaN(sEnd) || sEnd <= sStart) return 0;
+
+	// Local calendar day bounds for targetDate: 00:00:00.000 to next day 00:00:00.000
+	const dayStart = new Date(
+		targetDate.getFullYear(),
+		targetDate.getMonth(),
+		targetDate.getDate(),
+		0,
+		0,
+		0,
+		0,
+	).getTime();
+	const dayEnd = new Date(
+		targetDate.getFullYear(),
+		targetDate.getMonth(),
+		targetDate.getDate() + 1,
+		0,
+		0,
+		0,
+		0,
+	).getTime();
+
+	const overlapStart = Math.max(sStart, dayStart);
+	const overlapEnd = Math.min(sEnd, dayEnd);
+
+	if (overlapEnd <= overlapStart) return 0;
+	return Math.max(0, Math.round((overlapEnd - overlapStart) / 60000));
+}
+
+/**
+ * Checks whether a sleep session occurred or was active on a given calendar date.
+ * Returns true if any portion of sleep happened on targetDate, or if start/end matches targetDate.
+ */
+export function isSleepSessionOnDate(
+	log: BabySleepLog,
+	targetDate: Date,
+	now: Date = new Date(),
+): boolean {
+	if (getSleepMinutesOnDate(log, targetDate, now) > 0) {
+		return true;
+	}
+	const start = new Date(log.startTime);
+	if (!isNaN(start.getTime()) && isSameDay(start, targetDate)) {
+		return true;
+	}
+	if (log.endTime) {
+		const end = new Date(log.endTime);
+		if (!isNaN(end.getTime()) && isSameDay(end, targetDate)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 export function getSleepStats(logs: BabySleepLog[], babyMonthAge = 0) {
 	const today = new Date();
 	const activeSession = logs.find((l) => l.status === "sleeping" || !l.endTime) || null;
 
-	const todayLogs = logs.filter((l) => {
-		const start = new Date(l.startTime);
-		return isSameDay(start, today);
-	});
+	const todayLogs = logs.filter((l) => isSleepSessionOnDate(l, today));
 
 	let todaySleepMinutes = 0;
 	let todayNapMinutes = 0;
@@ -367,10 +441,8 @@ export function getSleepStats(logs: BabySleepLog[], babyMonthAge = 0) {
 	let todayCompletedCount = 0;
 
 	for (const log of todayLogs) {
-		let mins = log.durationMinutes || 0;
-		if (log.status === "sleeping" && !log.endTime) {
-			mins = Math.max(0, Math.round((today.getTime() - new Date(log.startTime).getTime()) / 60000));
-		} else {
+		const mins = getSleepMinutesOnDate(log, today);
+		if (log.status !== "sleeping" && log.endTime) {
 			todayCompletedCount++;
 		}
 		todaySleepMinutes += mins;
@@ -382,23 +454,9 @@ export function getSleepStats(logs: BabySleepLog[], babyMonthAge = 0) {
 	}
 
 	// Calculate awake hours today based on elapsed time from midnight
-	const nowMidnight = new Date(today);
-	nowMidnight.setHours(0, 0, 0, 0);
+	const nowMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
 	const elapsedTodayMinutes = Math.min(1440, Math.max(0, Math.round((today.getTime() - nowMidnight.getTime()) / 60000)));
 	const todayAwakeMinutes = Math.max(0, elapsedTodayMinutes - todaySleepMinutes);
-
-	// Daily average / estimated sleep per day over distinct recorded days
-	const dayGroups: Record<string, number> = {};
-	for (const log of logs) {
-		if (log.status === "completed" && log.durationMinutes) {
-			const d = new Date(log.startTime).toISOString().split("T")[0];
-			dayGroups[d] = (dayGroups[d] || 0) + log.durationMinutes;
-		}
-	}
-	const distinctDays = Object.keys(dayGroups);
-	const totalMinsAcrossDays = distinctDays.reduce((acc, k) => acc + dayGroups[k], 0);
-	const avgMinutesPerDay = distinctDays.length > 0 ? Math.round(totalMinsAcrossDays / distinctDays.length) : todaySleepMinutes;
-	const estimatedSleepHoursPerDay = avgMinutesPerDay / 60;
 
 	const benchmark = getSleepAgeBenchmark(babyMonthAge);
 
@@ -412,9 +470,6 @@ export function getSleepStats(logs: BabySleepLog[], babyMonthAge = 0) {
 		todayAwakeFormatted: formatDurationMinutes(todayAwakeMinutes),
 		todayNapMinutes,
 		todayNightMinutes,
-		avgMinutesPerDay,
-		estimatedSleepHoursPerDay: Number(estimatedSleepHoursPerDay.toFixed(1)),
-		estimatedSleepHoursFormatted: `${estimatedSleepHoursPerDay.toFixed(1)} hrs`,
 		benchmark,
 		lastSession: logs.length > 0 ? logs[0] : null,
 	};
@@ -425,30 +480,23 @@ export function getSleepComparisonData(logs: BabySleepLog[], daysCount = 7, baby
 	const today = new Date();
 	const benchmark = getSleepAgeBenchmark(babyMonthAge);
 
-	const nowMidnight = new Date(today);
-	nowMidnight.setHours(0, 0, 0, 0);
+	const nowMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
 	const elapsedTodayMinutes = Math.min(1440, Math.max(0, Math.round((today.getTime() - nowMidnight.getTime()) / 60000)));
 
 	for (let i = daysCount - 1; i >= 0; i--) {
 		const targetDate = new Date(today);
 		targetDate.setDate(targetDate.getDate() - i);
-		const dateKey = targetDate.toISOString().split("T")[0];
+		const dateKey = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, "0")}-${String(targetDate.getDate()).padStart(2, "0")}`;
 		const displayDate = targetDate.toLocaleDateString(undefined, { weekday: "short", month: "numeric", day: "numeric" });
 
-		const dayLogs = logs.filter((l) => {
-			const s = new Date(l.startTime);
-			return isSameDay(s, targetDate);
-		});
+		const dayLogs = logs.filter((l) => isSleepSessionOnDate(l, targetDate, today));
 
 		let totalMinutes = 0;
 		let napMinutes = 0;
 		let nightMinutes = 0;
 
 		for (const l of dayLogs) {
-			let m = l.durationMinutes || 0;
-			if (l.status === "sleeping" && !l.endTime) {
-				m = Math.max(0, Math.round((Date.now() - new Date(l.startTime).getTime()) / 60000));
-			}
+			const m = getSleepMinutesOnDate(l, targetDate, today);
 			totalMinutes += m;
 			if (isNightSession(l)) nightMinutes += m;
 			else napMinutes += m;
@@ -503,26 +551,8 @@ export function getMilkStats(logs: BabyMilkLog[]) {
 		todayLeftoverOz += log.leftoverOz;
 	}
 
-	const dayGroups: Record<string, { drank: number; leftover: number; prepared: number }> = {};
-	for (const log of logs) {
-		const d = new Date(log.loggedAt).toISOString().split("T")[0];
-		if (!dayGroups[d]) dayGroups[d] = { drank: 0, leftover: 0, prepared: 0 };
-		dayGroups[d].drank += log.drankOz;
-		dayGroups[d].leftover += log.leftoverOz;
-		dayGroups[d].prepared += log.preparedOz;
-	}
-
-	const distinctDays = Object.keys(dayGroups);
-	const countDays = distinctDays.length > 0 ? distinctDays.length : 1;
-	const totalDrankAcrossDays = distinctDays.reduce((acc, k) => acc + dayGroups[k].drank, 0);
-	const totalLeftoverAcrossDays = distinctDays.reduce((acc, k) => acc + dayGroups[k].leftover, 0);
-	const totalPreparedAcrossDays = distinctDays.reduce((acc, k) => acc + dayGroups[k].prepared, 0);
-
-	const estimatedDrankOzPerDay = Number((totalDrankAcrossDays / countDays).toFixed(1));
-	const estimatedLeftoverOzPerDay = Number((totalLeftoverAcrossDays / countDays).toFixed(1));
-	const estimatedPreparedOzPerDay = Number((totalPreparedAcrossDays / countDays).toFixed(1));
-	const consumptionRate = totalPreparedAcrossDays > 0
-		? Math.round((totalDrankAcrossDays / totalPreparedAcrossDays) * 100)
+	const consumptionRate = todayPreparedOz > 0
+		? Math.round((todayDrankOz / todayPreparedOz) * 100)
 		: 100;
 
 	return {
@@ -530,9 +560,6 @@ export function getMilkStats(logs: BabyMilkLog[]) {
 		todayPreparedOz: Number(todayPreparedOz.toFixed(1)),
 		todayDrankOz: Number(todayDrankOz.toFixed(1)),
 		todayLeftoverOz: Number(todayLeftoverOz.toFixed(1)),
-		estimatedDrankOzPerDay,
-		estimatedLeftoverOzPerDay,
-		estimatedPreparedOzPerDay,
 		consumptionRate,
 		lastFeed: logs.length > 0 ? logs[0] : null,
 	};
@@ -541,7 +568,6 @@ export function getMilkStats(logs: BabyMilkLog[]) {
 export function getMilkComparisonData(logs: BabyMilkLog[], daysCount = 7) {
 	const result = [];
 	const today = new Date();
-	const stats = getMilkStats(logs);
 
 	for (let i = daysCount - 1; i >= 0; i--) {
 		const targetDate = new Date(today);
@@ -567,7 +593,6 @@ export function getMilkComparisonData(logs: BabyMilkLog[], daysCount = 7) {
 			drankOz: Number(drankOz.toFixed(1)),
 			leftoverOz: Number(leftoverOz.toFixed(1)),
 			preparedOz: Number(preparedOz.toFixed(1)),
-			estimatedDrankOz: stats.estimatedDrankOzPerDay,
 			feedCount: dayLogs.length,
 		});
 	}

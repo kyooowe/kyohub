@@ -146,7 +146,6 @@ export function MilkTracker({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [chartDaysRange, setChartDaysRange] = useState<7 | 14>(7);
 	const [chartMetric, setChartMetric] = useState<"both" | "drank" | "leftover">("both");
-	const [showTargetLine, setShowTargetLine] = useState(true);
 
 	// Alert hook (in-page alert, NO toasts)
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(4000);
@@ -479,7 +478,7 @@ export function MilkTracker({
 										max={quickPreparedOz}
 										value={quickLeftoverOz}
 										onChange={(e) => setQuickLeftoverOz(e.target.value)}
-										className="h-9 w-20 rounded-xl text-xs font-bold"
+										className="h-9 w-20 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
 									/>
 									<span className="text-xs text-slate-500 font-semibold shrink-0">
 										Drank: {Math.max(0, quickPreparedOz - (parseFloat(quickLeftoverOz) || 0))} oz
@@ -516,7 +515,7 @@ export function MilkTracker({
 						>
 							<Plus size={16} />
 							<span className="tracking-wide">
-								Log {quickPreparedOz} oz ({quickStatus === "completed" ? "Completed" : `${quickLeftoverOz || 0} oz left`})
+								Log {quickPreparedOz} oz ({quickStatus === "ongoing" ? "Ongoing" : quickStatus === "completed" ? "Completed" : `${quickLeftoverOz || 0} oz left`})
 							</span>
 						</button>
 					</div>
@@ -524,9 +523,9 @@ export function MilkTracker({
 			</div>
 
 			{/* ==================================================================== */}
-			{/* METRIC COUNTERS GRID: Drank Today & Estimated Milk Per Day           */}
+			{/* METRIC COUNTERS GRID: Drank Today, Leftover, and Prepared Milk       */}
 			{/* ==================================================================== */}
-			<div data-page-palette-preserve className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+			<div data-page-palette-preserve className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
 				{/* Card 1: How many oz baby drank today (Sky) */}
 				<Card className="metric-summary-card metric-summary-card--sky relative gap-0 overflow-hidden rounded-3xl border border-blue-200 bg-[#f5f8ff] py-0 shadow-sm shadow-blue-950/5 ring-0 transition-shadow hover:shadow-md dark:border-blue-900/70 dark:bg-[#151b2b]">
 					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] gap-x-2.5 gap-y-2.5 p-3.5">
@@ -637,43 +636,6 @@ export function MilkTracker({
 						</div>
 					</CardContent>
 				</Card>
-
-				{/* Card 4: Estimated Drinked and Leftover Milk Per Day (Teal) */}
-				<Card className="metric-summary-card metric-summary-card--teal relative gap-0 overflow-hidden rounded-3xl border border-teal-200 bg-[#eafbf6] py-0 shadow-sm shadow-teal-950/5 ring-0 transition-shadow hover:shadow-md dark:border-teal-900/70 dark:bg-[#151b2b]">
-					<CardContent className="relative z-10 grid min-h-[9.5rem] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] gap-x-2.5 gap-y-2.5 p-3.5">
-						<div className="flex min-w-0 items-center gap-2">
-							<span className="grid size-8 sm:size-9 shrink-0 place-items-center rounded-xl bg-teal-600 text-white shadow-2xs">
-								<Activity size={16} strokeWidth={2} />
-							</span>
-							<p title="Estimated / Day" className="truncate text-xs sm:text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-100">
-								Estimated / Day
-							</p>
-						</div>
-						<div className="flex shrink-0 items-center justify-end">
-							<span className="inline-flex h-6.5 items-center justify-center gap-1 rounded-full bg-teal-100/90 px-2 text-[9px] font-bold tracking-wider text-teal-800 dark:bg-teal-950/80 dark:text-teal-300">
-								<Sparkles size={10} /> DAILY EST.
-							</span>
-						</div>
-						<div className="self-end">
-							<p className="text-3xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">
-								{stats.estimatedDrankOzPerDay}
-								<span className="ml-1 text-sm font-semibold text-slate-500 dark:text-slate-400">oz/day</span>
-							</p>
-							<p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-								Est. leftover: {stats.estimatedLeftoverOzPerDay} oz/day
-							</p>
-						</div>
-						<div className="flex shrink-0 self-end">
-							<button
-								type="button"
-								onClick={openCreateModal}
-								className="inline-flex h-7 items-center justify-center gap-1 rounded-full bg-teal-500/10 px-3 text-[11px] font-medium text-teal-700 transition-colors hover:bg-teal-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:text-teal-300"
-							>
-								<ArrowRight size={12} /> Log feed
-							</button>
-						</div>
-					</CardContent>
-				</Card>
 			</div>
 
 			{/* ==================================================================== */}
@@ -685,7 +647,7 @@ export function MilkTracker({
 					theme="rose"
 					icon={TrendingUp}
 					title="Daily Milk Intake & Leftover Comparison"
-					description="Compare drinked milk (oz) and leftover milk (oz) per day against daily estimated averages"
+					description="Compare drinked milk (oz) and leftover milk (oz) per day across feeding history"
 					appearance="soft"
 				>
 					<div className="password-library-badge hidden shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-medium sm:flex">
@@ -734,22 +696,8 @@ export function MilkTracker({
 							</div>
 						</div>
 
-						{/* Right side controls: Estimate Line toggle & 7/14 Days Range toggle */}
+						{/* Right side controls: 7/14 Days Range toggle */}
 						<div className="flex w-full flex-wrap items-center gap-2 sm:w-auto xl:justify-end">
-							{/* Estimate Benchmark Curve Toggle */}
-							<button
-								type="button"
-								onClick={() => setShowTargetLine((prev) => !prev)}
-								className={`password-row-count-control flex-1 sm:flex-initial inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl border px-3 text-xs font-semibold shadow-xs transition-colors ${
-									showTargetLine
-										? "password-filter-mode-option--active"
-										: "text-slate-600 hover:text-slate-900 dark:text-slate-300"
-								}`}
-							>
-								<Info size={14} className="shrink-0" />
-								<span>{showTargetLine ? "Est. Curve On" : "Show Est. Line"}</span>
-							</button>
-
 							{/* Range Toggle: 7 Days vs 14 Days */}
 							<div className="password-filter-mode-group flex shrink-0 items-center gap-1 rounded-xl border p-1 shadow-xs">
 								<button
@@ -792,7 +740,7 @@ export function MilkTracker({
 									Daily Intake Assessment
 								</p>
 								<p className="text-[11px] text-slate-500 dark:text-slate-400">
-									Est. Drank: {stats.estimatedDrankOzPerDay} oz/day · Est. Leftover: {stats.estimatedLeftoverOzPerDay} oz/day
+									Daily feeding intake and leftover volume timeline
 								</p>
 							</div>
 						</div>
@@ -902,19 +850,6 @@ export function MilkTracker({
 										dot={{ r: 4, fill: "#F59E0B" }}
 										activeDot={{ r: 6 }}
 										connectNulls
-									/>
-								)}
-
-								{/* Daily Estimate Benchmark Line (Dashed) */}
-								{showTargetLine && (
-									<Line
-										type="monotone"
-										dataKey="estimatedDrankOz"
-										name="Est. Avg Intake (oz)"
-										stroke="#F43F5E"
-										strokeWidth={2}
-										strokeDasharray="4 4"
-										dot={false}
 									/>
 								)}
 							</LineChart>
