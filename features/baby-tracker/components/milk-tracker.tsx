@@ -17,7 +17,6 @@ import {
 	Trash2,
 	Pencil,
 	Sparkles,
-	Search,
 	Clock,
 	Activity,
 	Baby,
@@ -30,7 +29,11 @@ import {
 	Calendar,
 	TrendingUp,
 	Info,
+	ChevronLeft,
+	ChevronRight,
+	X,
 } from "lucide-react";
+import { getPageNumbers } from "@/features/budget/lib/budget-utils";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -45,7 +48,6 @@ import type { BabyMilkLog, MilkStatus, MilkType } from "../types";
 import {
 	getMilkStats,
 	getMilkComparisonData,
-	getLocalDatetimeString,
 	isSameDay,
 } from "../lib/baby-tracker-utils";
 import { BabyTrackerAlert, useBabyTrackerAlert } from "./baby-tracker-alert";
@@ -142,8 +144,10 @@ export function MilkTracker({
 	const [submitting, setSubmitting] = useState(false);
 
 	// Filtering & chart states
-	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "ongoing" | "completed" | "leftover">("all");
-	const [searchQuery, setSearchQuery] = useState("");
+	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "ongoing" | "completed" | "leftover">("today");
+	const [dateFilter, setDateFilter] = useState<string>("");
+	const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [chartDaysRange, setChartDaysRange] = useState<7 | 14>(7);
 	const [chartMetric, setChartMetric] = useState<"both" | "drank" | "leftover">("both");
 
@@ -151,7 +155,6 @@ export function MilkTracker({
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(4000);
 
 	// Modal form states
-	const [formLoggedAt, setFormLoggedAt] = useState(getLocalDatetimeString);
 	const [formPreparedOz, setFormPreparedOz] = useState<string>("4.0");
 	const [formStatus, setFormStatus] = useState<MilkStatus>("completed");
 	const [formLeftoverOz, setFormLeftoverOz] = useState<string>("0");
@@ -176,7 +179,11 @@ export function MilkTracker({
 	const today = useMemo(() => new Date(), []);
 	const displayedLogs = useMemo(() => {
 		return logs.filter((log) => {
-			if (activeFilter === "today") {
+			if (dateFilter) {
+				const d = new Date(log.loggedAt);
+				const logDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+				if (logDateStr !== dateFilter) return false;
+			} else if (activeFilter === "today") {
 				const logged = new Date(log.loggedAt);
 				if (!isSameDay(logged, today)) return false;
 			}
@@ -184,16 +191,16 @@ export function MilkTracker({
 			if (activeFilter === "completed" && log.status !== "completed") return false;
 			if (activeFilter === "leftover" && log.status !== "leftover") return false;
 
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase().trim();
-				const matchesNotes = log.notes?.toLowerCase().includes(q);
-				const matchesType = log.milkType.toLowerCase().includes(q);
-				const matchesStatus = log.status.toLowerCase().includes(q);
-				if (!matchesNotes && !matchesType && !matchesStatus) return false;
-			}
 			return true;
 		});
-	}, [logs, activeFilter, searchQuery, today]);
+	}, [logs, activeFilter, dateFilter, today]);
+
+	// Pagination calculations
+	const pageCount = Math.max(1, Math.ceil(displayedLogs.length / rowsPerPage));
+	const activePage = Math.min(currentPage, pageCount);
+	const firstVisibleIndex = (activePage - 1) * rowsPerPage;
+	const paginatedLogs = displayedLogs.slice(firstVisibleIndex, firstVisibleIndex + rowsPerPage);
+	const pageNumbers = getPageNumbers(activePage, pageCount);
 
 	/* -------------------------------------------------------------------------- */
 	/*                               Action Handlers                              */
@@ -247,7 +254,6 @@ export function MilkTracker({
 
 	function openCreateModal() {
 		setEditingRecord(null);
-		setFormLoggedAt(getLocalDatetimeString());
 		setFormPreparedOz("4.0");
 		setFormStatus("completed");
 		setFormLeftoverOz("0");
@@ -257,12 +263,7 @@ export function MilkTracker({
 	}
 
 	function openEditModal(record: BabyMilkLog) {
-		const d = new Date(record.loggedAt);
-		const pad = (n: number) => n.toString().padStart(2, "0");
-		const localIso = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
 		setEditingRecord(record);
-		setFormLoggedAt(localIso);
 		setFormPreparedOz(record.preparedOz.toString());
 		setFormStatus(record.status);
 		setFormLeftoverOz(record.leftoverOz.toString());
@@ -300,7 +301,6 @@ export function MilkTracker({
 					status: formStatus,
 					leftoverOz: leftover,
 					milkType: formMilkType,
-					loggedAt: formLoggedAt ? new Date(formLoggedAt).toISOString() : undefined,
 					notes: formNotes.trim(),
 				});
 				showAlert("RECORD UPDATED", "Milk feeding record updated successfully!");
@@ -310,7 +310,7 @@ export function MilkTracker({
 					status: formStatus,
 					leftoverOz: leftover,
 					milkType: formMilkType,
-					loggedAt: formLoggedAt ? new Date(formLoggedAt).toISOString() : undefined,
+					loggedAt: new Date().toISOString(),
 					notes: formNotes.trim(),
 				});
 				showAlert(
@@ -873,27 +873,15 @@ export function MilkTracker({
 			{/* Styled exactly identical to Diaper & Stool Timeline                  */}
 			{/* ==================================================================== */}
 			<div className="space-y-3">
-				{/* Search & Filter Toolbar */}
+				{/* Filter Toolbar */}
 				<div
 					style={{ "--password-accent": paletteAccent } as CSSProperties}
 					className="password-library-header relative w-full min-w-0 max-w-full overflow-hidden rounded-3xl border p-2.5 shadow-md sm:p-3"
 				>
 					<span aria-hidden="true" className="password-library-orbit pointer-events-none absolute -right-5 -top-10 size-28 rounded-full" />
 					<div className="relative z-10 flex w-full min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
-						{/* Search Input */}
-						<label className="relative order-1 block min-w-0 flex-1 sm:w-60 sm:flex-initial">
-							<Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-							<Input
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-								placeholder="Search milk notes, type..."
-								aria-label="Search milk logs"
-								className="h-9 sm:h-10 rounded-xl border-white/80 bg-white/80 pl-9 pr-3 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-rose-400 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100"
-							/>
-						</label>
-
 						{/* Filter Pills */}
-						<div className="password-filter-mode-group order-3 flex w-full basis-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:order-2 sm:w-auto sm:basis-auto">
+						<div className="password-filter-mode-group flex w-full basis-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:w-auto sm:basis-auto">
 							{(
 								[
 									{ id: "all", label: "All", icon: Grid2X2 },
@@ -909,7 +897,13 @@ export function MilkTracker({
 									<button
 										key={option.id}
 										type="button"
-										onClick={() => setActiveFilter(option.id)}
+										onClick={() => {
+											setActiveFilter(option.id);
+											if (option.id === "all" || option.id === "today") {
+												setDateFilter("");
+											}
+											setCurrentPage(1);
+										}}
 										className={`password-filter-mode-option inline-flex h-8 sm:h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all ${
 											active
 												? "password-filter-mode-option--active"
@@ -923,17 +917,60 @@ export function MilkTracker({
 							})}
 						</div>
 
-						{/* Action Button: Log Feed */}
-						<div className="order-2 sm:order-3 ml-auto flex items-center gap-2">
-							<Button
-								type="button"
-								onClick={openCreateModal}
-								style={{ "--action-accent": paletteAccent } as CSSProperties}
-								className="palette-action-button h-9 sm:h-10 gap-1.5 rounded-xl border px-3.5 text-xs font-bold shadow-xs transition-all active:scale-95"
-							>
-								<Plus size={15} />
-								<span>Log Bottle</span>
-							</Button>
+						{/* Date & Row Filter Controls */}
+						<div className="ml-auto flex flex-wrap items-center gap-2">
+							{/* Date Filter */}
+							<label className="password-row-count-control inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold shadow-2xs transition-colors">
+								<Calendar size={14} className="shrink-0 text-slate-500 dark:text-slate-400" />
+								<input
+									type="date"
+									aria-label="Filter by date"
+									value={dateFilter}
+									onChange={(e) => {
+										setDateFilter(e.target.value);
+										if (e.target.value && activeFilter === "today") {
+											setActiveFilter("all");
+										}
+										setCurrentPage(1);
+									}}
+									className="password-row-count-select cursor-pointer rounded-md bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-800 outline-none dark:text-slate-100"
+								/>
+								{dateFilter && (
+									<button
+										type="button"
+										onClick={(e) => {
+											e.preventDefault();
+											setDateFilter("");
+											setCurrentPage(1);
+										}}
+										aria-label="Clear date filter"
+										title="Clear date filter"
+										className="inline-flex size-4 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+									>
+										<X size={11} strokeWidth={2.5} />
+									</button>
+								)}
+							</label>
+
+							{/* Row Filter */}
+							<label className="password-row-count-control inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold shadow-2xs transition-colors">
+								<span className="text-slate-600 dark:text-slate-300">Rows</span>
+								<select
+									aria-label="Rows per page"
+									value={rowsPerPage}
+									onChange={(event) => {
+										setRowsPerPage(Number(event.target.value));
+										setCurrentPage(1);
+									}}
+									className="password-row-count-select cursor-pointer rounded-md bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-800 outline-none dark:text-slate-100"
+								>
+									{[5, 10, 15, 20, 30].map((rows) => (
+										<option key={rows} value={rows} className="bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+											{rows}
+										</option>
+									))}
+								</select>
+							</label>
 						</div>
 					</div>
 				</div>
@@ -948,6 +985,11 @@ export function MilkTracker({
 							{displayedLogs.length}
 						</span>
 					</div>
+					{displayedLogs.length > 0 && rowsPerPage < displayedLogs.length && (
+						<p className="text-xs text-slate-500 dark:text-slate-400">
+							Showing {firstVisibleIndex + 1}–{Math.min(firstVisibleIndex + rowsPerPage, displayedLogs.length)} of {displayedLogs.length}
+						</p>
+					)}
 				</div>
 
 				{displayedLogs.length === 0 ? (
@@ -956,15 +998,19 @@ export function MilkTracker({
 							<Droplets size={22} />
 						</span>
 						<p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-							{activeFilter === "today" ? "No bottle feeds logged today yet" : "No milk feeding records found"}
+							{dateFilter
+								? `No bottle feeds found for ${dateFilter}`
+								: activeFilter === "today"
+								? "No bottle feeds logged today yet"
+								: "No milk feeding records found"}
 						</p>
 						<p className="max-w-xs text-xs text-slate-500 dark:text-slate-400">
-							Use the quick milk station at the top or &ldquo;Log Bottle&rdquo; to record baby&apos;s feedings.
+							Use the quick milk station at the top to record baby&apos;s feedings.
 						</p>
 					</div>
 				) : (
 					<div className="space-y-2.5">
-						{displayedLogs.map((log) => {
+						{paginatedLogs.map((log) => {
 							const logged = new Date(log.loggedAt);
 
 							return (
@@ -1017,11 +1063,6 @@ export function MilkTracker({
 
 										<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
 											<span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
-												<Clock size={12} className="text-slate-400" />
-												{logged.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-											</span>
-											<span aria-hidden="true">·</span>
-											<span className="inline-flex items-center gap-1">
 												<Calendar size={12} className="text-slate-400" />
 												{logged.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
 											</span>
@@ -1123,6 +1164,72 @@ export function MilkTracker({
 						})}
 					</div>
 				)}
+
+				{/* Pagination Controls */}
+				{displayedLogs.length > 0 && pageCount > 1 && (
+					<nav aria-label="Milk timeline pagination" className="shared-pagination w-full pt-1" style={{ "--pagination-accent": paletteAccent } as CSSProperties}>
+						<div className="shared-pagination-controls flex w-full items-center justify-between rounded-2xl border p-1.5 sm:px-3 sm:py-2">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Previous page"
+								disabled={activePage === 1}
+								onClick={() => setCurrentPage(activePage - 1)}
+							>
+								<ChevronLeft size={16} />
+								<span className="hidden sm:inline">Previous</span>
+							</Button>
+
+							<div className="flex items-center gap-1">
+								{pageNumbers.map((page, idx) => {
+									if (page === "...") {
+										return (
+											<span
+												key={`ellipsis-${idx}`}
+												className="grid size-8.5 place-items-center text-xs font-semibold text-slate-400 select-none dark:text-slate-500"
+											>
+												…
+											</span>
+										);
+									}
+
+									const isCurrent = page === activePage;
+									return (
+										<button
+											key={page}
+											type="button"
+											onClick={() => setCurrentPage(Number(page))}
+											aria-current={isCurrent ? "page" : undefined}
+											aria-label={`Page ${page}`}
+											className={`grid size-8.5 place-items-center rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+												isCurrent
+													? "shared-pagination-current text-white shadow-xs"
+													: "shared-pagination-button"
+											}`}
+										>
+											{page}
+										</button>
+									);
+								})}
+							</div>
+
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Next page"
+								disabled={activePage === pageCount}
+								onClick={() => setCurrentPage(activePage + 1)}
+							>
+								<span className="hidden sm:inline">Next</span>
+								<ChevronRight size={16} />
+							</Button>
+						</div>
+					</nav>
+				)}
 			</div>
 
 			{/* ==================================================================== */}
@@ -1152,18 +1259,6 @@ export function MilkTracker({
 
 					<form onSubmit={handleSaveModalRecord} className="flex min-h-0 flex-1 flex-col overflow-hidden">
 						<div className="flex-1 min-h-0 space-y-4 overflow-y-auto p-5 text-sm sm:p-6">
-							{/* Date & Time */}
-							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
-								<span>Feeding Time</span>
-								<Input
-									type="datetime-local"
-									value={formLoggedAt}
-									onChange={(e) => setFormLoggedAt(e.target.value)}
-									required
-									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
-								/>
-							</label>
-
 							{/* Prepared Milk (oz) */}
 							<div className="space-y-1.5">
 								<div className="flex items-center justify-between">

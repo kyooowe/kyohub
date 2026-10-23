@@ -8,7 +8,6 @@ import {
 	Info,
 	Loader2,
 	Droplets,
-	Search,
 	Grid2X2,
 	Baby,
 	HelpCircle,
@@ -17,7 +16,11 @@ import {
 	ShieldCheck,
 	Smile,
 	Calendar,
+	ChevronLeft,
+	ChevronRight,
+	X,
 } from "lucide-react";
+import { getPageNumbers } from "@/features/budget/lib/budget-utils";
 import { Button } from "@/components/ui/button";
 
 function BabyDiaperIcon({ size = 18, className = "" }: { size?: number; className?: string }) {
@@ -49,7 +52,6 @@ import type { PagePalette } from "@/components/settings/page-palettes";
 import type { BabyStoolLog, DiaperType, StoolAmount, StoolColor, StoolConsistency } from "../types";
 import {
 	getDiaperStats,
-	getLocalDatetimeString,
 	isSameDay,
 	stoolColorMetadata,
 	stoolConsistencyMetadata,
@@ -75,8 +77,10 @@ export function StoolCounter({
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [guideOpen, setGuideOpen] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
-	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "stool" | "wet" | "both">("all");
-	const [searchQuery, setSearchQuery] = useState("");
+	const [activeFilter, setActiveFilter] = useState<"all" | "today" | "stool" | "wet" | "both">("today");
+	const [dateFilter, setDateFilter] = useState<string>("");
+	const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+	const [currentPage, setCurrentPage] = useState<number>(1);
 	const { alert, showAlert, clearAlert } = useBabyTrackerAlert(3000);
 
 	// Detailed modal form states
@@ -84,7 +88,6 @@ export function StoolCounter({
 	const [consistency, setConsistency] = useState<StoolConsistency>("soft");
 	const [selectedColor, setSelectedColor] = useState<StoolColor>("yellow");
 	const [amount, setAmount] = useState<StoolAmount>("medium");
-	const [changeTime, setChangeTime] = useState(getLocalDatetimeString);
 
 	const stats = getDiaperStats(logs);
 
@@ -115,7 +118,6 @@ export function StoolCounter({
 
 		const form = new FormData(event.currentTarget);
 		const notes = String(form.get("notes") || "").trim();
-		const dateTimeValue = String(form.get("loggedAt") || "").trim();
 
 		try {
 			await onCreateLog({
@@ -124,7 +126,7 @@ export function StoolCounter({
 				color: selectedColor,
 				amount,
 				notes,
-				loggedAt: dateTimeValue ? new Date(dateTimeValue).toISOString() : new Date().toISOString(),
+				loggedAt: new Date().toISOString(),
 			});
 			showAlert("DIAPER LOGGED", "Detailed diaper change recorded successfully!");
 			setDialogOpen(false);
@@ -148,12 +150,17 @@ export function StoolCounter({
 		}
 	}
 
-	const today = new Date();
+	const today = useMemo(() => new Date(), []);
 	const displayedLogs = useMemo(() => {
 		return logs.filter((log) => {
-			if (activeFilter === "today" && !isSameDay(new Date(log.loggedAt), today)) {
-				return false;
+			if (dateFilter) {
+				const d = new Date(log.loggedAt);
+				const logDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+				if (logDateStr !== dateFilter) return false;
+			} else if (activeFilter === "today") {
+				if (!isSameDay(new Date(log.loggedAt), today)) return false;
 			}
+
 			if (activeFilter === "stool" && log.type !== "stool" && log.type !== "both") {
 				return false;
 			}
@@ -164,20 +171,16 @@ export function StoolCounter({
 				return false;
 			}
 
-			if (searchQuery.trim()) {
-				const q = searchQuery.toLowerCase().trim();
-				const matchesNotes = log.notes?.toLowerCase().includes(q);
-				const matchesType = log.type.toLowerCase().includes(q);
-				const matchesColor = log.color.toLowerCase().includes(q);
-				const matchesConsistency = log.consistency.toLowerCase().includes(q);
-				if (!matchesNotes && !matchesType && !matchesColor && !matchesConsistency) {
-					return false;
-				}
-			}
-
 			return true;
 		});
-	}, [logs, activeFilter, searchQuery, today]);
+	}, [logs, activeFilter, dateFilter, today]);
+
+	// Pagination calculations
+	const pageCount = Math.max(1, Math.ceil(displayedLogs.length / rowsPerPage));
+	const activePage = Math.min(currentPage, pageCount);
+	const firstVisibleIndex = (activePage - 1) * rowsPerPage;
+	const paginatedLogs = displayedLogs.slice(firstVisibleIndex, firstVisibleIndex + rowsPerPage);
+	const pageNumbers = getPageNumbers(activePage, pageCount);
 
 	return (
 		<div className="w-full min-w-0 max-w-full space-y-5 sm:space-y-6">
@@ -233,7 +236,6 @@ export function StoolCounter({
 						<button
 							type="button"
 							onClick={() => {
-								setChangeTime(getLocalDatetimeString());
 								setDialogOpen(true);
 							}}
 							style={{ "--action-accent": paletteAccent } as CSSProperties}
@@ -404,27 +406,15 @@ export function StoolCounter({
 				</Card>
 			</div>
 
-			{/* Search & Filter Bar */}
+			{/* Filter Toolbar */}
 			<div
 				style={{ "--password-accent": paletteAccent } as CSSProperties}
 				className="password-library-header relative w-full min-w-0 max-w-full overflow-hidden rounded-3xl border p-2.5 shadow-md sm:p-3"
 			>
 				<span aria-hidden="true" className="password-library-orbit pointer-events-none absolute -right-5 -top-10 size-28 rounded-full" />
 				<div className="relative z-10 flex w-full min-w-0 flex-wrap items-center gap-2.5 sm:gap-3">
-					{/* Search Input */}
-					<label className="relative order-1 block min-w-0 flex-1 sm:w-60 sm:flex-initial">
-						<Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-						<Input
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							placeholder="Search notes, color, type..."
-							aria-label="Search diaper logs"
-							className="h-9 sm:h-10 rounded-xl border-white/80 bg-white/80 pl-9 pr-3 text-xs sm:text-sm text-slate-900 shadow-2xs placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-rose-400 dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-100"
-						/>
-					</label>
-
 					{/* Filter Pills */}
-					<div className="password-filter-mode-group order-3 flex w-full basis-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:order-2 sm:w-auto sm:basis-auto">
+					<div className="password-filter-mode-group flex w-full basis-full shrink-0 items-center gap-1 overflow-x-auto scrollbar-none rounded-xl border p-1 shadow-xs sm:w-auto sm:basis-auto">
 						{(
 							[
 								{ id: "all", label: "All", icon: Grid2X2 },
@@ -440,7 +430,13 @@ export function StoolCounter({
 								<button
 									key={option.id}
 									type="button"
-									onClick={() => setActiveFilter(option.id)}
+									onClick={() => {
+										setActiveFilter(option.id);
+										if (option.id === "all" || option.id === "today") {
+											setDateFilter("");
+										}
+										setCurrentPage(1);
+									}}
 									className={`password-filter-mode-option inline-flex h-8 sm:h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-all ${
 										active
 											? "password-filter-mode-option--active"
@@ -452,6 +448,62 @@ export function StoolCounter({
 								</button>
 							);
 						})}
+					</div>
+
+					{/* Date & Row Filter Controls */}
+					<div className="ml-auto flex flex-wrap items-center gap-2">
+						{/* Date Filter */}
+						<label className="password-row-count-control inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold shadow-2xs transition-colors">
+							<Calendar size={14} className="shrink-0 text-slate-500 dark:text-slate-400" />
+							<input
+								type="date"
+								aria-label="Filter by date"
+								value={dateFilter}
+								onChange={(e) => {
+									setDateFilter(e.target.value);
+									if (e.target.value && activeFilter === "today") {
+										setActiveFilter("all");
+									}
+									setCurrentPage(1);
+								}}
+								className="password-row-count-select cursor-pointer rounded-md bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-800 outline-none dark:text-slate-100"
+							/>
+							{dateFilter && (
+								<button
+									type="button"
+									onClick={(e) => {
+										e.preventDefault();
+										setDateFilter("");
+										setCurrentPage(1);
+									}}
+									aria-label="Clear date filter"
+									title="Clear date filter"
+									className="inline-flex size-4 items-center justify-center rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+								>
+									<X size={11} strokeWidth={2.5} />
+								</button>
+							)}
+						</label>
+
+						{/* Row Filter */}
+						<label className="password-row-count-control inline-flex h-9 sm:h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border px-2.5 text-xs font-semibold shadow-2xs transition-colors">
+							<span className="text-slate-600 dark:text-slate-300">Rows</span>
+							<select
+								aria-label="Rows per page"
+								value={rowsPerPage}
+								onChange={(event) => {
+									setRowsPerPage(Number(event.target.value));
+									setCurrentPage(1);
+								}}
+								className="password-row-count-select cursor-pointer rounded-md bg-transparent px-1 py-0.5 text-xs font-semibold text-slate-800 outline-none dark:text-slate-100"
+							>
+								{[5, 10, 15, 20, 30].map((rows) => (
+									<option key={rows} value={rows} className="bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+										{rows}
+									</option>
+								))}
+							</select>
+						</label>
 					</div>
 				</div>
 			</div>
@@ -467,14 +519,21 @@ export function StoolCounter({
 							{displayedLogs.length}
 						</span>
 					</div>
-					<button
-						type="button"
-						onClick={() => setGuideOpen(true)}
-						className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:underline dark:text-rose-400"
-					>
-						<Info size={13} />
-						<span>Stool Color Guide</span>
-					</button>
+					<div className="flex items-center gap-3">
+						{displayedLogs.length > 0 && rowsPerPage < displayedLogs.length && (
+							<p className="text-xs text-slate-500 dark:text-slate-400">
+								Showing {firstVisibleIndex + 1}–{Math.min(firstVisibleIndex + rowsPerPage, displayedLogs.length)} of {displayedLogs.length}
+							</p>
+						)}
+						<button
+							type="button"
+							onClick={() => setGuideOpen(true)}
+							className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 hover:underline dark:text-rose-400"
+						>
+							<Info size={13} />
+							<span>Stool Color Guide</span>
+						</button>
+					</div>
 				</div>
 
 				{displayedLogs.length === 0 ? (
@@ -483,7 +542,11 @@ export function StoolCounter({
 							<Baby size={22} />
 						</span>
 						<p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-							{activeFilter === "today" ? "No diapers logged today yet" : "No diaper records found"}
+							{dateFilter
+								? `No diapers logged for ${dateFilter}`
+								: activeFilter === "today"
+								? "No diapers logged today yet"
+								: "No diaper records found"}
 						</p>
 						<p className="max-w-xs text-xs text-slate-500 dark:text-slate-400">
 							Use the quick care buttons at the top to log wet and dirty diapers with a single tap.
@@ -491,7 +554,7 @@ export function StoolCounter({
 					</div>
 				) : (
 					<div className="space-y-2.5">
-						{displayedLogs.map((log) => {
+						{paginatedLogs.map((log) => {
 							const date = new Date(log.loggedAt);
 							const colorMeta = stoolColorMetadata[log.color] || stoolColorMetadata.yellow;
 							const consistencyMeta = stoolConsistencyMetadata[log.consistency] || stoolConsistencyMetadata.soft;
@@ -540,11 +603,6 @@ export function StoolCounter({
 
 										<div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">
 											<span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
-												<Clock size={12} className="text-slate-400" />
-												{date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-											</span>
-											<span aria-hidden="true">·</span>
-											<span className="inline-flex items-center gap-1">
 												<Calendar size={12} className="text-slate-400" />
 												{date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
 											</span>
@@ -601,6 +659,72 @@ export function StoolCounter({
 							);
 						})}
 					</div>
+				)}
+
+				{/* Pagination Controls */}
+				{displayedLogs.length > 0 && pageCount > 1 && (
+					<nav aria-label="Diaper timeline pagination" className="shared-pagination w-full pt-1" style={{ "--pagination-accent": paletteAccent } as CSSProperties}>
+						<div className="shared-pagination-controls flex w-full items-center justify-between rounded-2xl border p-1.5 sm:px-3 sm:py-2">
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Previous page"
+								disabled={activePage === 1}
+								onClick={() => setCurrentPage(activePage - 1)}
+							>
+								<ChevronLeft size={16} />
+								<span className="hidden sm:inline">Previous</span>
+							</Button>
+
+							<div className="flex items-center gap-1">
+								{pageNumbers.map((page, idx) => {
+									if (page === "...") {
+										return (
+											<span
+												key={`ellipsis-${idx}`}
+												className="grid size-8.5 place-items-center text-xs font-semibold text-slate-400 select-none dark:text-slate-500"
+											>
+												…
+											</span>
+										);
+									}
+
+									const isCurrent = page === activePage;
+									return (
+										<button
+											key={page}
+											type="button"
+											onClick={() => setCurrentPage(Number(page))}
+											aria-current={isCurrent ? "page" : undefined}
+											aria-label={`Page ${page}`}
+											className={`grid size-8.5 place-items-center rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+												isCurrent
+													? "shared-pagination-current text-white shadow-xs"
+													: "shared-pagination-button"
+											}`}
+										>
+											{page}
+										</button>
+									);
+								})}
+							</div>
+
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								className="shared-pagination-button inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-xs font-semibold"
+								aria-label="Next page"
+								disabled={activePage === pageCount}
+								onClick={() => setCurrentPage(activePage + 1)}
+							>
+								<span className="hidden sm:inline">Next</span>
+								<ChevronRight size={16} />
+							</Button>
+						</div>
+					</nav>
 				)}
 			</div>
 
@@ -716,18 +840,6 @@ export function StoolCounter({
 									</label>
 								</div>
 							)}
-
-							{/* Date & Time */}
-							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
-								<span>Change Time</span>
-								<Input
-									type="datetime-local"
-									name="loggedAt"
-									value={changeTime}
-									onChange={(e) => setChangeTime(e.target.value)}
-									className="h-10 border-rose-200 text-slate-900 focus-visible:border-rose-400 focus-visible:ring-rose-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500"
-								/>
-							</label>
 
 							{/* Notes */}
 							<label className="block space-y-1.5 text-xs font-medium text-slate-900 dark:text-slate-100 sm:text-sm">
