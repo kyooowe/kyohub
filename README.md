@@ -20,6 +20,22 @@ Kyohub is a family space for keeping everyday plans together—from grocery runs
 *One cozy space for the little things that keep your family organized.*
 
 <details>
+<summary>👶 <strong>Baby tracker</strong></summary>
+
+<br>
+
+All-in-one daily nursery and infant care tracking for parents.
+
+- **Milk feedings:** Quick-log bottle intake, formula or breast milk, leftover ounces, and exact timestamps.
+- **Diapers & stool:** Record wet, dirty, or combined changes with consistency and stool color guides.
+- **Sleep sessions:** Track naps and night sleep with a live timer, awake duration, and daily rest breakdowns.
+- **Growth progression:** Monitor monthly height, weight, and head circumference percentiles against WHO benchmarks.
+- **Immunizations & meds:** Keep vaccine schedules organized and track daily medication doses.
+- **Pediatrician notes:** Save doctor visit logs, advice, prescriptions, and symptoms.
+
+</details>
+
+<details>
 <summary>🛒 <strong>Grocery planner</strong></summary>
 
 <br>
