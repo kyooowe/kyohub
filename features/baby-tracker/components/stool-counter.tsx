@@ -556,6 +556,11 @@ export function StoolCounter({
 					<div className="space-y-2.5">
 						{paginatedLogs.map((log) => {
 							const date = new Date(log.loggedAt);
+							const createdDate = log.createdAt ? new Date(log.createdAt) : date;
+							const timeSource = !isNaN(createdDate.getTime()) ? createdDate : date;
+							const formattedTime = !isNaN(timeSource.getTime())
+								? timeSource.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+								: null;
 							const colorMeta = stoolColorMetadata[log.color] || stoolColorMetadata.yellow;
 							const consistencyMeta = stoolConsistencyMetadata[log.consistency] || stoolConsistencyMetadata.soft;
 
@@ -606,6 +611,15 @@ export function StoolCounter({
 												<Calendar size={12} className="text-slate-400" />
 												{date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
 											</span>
+											{formattedTime && (
+												<>
+													<span aria-hidden="true">·</span>
+													<span className="inline-flex items-center gap-1 font-medium text-slate-600 dark:text-slate-300">
+														<Clock size={12} className="text-slate-400" />
+														{formattedTime}
+													</span>
+												</>
+											)}
 											{log.notes ? (
 												<>
 													<span aria-hidden="true">·</span>
